@@ -1,0 +1,13 @@
+{
+  "name": "conjur-hostidentity",
+  "version": "0.0.1",
+  "author": "Conjur Inc.",
+  "summary": "Creates and installs Conjur host identity",
+  "license": "Apache 2.0",
+  "source": "https://github.com/conjurinc/puppet-conjur-host-identity",
+  "project_page": "https://github.com/conjurinc/puppet-conjur-host-identity",
+  "issues_url": "https://github.com/conjurinc/puppet-conjur-host-identity/issues",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  ]
+}
