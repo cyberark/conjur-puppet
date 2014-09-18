@@ -26,17 +26,31 @@ class conjur::host_identity (
   }
 
   if $key == undef {
-    $key = create_host($name, $token)
-  }
+    $create_host_identity = '/opt/conjur/bin/create-host-identity'
 
-  $identity = {
-    machine => "$appliance/authn",
-    login => "host/$name",
-    password => $key
-  }
+    package { 'conjur-asset-host-factory':
+      provider => conjur_gem
+    }
 
-  file { $netrcfile:
-    content => template('conjur/netrc_entry.erb'),
-    mode => '0600'
+    file { $create_host_identity:
+      content => file('conjur/create-host-identity.rb'),
+      mode => '0755'
+    }
+
+    exec { 'create-host-identity':
+      command => "$create_host_identity $name $token",
+      creates => $netrcfile
+    }
+  } else {
+    $identity = {
+      machine => "$appliance/authn",
+      login => "host/$name",
+      password => $key
+    }
+
+    file { $netrcfile:
+      content => template('conjur/netrc_entry.erb'),
+      mode => '0600'
+    }
   }
 }
