@@ -29,7 +29,8 @@ class conjur::host_identity (
     $create_host_identity = '/opt/conjur/bin/create-host-identity'
 
     package { 'conjur-asset-host-factory':
-      provider => conjur_gem
+      provider => conjur_gem,
+      require => Class['conjur::client']
     }
 
     file { $create_host_identity:
@@ -39,6 +40,7 @@ class conjur::host_identity (
 
     exec { 'create-host-identity':
       command => "$create_host_identity $name $token",
+      require => Class['conjur::client'],
       creates => $netrcfile
     }
   } else {
