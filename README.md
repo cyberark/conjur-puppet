@@ -1,4 +1,4 @@
-# hostidentity
+# conjur
 
 #### Table of Contents
 
@@ -15,65 +15,118 @@
 
 ## Overview
 
-A one-maybe-two sentence summary of what the module does/what problem it solves.
-This is your 30 second elevator pitch for your module. Consider including
-OS/Puppet version it works with.
+This module helps to integrate [Conjur](http://www.conjur.net) security solution
+with Puppet-driven configuration, thus allowing you to use externally-stored,
+access-controlled, audited secrets with minimal trust; the secrets
+never end up on the master and are fetched directly by the client.
+
+Tested on CentOS 6.5 with Puppet 3.7.1. Will probably work on any EL.
 
 ## Module Description
 
-If applicable, this section should have a brief description of the technology
-the module integrates with and what that integration enables. This section
-should answer the questions: "What does this module *do*?" and "Why would I use
-it?"
+[Conjur](http://www.conjur.net) allows you to store secrets in an encrypted
+database and control access to them; a host then can use its own security
+credentials and identity to securely fetch the secrets and use them in configuration.
 
-If your module has a range of functionality (installation, configuration,
-management, etc.) this is the time to mention it.
+This module handles
+- installing Conjur client,
+- configuring it,
+- creating a host identity with Conjur host factory,
+- fetching secrets and using them in config files.
 
 ## Setup
 
 ### What hostidentity affects
 
-* A list of files, packages, services, or operations that the module will alter,
-  impact, or execute on the system it's installed on.
-* This is a great place to stick any warnings.
-* Can be in list or paragraph form.
+* conjur client package,
+* conjur config and identity files - `/etc/conjur.{conf,identity}`,
+* any config files you conjurize.
 
-### Setup Requirements **OPTIONAL**
+### Setup Requirements
 
-If your module requires anything extra before setting up (pluginsync enabled,
-etc.), mention it here.
+You should have a Conjur server configured with either a precreated identity
+for the host or, alternatively, a host factory set up. You'll need the Conjur TLS
+certificate, account info and endpoint URL, and either a host API key or a host
+factory token.
 
-### Beginning with hostidentity
+### Beginning with conjur
 
-The very basic steps needed for a user to get the module up and running.
+To install the Conjur client and host identity:
 
-If your most recent release breaks compatibility or requires particular steps
-for upgrading, you may wish to include an additional section here: Upgrading
-(For an example, see http://forge.puppetlabs.com/puppetlabs/firewall).
+    include conjur::client
+    class { conjur::host_identity:
+      appliance => 'https://master.conjur.um.pl.eu.org/api'
+      certificate => file("conjur/example.pem"),
+      account => hatest,
+
+      name => hftest,
+
+      key => '3bfqryknzbbmh1j3ecftgyac9w22677hw27z9yns3rcf29h3w2hvgn',
+      # alternatively, use a host factory token:
+      token => '3bfqryknzbbmh1j3ecftgyac9w22677hw27z9yns3rcf29h3w2hvgn'
+    }
 
 ## Usage
 
-Put the classes, types, and resources for customizing, configuring, and doing
-the fancy stuff with your module here.
+### Secrets from Conjur variables
+
+Wherever there is a secret (password, API key, etc.) being stored in a config file,
+you can instead use `conjur_variable` function to tie it in and then use `conjurize_file`
+resource to process it. This allows using secrets from Conjur with non-Conjur-aware resources,
+for example:
+
+    $planet = conjur_variable('planet')
+
+    file { '/etc/hello.txt':
+      content => "Hello $planet!\n"
+    }
+
+    conjurize_file { '/etc/hello.txt':
+      map => {
+        planet => "!var puppetdemo/planet"
+      }
+    }
 
 ## Reference
 
-Here, list the classes, types, providers, facts, etc contained in your module.
-This section should include all of the under-the-hood workings of your module so
-people know what the module is touching on their system but don't need to mess
-with things. (We are working on automating this section!)
+### Classes
+
+- `conjur::client`: Installs the Conjur client
+- `conjur::host_identity`: Configures the Conjur client and sets up host identity
+
+### Functions
+
+#### conjur_variable
+
+A placeholder to use in config files to be substituted by a secret fetched from Conjur.
+
+### Providers
+
+#### conjur_gem
+
+A package provider to install gems in Conjur embedded Ruby environment.
+
+#### conjurize_file
+
+Alters an existing `File` resource by substituting `conjur_variable`s according to
+a given variable map.
+
+##### `map`
+
+Sets up a mapping from named variables in the config file to variables stored on the
+conjur server, ie.
+
+    map => {
+      password => '!var puppet-1.0/mysql/password
+    }
+
+Note the !var prefix; this is directly translated to yaml mapping file, please consult Conjur
+documentation for further details on that.
 
 ## Limitations
 
-This is where you list OS compatibility, version compatibility, etc.
+In this development release only CentOS is currently supported.
 
 ## Development
 
-Since your module is awesome, other users will want to play with it. Let them
-know what the ground rules for contributing are.
-
-## Release Notes/Contributors/Etc **Optional**
-
-If you aren't using changelog, put your release notes here (though you should
-consider using changelog). You may also add any additional sections you feel are
-necessary or important to include here. Please use the `## ` header.
+Feel free to submit pull requests.

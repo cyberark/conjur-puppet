@@ -4,9 +4,9 @@
   "author": "Conjur Inc.",
   "summary": "Conjur",
   "license": "Apache 2.0",
-  "source": "https://github.com/conjurinc/conjur-puppet",
-  "project_page": "https://github.com/conjurinc/conjur-puppet",
-  "issues_url": "https://github.com/conjurinc/conjur-puppet/issues",
+  "source": "https://github.com/conjurinc/puppet",
+  "project_page": "https://github.com/conjurinc/puppet",
+  "issues_url": "https://github.com/conjurinc/puppet/issues",
   "dependencies": [
     {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
   ]
