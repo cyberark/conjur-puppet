@@ -3,11 +3,11 @@ Puppet::Type.type(:conjurize_file).provide(:permanent) do
     environment :HOME => "/var/tmp"
   end
 
-  def map
+  def variable_map
     nil
   end
 
-  def map= _map
+  def variable_map= _map
     @map = _map
     apply
   end
@@ -16,8 +16,7 @@ Puppet::Type.type(:conjurize_file).provide(:permanent) do
 
   def apply
     # any better way to force the ordering?
-    resource.catalog.resource(:class, 'conjur::host_identity').refresh
-    resource.catalog.resource(:class, 'conjur::client').refresh
+    resource.catalog.resource(:class, 'conjur').refresh
 
     # don't save the secrets to a bucket
     file[:backup] = false

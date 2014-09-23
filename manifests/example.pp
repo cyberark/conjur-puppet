@@ -1,12 +1,11 @@
 class conjur::example {
-  include conjur::client
-  
-  class { conjur::host_identity:
-    certificate => file("conjur/example.pem"),
-    account => hatest,
-    name => hftest,
-    key => '3bfqryknzbbmh1j3ecftgyac9w22677hw27z9yns3rcf29h3w2hvgn',
-    appliance => 'https://master.conjur.um.pl.eu.org/api'
+  class { conjur:
+    conjur_certificate => file("conjur/example.pem"),
+    conjur_account => hatest,
+    conjur_url => 'https://master.conjur.um.pl.eu.org/api',
+
+    host_id => hftest,
+    host_key => '3bfqryknzbbmh1j3ecftgyac9w22677hw27z9yns3rcf29h3w2hvgn'
   }
 
   $planet = conjur_variable('planet')
@@ -16,7 +15,7 @@ class conjur::example {
   }
 
   conjurize_file { '/etc/hello.txt':
-    map => {
+    variable_map => {
       planet => "!var puppetdemo/planet"
     }
   }

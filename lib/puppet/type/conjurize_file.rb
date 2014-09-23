@@ -3,7 +3,7 @@ Puppet::Type.newtype(:conjurize_file) do
     isnamevar
   end
 
-  newproperty :map do
+  newproperty :variable_map do
     defaultto {}
   end
 end

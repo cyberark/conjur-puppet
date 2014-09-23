@@ -53,17 +53,16 @@ factory token.
 
 To install the Conjur client and host identity:
 
-    include conjur::client
-    class { conjur::host_identity:
-      appliance => 'https://master.conjur.um.pl.eu.org/api'
-      certificate => file("conjur/example.pem"),
-      account => hatest,
+    class { conjur:
+      conjur_url => 'https://master.conjur.um.pl.eu.org/api'
+      conjur_certificate => file("conjur/example.pem"),
+      conjur_account => hatest,
 
-      name => hftest,
+      host_id => hftest,
 
-      key => '3bfqryknzbbmh1j3ecftgyac9w22677hw27z9yns3rcf29h3w2hvgn',
+      host_key => '3bfqryknzbbmh1j3ecftgyac9w22677hw27z9yns3rcf29h3w2hvgn',
       # alternatively, use a host factory token:
-      token => '3bfqryknzbbmh1j3ecftgyac9w22677hw27z9yns3rcf29h3w2hvgn'
+      hostfactory_token => '3bfqryknzbbmh1j3ecftgyac9w22677hw27z9yns3rcf29h3w2hvgn'
     }
 
 ## Usage
@@ -82,7 +81,7 @@ for example:
     }
 
     conjurize_file { '/etc/hello.txt':
-      map => {
+      variable_map => {
         planet => "!var puppetdemo/planet"
       }
     }
@@ -111,14 +110,17 @@ A package provider to install gems in Conjur embedded Ruby environment.
 Alters an existing `File` resource by substituting `conjur_variable`s according to
 a given variable map.
 
-##### `map`
+##### `variable_map`
 
 Sets up a mapping from named variables in the config file to variables stored on the
 conjur server, ie.
 
-    map => {
-      password => '!var puppet-1.0/mysql/password
+    variable_map => {
+      mysql_password => '!var puppet-1.0/mysql/password
     }
+
+This will replace `conjur_variable('mysql_password')` in the conjurized file with the
+contents of `puppet-1.0/mysql/password` Conjur variable.
 
 Note the !var prefix; this is directly translated to yaml mapping file, please consult Conjur
 documentation for further details on that.
