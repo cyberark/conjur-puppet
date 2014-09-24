@@ -7,6 +7,12 @@
   "source": "https://github.com/conjurinc/puppet",
   "project_page": "https://github.com/conjurinc/puppet",
   "issues_url": "https://github.com/conjurinc/puppet/issues",
+  "operatingsystem_support": [
+    {
+    "operatingsystem":"RedHat",
+    "operatingsystemrelease":[ "5.0", "6.0" ]
+    }
+  ],
   "dependencies": [
     {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
   ]
