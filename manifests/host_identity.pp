@@ -17,7 +17,7 @@ class conjur::host_identity inherits conjur {
     }
 
     exec { 'create-host-identity':
-      command => "$create_host_identity $host_conjurid $hostfactory_token",
+      command => "$create_host_identity $host_id $hostfactory_token",
       require => Class['conjur::client'],
       creates => $netrc_path
     }
