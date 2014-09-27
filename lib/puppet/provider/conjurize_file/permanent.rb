@@ -15,12 +15,13 @@ Puppet::Type.type(:conjurize_file).provide(:permanent) do
   private
 
   def apply
-    # any better way to force the ordering?
-    resource.catalog.resource(:class, 'conjur').refresh
+    # if conjur class is declared, make sure it's refreshed
+    conjur = resource.catalog.resource(:class, 'conjur')
+    conjur.refresh if conjur
 
     # don't save the secrets to a bucket
     file[:backup] = false
-    
+
     file[:content] = render
     file.write :content
     cleanup
