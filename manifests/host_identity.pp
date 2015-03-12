@@ -24,7 +24,7 @@ class conjur::host_identity inherits conjur {
   } else {
     $identity = {
       machine => "$conjur_url/authn",
-      login => "host/$host_conjurid",
+      login => "host/$host_id",
       password => $host_key
     }
 
