@@ -16,9 +16,11 @@
 ## Overview
 
 This module helps to integrate [Conjur](http://www.conjur.net) security solution
-with Puppet-driven configuration, thus allowing you to use externally-stored,
-access-controlled, audited secrets with minimal trust; the secrets
-never end up on the master and are fetched directly by the client.
+with Puppet-driven configuration, thus allowing you to:
+- use externally-stored, access-controlled, audited secrets with minimal
+  trust; the secrets never end up on the master and are fetched directly by
+  the client,
+- centrally and flexibly control and audit SSH access to hosts.
 
 Tested on CentOS 6.5 with Puppet 3.7.1. Will probably work on any EL.
 
@@ -26,21 +28,32 @@ Tested on CentOS 6.5 with Puppet 3.7.1. Will probably work on any EL.
 
 [Conjur](http://www.conjur.net) allows you to store secrets in an encrypted
 database and control access to them; a host then can use its own security
-credentials and identity to securely fetch the secrets and use them in configuration.
+credentials and identity to securely fetch the secrets and use them in
+configuration.
+
+Another feature of Conjur is central management of SSH access to hosts;
+conjurized hosts are a first-class resource in Conjur RBAC engine and can
+be access controlled with arbitrary flexibility and granularity.
 
 This module handles
 - installing Conjur client,
 - configuring it,
 - creating a host identity with Conjur host factory,
+- configuring the host for Conjur SSH access control,
 - fetching secrets and using them in config files.
 
 ## Setup
 
-### What hostidentity affects
+### What conjur affects
 
 * conjur client package,
-* conjur config and identity files - `/etc/conjur.{conf,identity}`,
+* conjur config and identity files - `/etc/conjur.{conf,identity}`.
+
+If secrets management is used, then additionally
 * any config files you conjurize.
+
+If SSH access management is used, then additionally
+* NSS, nslcd and sshd configuration.
 
 ### Setup Requirements
 
@@ -86,12 +99,34 @@ for example:
       }
     }
 
+### SSH access control
+
+To configure the host for Conjur SSH access control, set `ssh` on `conjur`
+class:
+
+    class { conjur:
+      conjur_url => 'https://master.conjur.um.pl.eu.org/api'
+      conjur_certificate => file("conjur/example.pem"),
+      conjur_account => hatest,
+
+      host_id => hftest,
+
+      host_key => '3bfqryknzbbmh1j3ecftgyac9w22677hw27z9yns3rcf29h3w2hvgn',
+
+      ssh => true
+    }
+
+or declare `conjur::ssh` class directly:
+
+    class { 'conjur::ssh': }
+
 ## Reference
 
 ### Classes
 
 - `conjur::client`: Installs the Conjur client
 - `conjur::host_identity`: Configures the Conjur client and sets up host identity
+- `conjur::ssh`: Configures the host for Conjur SSH access control
 
 ### Functions
 
