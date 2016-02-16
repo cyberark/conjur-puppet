@@ -116,7 +116,7 @@ Sets up a mapping from named variables in the config file to variables stored on
 conjur server, ie.
 
     variable_map => {
-      mysql_password => '!var puppet-1.0/mysql/password
+      mysql_password => '!var puppet-1.0/mysql/password'
     }
 
 This will replace `conjur_variable('mysql_password')` in the conjurized file with the
