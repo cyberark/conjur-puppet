@@ -1,80 +1,84 @@
-# Puppet-in-Docker with Docker Compose
+# Connecting Puppet and Conjur Using a Custom Fact
 
-[Docker Compose](https://docs.docker.com/compose/) is a tool for defining and
-running multi-container Docker applications. With compose you define a
-set of containers, along with their relationships, in a YAML file. And
-then use the `docker-compose` CLI to launch and manage them.
+The Puppet agent provides a Conjur access token to the Puppet master in a custom fact called `conjur_token`.
 
-For this example we've provided a compose file using the version 2
-schema. This means you will need at least Docker Engine 1.10 and Compose
-1.6.
+## Running the Server
 
-## Running the server
+Run `./start.sh`, which:
 
-The example launches a stack running Puppet Server, PuppetDB, a
-PostgresDB container for PuppetDB and the open source dashboards
-Puppetboard and Puppet Explorer. See the `docker-compose.yml` file for
-details.
+* Builds all the necessary containers
+* Starts the `conjur` server
+* Loads policies into Conjur
+* Creates a new Host Factory token for the `prod/inventory` layer and saves it to a file
+* Launches all the Puppet server containers.
 
-Run `docker-compose up` to launch the containers. Note that you'll see
-lots of output as the various software launches in parallel.
+## Running the Client (Node)
+
+The `node` container uses the Host Factory token to acquire an identity. It then saves this identity information, and runs the Puppet agent. Facter authenticates with Conjur and passes the access token as a custom fact called
+`conjur_token`:
 
 ```
-$ docker-compose up
-Creating compose_puppetboard_1
-Creating postgres
-Creating puppet
-Creating compose_puppetexplorer_1
-...
+$ docker-compose run --rm node
+Starting compose_conjur_policies_1
++ host_id=puppet/d0876dbdf4a0
+++ cat /etc/hostfactory_token.txt
++ token=13121xr1bffs5j9qxd242jc96rj3vbrzp412yc2t81aaqaxn2yhps30
++ conjur hostfactory hosts create 13121xr1bffs5j9qxd242jc96rj3vbrzp412yc2t81aaqaxn2yhps30 puppet/d0876dbdf4a0
+++ cat /etc/host.json
+++ jq -r .api_key
++ api_key=2cvenc2pyvb8h3xq2t2f80nyb3sgtfg528w0805nwa2sa1r2h1za
++ cat
++ chmod 0600 /root/.netrc
++ /opt/puppetlabs/bin/puppet agent --verbose --onetime --no-daemonize --summarize
+Info: Creating a new SSL key for d0876dbdf4a0
+Info: Caching certificate for ca
+Info: csr_attributes file loading from /etc/puppetlabs/puppet/csr_attributes.yaml
+Info: Creating a new SSL certificate request for d0876dbdf4a0
+Info: Certificate Request fingerprint (SHA256): 2B:23:DA:42:80:83:CC:B1:9D:FB:FF:C7:8A:7C:24:57:35:5C:D6:87:48:48:9A:5A:E1:7C:2C:0E:1D:15:97:5D
+Info: Caching certificate for d0876dbdf4a0
+Info: Caching certificate_revocation_list for ca
+Info: Caching certificate for ca
+Info: Using configured environment 'production'
+Info: Retrieving pluginfacts
+Info: Retrieving plugin
+Info: Caching catalog for d0876dbdf4a0
+Info: Applying configuration version '1481059553'
+Notice: /Stage[main]/Main/Node[default]/File[/tmp/puppet-in-docker]/ensure: defined content as '{md5}938727d2f2612b38d783932417edf030'
+Info: Creating state file /opt/puppetlabs/puppet/cache/state/state.yaml
+Notice: Applied catalog in 0.09 seconds
+Changes:
+            Total: 1
+Events:
+          Success: 1
+            Total: 1
+Resources:
+          Changed: 1
+      Out of sync: 1
+            Total: 8
+Time:
+       Filebucket: 0.00
+         Schedule: 0.00
+             File: 0.04
+   Config retrieval: 1.02
+            Total: 1.06
+         Last run: 1481059553
+Version:
+           Config: 1481059553
+           Puppet: 4.8.0
 ```
 
-One the output from compose stops, in another terminal confirm you have the
-containers up and running.
 
-```
-$ docker ps                                                                                                                                                                                                                                                             ~
-CONTAINER ID        IMAGE                      COMMAND                  CREATED             STATUS              PORTS                                              NAMES
-7af731797a95        puppet/puppetexplorer      "/usr/bin/caddy"         2 minutes ago       Up 2 minutes        0.0.0.0:32828->80/tcp                              compose_puppetexplorer_1
-8f8aecd2cc69        puppet/puppetserver        "/opt/puppetlabs/bin/"   2 minutes ago       Up 2 minutes        0.0.0.0:32827->8140/tcp                            puppet
-1fefb0ea22ff        puppet/puppetdb-postgres   "/docker-entrypoint.s"   2 minutes ago       Up 2 minutes        5432/tcp                                           postgres
-910002aa3e6a        puppet/puppetboard         "/usr/bin/gunicorn -b"   2 minutes ago       Up 2 minutes        0.0.0.0:32824->8000/tcp                            compose_puppetboard_1
-78bfd7967680        puppet/puppetdb            "dumb-init /docker-en"   2 minutes ago       Up 2 minutes        0.0.0.0:32826->8080/tcp, 0.0.0.0:32825->8081/tcp   compose_puppetdb_1
-```
+## Viewing the Node with the Conjur UI
+
+Open the Conjur UI on port 9443. You'll be able to find the Puppet resources by searching for "puppet".
+
+## Viewing the Node with Puppet Explorer
 
 Note the port number for the puppetexplorer container, in my case `32828`. If
 you're running docker locally you should be able to access the dashboard
 on `0.0.0.0:32824` (your port will likely vary). If you're running
 `docker-machine` then you can run `docker-machine ip` to determine the
-correct IP address. So far the dashboard should be empty, we haven't run
-any agents yet. Let's do that now.
-
-
-## Running ephemeral agents
-
-You could connect any agents to the Puppet infrastructure launched above
-but for demonstration purposes we're just going to launch a few ephemeral
-puppet agents in Docker containers. These aren't useful in most sense,
-the container will run, receive instructions from Puppet and then disappear.
-But they are useful for testing and demonstration purposes.
-
-Note that compose automatically creates a default network which we need to
-connect our containers to in order for them to find the Puppet Server.
-
-Let's run up a few alpine agents. Run the following command a few times.
-
-```
-docker run --net compose_default puppet/puppet-agent-alpine
-```
-
-And then run some Ubuntu based agents. Again run the command a couple
-of times to populate the database.
-
-```
-docker run --net compose_default puppet/puppet-agent-ubuntu
-```
-
-Now access the dashboard described above again. You should have some data
-to explore.
+correct IP address. 
 
 ## Exploring PuppetDB data
 
