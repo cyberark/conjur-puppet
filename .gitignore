@@ -1,0 +1,7 @@
+# Container volumes
+puppet/
+puppetdb/
+puppetdb-postgres/
+inventory_token.json
+inventory_token.txt
+conjur.pem

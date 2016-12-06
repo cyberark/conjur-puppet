@@ -1,0 +1,6 @@
+---
+- !policy 
+  id: inventory
+  body:
+    - !host-factory
+      layers: [ !layer ]

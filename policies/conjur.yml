@@ -1,0 +1,6 @@
+- !policy
+  id: prod
+  owner: !group people/operations
+  body:
+  - !include prod/inventory.yml
+
