@@ -20,9 +20,9 @@ services:
       - ./policies:/var/puppet-policies
 
   puppet:
+    build: puppet-master
     container_name: puppet
     hostname: puppet
-    image: puppet/puppetserver
     ports:
       - 8140
     environment:
