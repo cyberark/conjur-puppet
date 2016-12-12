@@ -26,6 +26,16 @@ docker-compose exec -T conjur env CONJUR_AUTHN_LOGIN=admin \
   CONJUR_ACCOUNT=cucumber \
   conjur hostfactory tokens create --duration-days 365 prod/inventory | tee inventory_token.json
 
+password=$(openssl rand -hex 12)
+
+echo Loading inventory-db password
+docker-compose exec -T conjur env CONJUR_AUTHN_LOGIN=admin \
+  CONJUR_AUTHN_API_KEY=secret \
+  CONJUR_APPLIANCE_URL=http://localhost/api \
+  CONJUR_ACCOUNT=cucumber \
+  conjur variable values add prod/inventory-db/password $password
+
+
 cat inventory_token.json | docker-compose run --rm jq -r ".[0].token" > inventory_token.txt
 
 docker-compose exec -T conjur cat /opt/conjur/etc/ssl/ca.pem > conjur.pem

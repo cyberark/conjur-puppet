@@ -1,18 +1,36 @@
 Facter.add('conjur_token') do
   setcode do
+    require 'yaml'
+    require 'conjur-api'
     require 'net/http'
     require 'openssl'
     require 'open-uri'
-    require 'base64'
     require 'json'
-    require 'conjur-cli'
-    require 'restclient'
+    require 'netrc'
+
+    def configure_conjur
+      conjur_config = Puppet.settings[:conjur_config] || File.join(Puppet.settings[:confdir], 'conjur.yaml')
+      if Puppet::FileSystem.exist?(conjur_config)
+        config = YAML.load(File.read(conjur_config))
+        Conjur.configuration.appliance_url = config['appliance_url'] or raise "Conjur url is required in conjur.yml"
+        Conjur.configuration.account = config['account'] or raise "Conjur account is required in conjur.yml"
+        if Conjur.configuration.cert_file.nil? && ( cert_file = config['cert_file'] )
+          Conjur.configuration.cert_file = cert_file
+          Conjur.configuration.apply_cert_config!
+        end
+      else
+        raise "Conjur config file #{conjur_config} not found"
+      end
+    end
+
+    configure_conjur
 
     def do_retry times, delay = 5, &block
       tries = 0
       begin
         yield
       rescue
+        puts $!.message
         sleep delay
         if ( tries += 1 ) < times
           retry
@@ -22,9 +40,10 @@ Facter.add('conjur_token') do
       end
     end
 
-    Conjur::Config.load
-    Conjur::Config.apply
-    conjur_api = Conjur::Authn.connect nil, noask: true
+    netrc_file = ENV['CONJUR_NETRC_PATH'] || File.expand_path("~/.netrc")
+    netrc = Netrc.read(netrc_file)
+    credentials = netrc[[ Conjur.configuration.appliance_url, "authn" ].join("/")] or raise "No Conjur credentials found in netrc file"
+    conjur_api = Conjur::API.new_from_key(*credentials)
 
     token = do_retry 3 do
       JSON.pretty_generate(conjur_api.token)

@@ -25,10 +25,6 @@ services:
     hostname: puppet
     ports:
       - 8140
-    environment:
-      CONJUR_APPLIANCE_URL: https://conjur/api
-      CONJUR_ACCOUNT: cucumber
-      CONJUR_CERT_FILE: /etc/conjur.pem
     volumes:
       - ./conjur.pem:/etc/conjur.pem
       - ./code:/etc/puppetlabs/code/
@@ -45,13 +41,11 @@ services:
 
   node:
     build: node
-    environment:
-      CONJUR_APPLIANCE_URL: https://conjur/api
-      CONJUR_ACCOUNT: cucumber
-      CONJUR_CERT_FILE: /etc/conjur.pem
     volumes:
-      - ./conjur.pem:/etc/conjur.pem
-      - ./inventory_token.txt:/etc/hostfactory_token.txt
+      - ./conjur.pem:/etc/conjur.pem:ro
+      - ./inventory_token.txt:/etc/hostfactory_token.txt:ro
+      - ./node/conjur_token.rb:/opt/facts/conjur_token.rb
+      - ./puppet-master/conjur.yaml:/etc/puppetlabs/puppet/conjur.yaml:ro
     links:
       - conjur:conjur
       - puppet:puppet

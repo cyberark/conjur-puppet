@@ -1,0 +1,3 @@
+appliance_url: https://conjur/api
+account: cucumber
+cert_file: /etc/conjur.pem

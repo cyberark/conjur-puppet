@@ -11,4 +11,6 @@ COPY puppet.conf /etc/puppetlabs/puppet/puppet.conf
 COPY conjur_token.rb /opt/facts
 COPY run.sh /
 
+RUN ln -sf /etc/puppetlabs/puppet/conjur.yaml /root/.conjurrc
+
 ENTRYPOINT [ "/run.sh" ]
