@@ -1,5 +1,11 @@
 File { backup => false }
 
+class inventory {
+  $db_password = conjur_secret('prod/inventory-db/password')
+
+  notify { "Installing DB password: ${db_password}": }
+}
+
 node default {
   file { '/tmp/puppet-in-docker':
     ensure  => present,
@@ -7,8 +13,4 @@ node default {
   }
 }
 
-node frontend {
-  $db_password = conjur_secret('prod/inventory-db/password')
-
-  notify { "Loaded db password: ${db_password}": }
-}
+hiera_include('classes')

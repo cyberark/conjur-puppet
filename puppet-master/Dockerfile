@@ -17,6 +17,4 @@ RUN puppet apply /conjur-api.pp
 # For release, this should be distributed as a module
 COPY functions/* /opt/puppetlabs/puppet/lib/ruby/vendor_ruby/puppet/functions/
 
-COPY site.pp /etc/puppetlabs/code/environments/production/manifests/
-
 COPY conjur.yaml /etc/puppetlabs/puppet/

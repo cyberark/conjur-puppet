@@ -45,6 +45,7 @@ services:
       - ./conjur.pem:/etc/conjur.pem:ro
       - ./inventory_token.txt:/etc/hostfactory_token.txt:ro
       - ./node/conjur_token.rb:/opt/facts/conjur_token.rb
+      - ./node/conjur_layers.rb:/opt/facts/conjur_layers.rb
       - ./puppet-master/conjur.yaml:/etc/puppetlabs/puppet/conjur.yaml:ro
     links:
       - conjur:conjur

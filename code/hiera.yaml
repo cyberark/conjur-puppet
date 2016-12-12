@@ -3,6 +3,9 @@
   - yaml
 :hierarchy:
   - "nodes/%{::trusted.certname}"
+  - "layers/%{::conjur_layers.0}"
+  - "layers/%{::conjur_layers.1}"
+  - "layers/%{::conjur_layers.2}"
   - common
 
 :yaml:

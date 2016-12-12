@@ -9,6 +9,7 @@ ENV FACTERLIB /opt/facts
 
 COPY puppet.conf /etc/puppetlabs/puppet/puppet.conf
 COPY conjur_token.rb /opt/facts
+COPY conjur_layers.rb /opt/facts
 COPY run.sh /
 
 RUN ln -sf /etc/puppetlabs/puppet/conjur.yaml /root/.conjurrc
