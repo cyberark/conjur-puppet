@@ -17,9 +17,7 @@ This project demonstrates how to inject Conjur-managed secrets into Puppet code.
 
 ## Demo
 
-This example shows how an `inventory` service can obtain a database password to the `inventory-db`. The `inventory` service is modeled as a Puppet-managed node. This node applies an `inventory` class, which fetches the secret from Conjur using the `conjur_token` fact and prints it to the console on the node-side.
-
-In a more realistic example, the password would be merged into a file using a Puppet template.
+This example shows how an `inventory` service can obtain a database password to the `inventory-db`. The `inventory` service is modeled as a Puppet-managed node. This node applies an `inventory` class, which fetches the secret from Conjur using the `conjur_token` fact and writes it to the file `/dev/shm/etc/inventory.conf`
 
 ### Running the Server
 
@@ -53,32 +51,35 @@ Starting compose_conjur_policies_1
 Info: Using configured environment 'production'
 Info: Retrieving pluginfacts
 Info: Retrieving plugin
-Info: Caching catalog for c020f6139c71
-Info: Applying configuration version '1481572162'
-Notice: Installing DB password: e4eabb1e741469407f8b9868
-Notice: /Stage[main]/Inventory/Notify[Installing DB password: e4eabb1e741469407f8b9868]/message: defined 'message' as 'Installing DB password: e4eabb1e741469407f8b9868'
-Notice: Applied catalog in 0.17 seconds
+Info: Caching catalog for e220b44c5a20
+Info: Applying configuration version '1481575407'
+Notice: /Stage[main]/Inventory/File[/dev/shm/etc]/ensure: created
+Notice: /Stage[main]/Inventory/File[/dev/shm/etc/inventory.conf]/ensure: defined content as '{md5}b2c57da40a62afa1fbf1f54f0ccdcb7e'
+Notice: /Stage[main]/Inventory/File[/etc/inventory.conf]/ensure: created
+Notice: Applied catalog in 0.07 seconds
 Changes:
-            Total: 1
+            Total: 3
 Events:
-          Success: 1
-            Total: 1
+          Success: 3
+            Total: 3
 Resources:
-          Changed: 1
-      Out of sync: 1
-            Total: 9
+            Total: 11
+      Out of sync: 3
+          Changed: 3
 Time:
-       Filebucket: 0.00
          Schedule: 0.00
-           Notify: 0.00
-             File: 0.02
-   Config retrieval: 14.49
-            Total: 14.51
-         Last run: 1481572174
+             File: 0.01
+   Config retrieval: 1.15
+            Total: 1.16
+         Last run: 1481575408
+       Filebucket: 0.00
 Version:
-           Config: 1481572162
+           Config: 1481575407
            Puppet: 4.8.0
-root@c020f6139c71:/#
+root@e220b44c5a20:/# cat /etc/inventory.conf
+db_password: 2effa8d2f9b76f7b1e1fd507
+root@e220b44c5a20:/# ls -al /etc/inventory.conf
+lrwxrwxrwx 1 root root 27 Dec 12 20:43 /etc/inventory.conf -> /dev/shm/etc/inventory.conf
 ```
 
 ## Viewing the Node with the Conjur UI
