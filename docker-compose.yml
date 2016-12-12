@@ -10,6 +10,11 @@ services:
 
   conjur:
     image: appliance-cuke-master
+    environment:
+      CONJUR_AUTHN_LOGIN: admin
+      CONJUR_AUTHN_API_KEY: secret
+      CONJUR_APPLIANCE_URL: http://localhost/api
+      CONJUR_ACCOUNT: cucumber 
     ports:
       - 9443:443
     security_opt:
@@ -26,7 +31,7 @@ services:
     ports:
       - 8140
     volumes:
-      - ./conjur.pem:/etc/conjur.pem
+      - ./conjur.pem:/etc/conjur.pem:ro
       - ./code:/etc/puppetlabs/code/
       - ./puppet/ssl:/etc/puppetlabs/puppet/ssl/
       - ./puppet/serverdata:/opt/puppetlabs/server/data/puppetserver/
@@ -35,7 +40,7 @@ services:
     # Due to needing to access PuppetDB on same hostame as signed in the
     # certificate you may need to uncommant the following lines
     #environment:
-    #  - PUPPETDB_SERVER_URLS=https://puppetdb.local:8081
+    #  PUPPETDB_SERVER_URLS: https://puppetdb.local:8081
     #links:
     #  - puppetdb:puppetdb.local
 
@@ -55,8 +60,8 @@ services:
     container_name: postgres
     image: puppet/puppetdb-postgres
     environment:
-      - POSTGRES_PASSWORD=puppetdb
-      - POSTGRES_USER=puppetdb
+      POSTGRES_PASSWORD: puppetdb
+      POSTGRES_USER: puppetdb
     expose:
       - 5432
     volumes:

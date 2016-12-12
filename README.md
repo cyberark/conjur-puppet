@@ -1,18 +1,38 @@
-# Connecting Puppet and Conjur Using a Custom Fact
+# Connecting Puppet and Conjur
 
-The Puppet agent provides a Conjur access token to the Puppet master in a custom fact called `conjur_token`.
+This project demonstrates how to inject Conjur-managed secrets into Puppet code. 
 
-## Running the Server
+## Key concepts
+
+* **Conjur connection** Both the client node and the Puppet master are both configured to connect to Conjur via `conjur.conf` and `conjur.pem`. 
+* **Conjur identity**
+  * **node-side** The client node has a Conjur identity, typically obtained via host factory token.
+  * **master-side** The Puppet master does *not* have a Conjur identity.
+* **Custom facts** The client node submits custom facts obtained from Conjur:
+  * `conjur_token` An encrypted Conjur access token. The token is encrypted using the public certificate of the Puppet master; then decrypted by the Puppet master for use. Note that the access token also has a built-in expiration of 8 minutes, after which it is no longer valid.
+  * `conjur_layers` An array of all the Conjur layers to which the node belongs.
+* **Custom functions**
+  * `conjur_secret` Looks up the value of a secret in Conjur. In this way it can be assigned to a Puppet variable and used like any variable.
+* **Hiera** In this example, the `conjur_layers` fact is used in Hiera to assign Puppet class(es) to the node.
+
+## Demo
+
+This example shows how an `inventory` service can obtain a database password to the `inventory-db`. The `inventory` service is modeled as a Puppet-managed node. This node applies an `inventory` class, which fetches the secret from Conjur using the `conjur_token` fact and prints it to the console on the node-side.
+
+In a more realistic example, the password would be merged into a file using a Puppet template.
+
+### Running the Server
 
 Run `./start.sh`, which:
 
-* Builds all the necessary containers
-* Starts the `conjur` server
-* Loads policies into Conjur
-* Creates a new Host Factory token for the `prod/inventory` layer and saves it to a file
-* Launches all the Puppet server containers.
+* Builds all the necessary containers.
+* Starts the `conjur` server.
+* Loads policies into Conjur.
+* Populates the `prod/inventory-db/password` variable.
+* Creates a new Host Factory token for the `prod/inventory` layer and saves it to a file.
+* Launches all the Puppet server containers..
 
-## Running the Client (Node)
+### Running the Client (Node)
 
 The `node` container uses the Host Factory token to acquire an identity. It then saves this identity information, and runs the Puppet agent. Facter authenticates with Conjur and passes the access token as a custom fact called
 `conjur_token`:
@@ -30,22 +50,14 @@ Starting compose_conjur_policies_1
 + cat
 + chmod 0600 /root/.netrc
 + /opt/puppetlabs/bin/puppet agent --verbose --onetime --no-daemonize --summarize
-Info: Creating a new SSL key for d0876dbdf4a0
-Info: Caching certificate for ca
-Info: csr_attributes file loading from /etc/puppetlabs/puppet/csr_attributes.yaml
-Info: Creating a new SSL certificate request for d0876dbdf4a0
-Info: Certificate Request fingerprint (SHA256): 2B:23:DA:42:80:83:CC:B1:9D:FB:FF:C7:8A:7C:24:57:35:5C:D6:87:48:48:9A:5A:E1:7C:2C:0E:1D:15:97:5D
-Info: Caching certificate for d0876dbdf4a0
-Info: Caching certificate_revocation_list for ca
-Info: Caching certificate for ca
 Info: Using configured environment 'production'
 Info: Retrieving pluginfacts
 Info: Retrieving plugin
-Info: Caching catalog for d0876dbdf4a0
-Info: Applying configuration version '1481059553'
-Notice: /Stage[main]/Main/Node[default]/File[/tmp/puppet-in-docker]/ensure: defined content as '{md5}938727d2f2612b38d783932417edf030'
-Info: Creating state file /opt/puppetlabs/puppet/cache/state/state.yaml
-Notice: Applied catalog in 0.09 seconds
+Info: Caching catalog for c020f6139c71
+Info: Applying configuration version '1481572162'
+Notice: Installing DB password: e4eabb1e741469407f8b9868
+Notice: /Stage[main]/Inventory/Notify[Installing DB password: e4eabb1e741469407f8b9868]/message: defined 'message' as 'Installing DB password: e4eabb1e741469407f8b9868'
+Notice: Applied catalog in 0.17 seconds
 Changes:
             Total: 1
 Events:
@@ -54,19 +66,20 @@ Events:
 Resources:
           Changed: 1
       Out of sync: 1
-            Total: 8
+            Total: 9
 Time:
        Filebucket: 0.00
          Schedule: 0.00
-             File: 0.04
-   Config retrieval: 1.02
-            Total: 1.06
-         Last run: 1481059553
+           Notify: 0.00
+             File: 0.02
+   Config retrieval: 14.49
+            Total: 14.51
+         Last run: 1481572174
 Version:
-           Config: 1481059553
+           Config: 1481572162
            Puppet: 4.8.0
+root@c020f6139c71:/#
 ```
-
 
 ## Viewing the Node with the Conjur UI
 
@@ -79,82 +92,3 @@ you're running docker locally you should be able to access the dashboard
 on `0.0.0.0:32824` (your port will likely vary). If you're running
 `docker-machine` then you can run `docker-machine ip` to determine the
 correct IP address. 
-
-## Exploring PuppetDB data
-
-PuppetDB also exposes a dashboard, showing various operational metrics,
-as well as [an API](https://docs.puppet.com/puppetdb/latest/api/) for
-accessing all the collected resource data. You can find the port for the
-dashboard using `docker ps` described above. The `docker port` command can
-also be useful.
-
-```
-$ docker port compose_puppetdb_1
-8080/tcp -> 0.0.0.0:32826
-8081/tcp -> 0.0.0.0:32825
-```
-
-With that port in hand, and the ip address of the machine running docker,
-you can query the PuppetDB API.
-
-```
-$ curl -s -X GET http://192.168.99.100:32826/pdb/query/v4 --data-urlencode 'query=nodes {}' | jq
-{
-    "deactivated": null,
-    "latest_report_hash": "f8332ac22e0abf6a51571fae6b57b2a881f207fe",
-    "facts_environment": "production",
-    "cached_catalog_status": "not_used",
-    "report_environment": "production",
-    "catalog_environment": "production",
-    "facts_timestamp": "2016-05-27T12:47:04.495Z",
-    "latest_report_noop": false,
-    "expired": null,
-    "report_timestamp": "2016-05-27T12:47:04.144Z",
-    "certname": "a9efc038b3ca",
-    "catalog_timestamp": "2016-05-27T12:47:05.038Z",
-    "latest_report_status": "changed"
-  },
-  {
-    "deactivated": null,
-    "latest_report_hash": "d273124e1e74708272228ac4465f6f1923100db7",
-    "facts_environment": "production",
-    "cached_catalog_status": "not_used",
-    "report_environment": "production",
-    "catalog_environment": "production",
-    "facts_timestamp": "2016-05-27T12:47:37.543Z",
-    "latest_report_noop": false,
-    "expired": null,
-    "report_timestamp": "2016-05-27T12:47:36.959Z",
-    "certname": "5a4cbf61e790",
-    "catalog_timestamp": "2016-05-27T12:47:38.050Z",
-    "latest_report_status": "changed"
-  }
-]
-```
-
-Here I'm issuing a [PQL](https://docs.puppet.com/puppetdb/latest/api/query/v4/pql.html)
-query for all nodes. I'm parsing it through [jq](https://stedolan.github.io/jq/) for
-nicer formatting.
-
-PuppetDB stores a great deal of information, and PQL and the API provides a
-powerful way of accessing it. The Puppet-in-Docker setup makes for a great
-experimental test bed for building atop that capability.
-
-## Troubleshooting
-
-In case you see errors like the this on the puppet container:
-
-```
-ERROR [puppetserver] Puppet Failed to execute '/pdb/cmd/v1?checksum=eeb40197db6a4ac3d8bce09778388cf7a812a621&version=5&certname=puppetdb.local&command=replace_facts' on at least 1 of the following 'server_urls': https://puppetdb:8081
-ERROR [c.p.h.c.i.PersistentSyncHttpClient] Error executing http request
- java.net.ConnectException: Connection refused
-```
-
-Try to uncomment the following lines in the definition of the puppet service in the `docker-compose.yaml` file:
-
-```
-environment:
-  - PUPPETDB_SERVER_URLS=https://puppetdb.local:8081
-links:
-  - puppetdb:puppetdb.local
-```
