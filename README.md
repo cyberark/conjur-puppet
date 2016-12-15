@@ -21,14 +21,17 @@ This example shows how an `inventory` service can obtain a database password to 
 
 ### Running the Server
 
-Run `./start.sh`, which:
+Make sure you have [conjurinc/possum-example](https://github.com/conjurinc/possum-example)
+image built and available locally.
+
+Then run `./start.sh`, which:
 
 * Builds all the necessary containers.
 * Starts the `conjur` server.
 * Loads policies into Conjur.
 * Populates the `prod/inventory-db/password` variable.
 * Creates a new Host Factory token for the `prod/inventory` layer and saves it to a file.
-* Launches all the Puppet server containers..
+* Launches all the Puppet server containers.
 
 ### Running the Client (Node)
 
