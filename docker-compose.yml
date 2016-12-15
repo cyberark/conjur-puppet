@@ -13,7 +13,6 @@ services:
     environment:
       CONJUR_AUTHN_LOGIN: admin
       CONJUR_AUTHN_API_KEY: secret
-      CONJUR_APPLIANCE_URL: http://localhost/api
       CONJUR_ACCOUNT: cucumber 
     ports:
       - 9443:443
