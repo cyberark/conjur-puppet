@@ -49,26 +49,22 @@ Facter.add('conjur_token') do
       JSON.pretty_generate(conjur_api.token)
     end
 
-    #ca_file = '/etc/puppetlabs/puppet/ssl/certs/ca.pem'
-    #https_options = if File.exists?(ca_file)
-    #  OpenSSL::SSL::SSLContext::DEFAULT_CERT_STORE.add_file ca_file
-    #  { ssl_verify_mode: OpenSSL::SSL::VERIFY_PEER }
-    #else
-    https_options =  { ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE }
-    #end
-
-    puppet_hostname = Puppet.settings[:server] # `puppet config print server`.strip
-    ca_hostname = Puppet.settings[:ca_server] # puppet config print ca_server`.strip
-    ca_port = Puppet.settings[:ca_port] # `puppet config print ca_port`.strip
-
-    # Get the certificate of the Puppet master
-    uri = URI.parse("https://#{ca_hostname}:#{ca_port}/puppet-ca/v1/certificate/#{puppet_hostname}?environment=_")
-    puppet_cert_pem = uri.open(https_options).readlines.join
+    def get_ssl_cert host, port, ca_file
+      context = OpenSSL::SSL::SSLContext.new
+      context.verify_callback = Puppet::SSL::Validator.default_validator
+      context.ca_file = ca_file
+      sock = TCPSocket.new host, port
+      client = OpenSSL::SSL::SSLSocket.new sock, context
+      client.connect
+      client.peer_cert
+    ensure
+      client.close if client
+      sock.close if sock
+    end
 
     cipher_name = 'AES-256-CBC'
-    puppet_certificate = OpenSSL::X509::Certificate.new puppet_cert_pem
+    puppet_certificate = get_ssl_cert *%i(server masterport localcacert).map(&Puppet.method(:[]))
     cipher = OpenSSL::Cipher::Cipher.new(cipher_name)
-
     encryptor = OpenSSL::PKCS7.encrypt([ puppet_certificate ], token, cipher, OpenSSL::PKCS7::BINARY)
     Base64.strict_encode64 encryptor.to_pem
   end

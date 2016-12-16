@@ -23,13 +23,9 @@ Puppet::Functions.create_function(:'conjur_secret') do
 
     conjur_token_ctxt = closure_scope.lookupvar('conjur_token') or raise "No conjur_token fact is available"
     conjur_token_ctxt = Base64.decode64(conjur_token_ctxt)
-    certdir = Puppet.settings[:certdir]
-    privatekeydir = Puppet.settings[:privatekeydir]
-    hostname = Puppet.settings[:server] #`puppet config print certname`.strip
-    cert_pem = File.read(File.join(certdir, "#{hostname}.pem"))
-    key_pem = File.read(File.join(privatekeydir, "#{hostname}.pem"))
-    key = OpenSSL::PKey.read(key_pem)
-    certificate = OpenSSL::X509::Certificate.new(cert_pem)
+    host = Puppet::SSL::Host.localhost
+    key = host.key.content
+    certificate = host.certificate.content
     decryptor = OpenSSL::PKCS7.new(conjur_token_ctxt)
     conjur_token = decryptor.decrypt(key, certificate)
     conjur_token = JSON.parse(conjur_token)
