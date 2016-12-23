@@ -33,6 +33,10 @@ Then run `./start.sh`, which:
 * Creates a new Host Factory token for the `prod/inventory` layer and saves it to a file.
 * Launches all the Puppet server containers.
 
+Note: it can take a couple minutes for the Puppet servers to come up.
+An easy, if crude, way to see if they did is to look at the CPU usage -- they'll spin at 100%
+until they're ready.
+
 ### Running the Client (Node)
 
 The `node` container uses the Host Factory token to acquire an identity. It then saves this identity information, and runs the Puppet agent. Facter authenticates with Conjur and passes the access token as a custom fact called
