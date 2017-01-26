@@ -9,4 +9,15 @@
 # Learn more about module testing here:
 # https://docs.puppet.com/guides/tests_smoke.html
 #
-include ::conjur
+
+class { conjur:
+  appliance_url => "https://localhost:8443/api",
+  authn_login => "host/pptest",
+  authn_api_key => "pj6qs7gbb6aek4r57a2evnz4v1jh3tj62g5vf4a2rmhyj52b5q9rb"
+}
+
+file { '/tmp/test.pem':
+  content => conjur_secret('test_secret'),
+  ensure => file,
+  show_diff => false  # don't log file content!
+}

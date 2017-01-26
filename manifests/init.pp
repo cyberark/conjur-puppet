@@ -42,7 +42,17 @@
 #
 # Copyright 2017 Your name here, unless otherwise noted.
 #
-class conjur {
-
-
+class conjur (
+  $appliance_url = $conjur::params::appliance_url,
+  $authn_login = $conjur::params::authn_login,
+  $authn_api_key = $conjur::params::authn_api_key,
+  $ssl_certificate = $conjur::params::ssl_certificate,
+) inherits conjur::params {
+  if $facts['conjur_token'] {
+    # if node provided its own token, use it
+    $token = $facts['conjur_token']
+  } elsif $authn_api_key {
+    # otherwise, if we know the API key, use it
+    $token = conjur_token($appliance_url, $authn_login, $authn_api_key)
+  }
 }
