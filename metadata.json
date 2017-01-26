@@ -1,0 +1,15 @@
+{
+  "name": "conjur-conjur",
+  "version": "1.0.0",
+  "author": "conjur",
+  "summary": "Securely use secrets stored in Conjur",
+  "license": "Apache-2.0",
+  "source": "https://github.com/conjur/puppet",
+  "project_page": "https://github.com/conjur/puppet",
+  "issues_url": "https://github.com/conjur/puppet/issues",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  ],
+  "data_provider": null
+}
+
