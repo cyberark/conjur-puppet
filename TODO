@@ -1,0 +1,5 @@
+- use Sensitive data type where it makes sense
+- verify TLS certificate
+- collect conjur configuration (and encrypted token if applicable) into `conjur_configuration` fact
+- use that configuration for defaults
+- support host factory tokens
