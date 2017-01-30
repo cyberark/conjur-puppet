@@ -54,7 +54,7 @@ module RSpec::Puppet
       catalog = build_catalog 'test', {}, nil, """
         #{test_manifest(:class)}
         file { var:
-          content => #{name}
+          content => $#{name}
         }
       """, nil
       catalog.resource('File[var]')[:content]

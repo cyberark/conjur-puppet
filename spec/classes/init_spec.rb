@@ -15,7 +15,7 @@ describe 'conjur' do
       allow_calling_puppet_function(:conjur_token) \
           .with(['https://conjur.test/api', 'host/test', 'the api key'])\
           .and_return 'the token'
-      expect(lookupvar('$conjur::token')).to eq 'the token'
+      expect(lookupvar('conjur::token')).to eq 'the token'
     end
   end
 
@@ -25,7 +25,7 @@ describe 'conjur' do
     } end
 
     it "uses the provided token" do
-      expect(lookupvar('$conjur::token')).to eq 'the provided token'
+      expect(lookupvar('conjur::token')).to eq 'the provided token'
     end
   end
 end
