@@ -47,6 +47,7 @@ class conjur (
   $authn_login = $conjur::params::authn_login,
   $authn_api_key = $conjur::params::authn_api_key,
   $ssl_certificate = $conjur::params::ssl_certificate,
+  $token = $conjur::params::token,
 ) inherits conjur::params {
   if $facts['conjur_token'] {
     # if node provided its own token, use it

@@ -9,6 +9,7 @@ module Puppet::Parser::Functions
     http = Puppet::Network::HttpPool.http_ssl_instance uri.host, uri.port
     encoded_token = Base64.urlsafe_encode64 lookupvar 'conjur::token'
     response = http.get uri.request_uri, 'Authorization' => "Token token=\"#{encoded_token}\""
+    raise Net::HTTPError.new response.message, response unless response.code =~ /^2/
     response.body
   end
 end

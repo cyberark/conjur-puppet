@@ -129,6 +129,9 @@ Content of the public SSL cert (given at conjur init).
 ##### `ssl_certificate_file`
 Absolute file path of the public SSL cert (given at conjur init).
 
+##### `token`
+Raw (unencoded) Conjur token. This is usually only useful for testing.
+
 ##### `conjur_conf_file`
 Absolute file path of the Conjur configuration file. Default ‘/etc/conjur.conf’.
 

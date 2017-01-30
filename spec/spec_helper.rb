@@ -27,4 +27,9 @@ shared_context "mock conjur connection", conjur: :mock do
   def http_unauthorized
     Net::HTTPUnauthorized.new '1.1', '403', 'unauthorized'
   end
+
+  def expect_authorized_conjur_get path
+    expect(conjur_connection).to receive(:get).with path,
+      'Authorization' => 'Token token="dGhlIHRva2Vu"' # "the token" b64d
+  end
 end
