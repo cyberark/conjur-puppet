@@ -80,7 +80,7 @@ User username or host name (prefixed with `host/`).
 ##### `authn_api_key`
 API key for a user or host.
 
-##### `token`
+##### `authn_token`
 Raw (unencoded) Conjur token. This is usually only useful for testing.
 
 #### Example
