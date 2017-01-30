@@ -4,3 +4,4 @@
 - collect conjur configuration (and encrypted token if applicable) into `conjur_configuration` fact
 - use that configuration for defaults
 - support host factory tokens
+- Get module building in Jenkins
