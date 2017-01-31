@@ -18,7 +18,6 @@ This is the official Puppet module for [Conjur](https://conjur.com), a robust id
 
 ## Setup
 
-
 ### Setup Requirements
 
 This module requires that you have a Conjur endpoint available to the Puppet nodes using this module.
