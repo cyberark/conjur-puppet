@@ -1,6 +1,6 @@
 {
   "name": "conjur-conjur",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha",
   "author": "conjur",
   "summary": "Securely use secrets stored in Conjur",
   "license": "Apache-2.0",
