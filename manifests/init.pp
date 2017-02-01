@@ -51,9 +51,6 @@ class conjur (
 ) inherits conjur::params {
   if $authn_token {
     $token = $authn_token
-  } elsif $facts['conjur_token'] {
-    # if node provided its own token, use it
-    $token = $facts['conjur_token']
   } elsif $authn_api_key {
     # otherwise, if we know the API key, use it
     $token = conjur_token($appliance_url, $authn_login, $authn_api_key)
