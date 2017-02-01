@@ -115,7 +115,7 @@ Open an issue or fork this project and open a Pull Request.
 
 Run a preconfigured Conjur instance with `docker-compose up -d`.
 Username is 'admin', password is 'secret'. The HTTPS endpoint is mapped to port `9443`.
-Once the server is running, view the UI at [localhost:9443](https://localhost:9443).
+Once the server is running, view the UI at [localhost:9443/ui](https://localhost:9443/ui).
 You can ignore the cert warning; a self-signed cert is used.
 
 ### Running a Puppet master locally
