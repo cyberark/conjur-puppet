@@ -3,3 +3,4 @@ rspec.xml
 .rvmrc*
 .bundle
 Gemfile.lock
+/pkg
