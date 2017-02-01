@@ -140,7 +140,7 @@ You will see Puppet converge on the node.
 
 A couple notes:
 
-1. docker-compose creates the `puppet_default` by default. The agent needs to connect to this
+1. docker-compose creates the `puppet_default` network by default. The agent needs to connect to this
    network to be able to see the Puppet master.
 2. The default command for these agent images is `agent --verbose --one-time --no-daemonize --summarize`.
    The default entrypoint is `/opt/puppetlabs/bin/puppet `.
