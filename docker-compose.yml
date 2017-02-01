@@ -11,4 +11,3 @@ conjur:
     - 9443:443
   security_opt:
     - seccomp:unconfined
-

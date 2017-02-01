@@ -1,3 +1,9 @@
+# container volumes
+puppet/
+puppetdb/
+puppetdb-postgres/
+
+# dev stuff
 conjur.pem
 rspec.xml
 .rvmrc*
