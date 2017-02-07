@@ -1,6 +1,7 @@
 require 'puppetlabs_spec_helper/module_spec_helper'
 require 'puppet/network/http/connection'
 require 'puppet/network/http_pool'
+require 'conjur/puppet/client'
 
 RSpec.configure do |config|
   config.mock_with :rspec do |mocks|
@@ -17,6 +18,8 @@ shared_context "mock conjur connection", conjur: :mock do
     allow(Puppet::Network::HttpPool).to receive(:http_ssl_instance) \
         .with('conjur.test', 443).and_return(conjur_connection)
   end
+
+  after { Conjur::Puppet::Client.clear }
 
   def http_ok body
     Net::HTTPOK.new('1.1', '200', 'ok').tap do |resp|

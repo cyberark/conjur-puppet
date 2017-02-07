@@ -1,15 +1,8 @@
-require 'uri'
-require 'base64'
+require 'conjur/puppet/client'
 
 module Puppet::Parser::Functions
-  newfunction(:conjur_secret, type: :rvalue) do |args|
-    id = args.first
-    uri = URI(lookupvar('conjur::appliance_url') + '/')
-    uri += "variables/" + URI.encode_www_form_component(id) + "/value"
-    http = Puppet::Network::HttpPool.http_ssl_instance uri.host, uri.port
-    encoded_token = Base64.urlsafe_encode64 lookupvar 'conjur::token'
-    response = http.get uri.request_uri, 'Authorization' => "Token token=\"#{encoded_token}\""
-    raise Net::HTTPError.new response.message, response unless response.code =~ /^2/
-    response.body
+  newfunction(:conjur_secret, type: :rvalue, arity: 1) do |args|
+    client = Conjur::Puppet::Client[lookupvar('conjur::appliance_url')]
+    client.variable_value args.first, token: lookupvar('conjur::token')
   end
 end
