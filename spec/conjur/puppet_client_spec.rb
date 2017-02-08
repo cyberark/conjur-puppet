@@ -19,7 +19,7 @@ describe Conjur::Puppet::Client do
 
   let(:cert_hostname) { 'localhost' }
   let(:uri) { URI "https://localhost:#{port}/api/" }
-  let(:port) { rand 31390 }
+  let(:port) { 31390 }
 
   let(:server) do
     WEBrick::HTTPServer.new(

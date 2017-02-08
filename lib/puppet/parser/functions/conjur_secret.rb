@@ -1,4 +1,4 @@
-require 'conjur/puppet/client'
+require_relative '../../../conjur/puppet/client'
 
 module Puppet::Parser::Functions
   newfunction(:conjur_secret, type: :rvalue, arity: 1) do |args|

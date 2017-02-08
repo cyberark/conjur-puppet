@@ -4,4 +4,5 @@ class conjur::params {
   $authn_api_key = undef
   $ssl_certificate = undef
   $authn_token = undef
+  $host_factory_token = undef
 }

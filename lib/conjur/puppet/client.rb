@@ -20,8 +20,11 @@ module Conjur
         post "authn/users/" + URI.encode_www_form_component(login) + "/authenticate", key
       end
 
-      def post path, content
-        response = http.post (uri + path).request_uri, content
+      def post path, content, encoded_token: nil
+        if encoded_token
+          headers = { 'Authorization' => "Token token=\"#{encoded_token}\"" }
+        end
+        response = http.post (uri + path).request_uri, content, headers
         raise Net::HTTPError.new response.message, response unless response.code =~ /^2/
         response.body
       end
@@ -35,17 +38,25 @@ module Conjur
       end
 
       def variable_value id, token: nil
-        get "variables/" + URI.encode_www_form_component(id) + "/value", token: token
+        get "variables/" + URI.encode_www_form_component(id) + "/value",
+            encoded_token: Base64.urlsafe_encode64(token)
       end
 
-      def get path, token: nil
-        if token
-          encoded_token = Base64.urlsafe_encode64 token
+      def get path, encoded_token: nil
+        if encoded_token
           headers = { 'Authorization' => "Token token=\"#{encoded_token}\"" }
         end
         response = http.get (uri + path).request_uri, headers
         raise Net::HTTPError.new response.message, response unless response.code =~ /^2/
         response.body
+      end
+
+      def create_host id, token
+        response = post(
+          "host_factories/hosts?" + URI.encode_www_form(id: id), nil,
+          encoded_token: token
+        )
+        JSON.load response
       end
     end
   end

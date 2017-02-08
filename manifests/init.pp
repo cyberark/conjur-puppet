@@ -1,58 +1,27 @@
-# Class: conjur
-# ===========================
-#
-# Full description of class conjur here.
-#
-# Parameters
-# ----------
-#
-# Document parameters here.
-#
-# * `sample parameter`
-# Explanation of what this parameter affects and what it defaults to.
-# e.g. "Specify one or more upstream ntp servers as an array."
-#
-# Variables
-# ----------
-#
-# Here you should define a list of variables that this module would require.
-#
-# * `sample variable`
-#  Explanation of how this variable affects the function of this class and if
-#  it has a default. e.g. "The parameter enc_ntp_servers must be set by the
-#  External Node Classifier as a comma separated list of hostnames." (Note,
-#  global variables should be avoided in favor of class parameters as
-#  of Puppet 2.6.)
-#
-# Examples
-# --------
-#
-# @example
-#    class { 'conjur':
-#      servers => [ 'pool.ntp.org', 'ntp.local.company.com' ],
-#    }
-#
-# Authors
-# -------
-#
-# Author Name <author@domain.com>
-#
-# Copyright
-# ---------
-#
-# Copyright 2017 Your name here, unless otherwise noted.
-#
 class conjur (
   $appliance_url = $conjur::params::appliance_url,
   $authn_login = $conjur::params::authn_login,
   $authn_api_key = $conjur::params::authn_api_key,
   $ssl_certificate = $conjur::params::ssl_certificate,
   $authn_token = $conjur::params::authn_token,
+  $host_factory_token = $conjur::params::host_factory_token,
 ) inherits conjur::params {
   if $authn_token {
     $token = $authn_token
-  } elsif $authn_api_key {
-    # otherwise, if we know the API key, use it
-    $token = conjur_token($appliance_url, $authn_login, $authn_api_key)
+  } else {
+      if $authn_api_key {
+      # otherwise, if we know the API key, use it
+      $api_key = $authn_api_key
+    } elsif $host_factory_token {
+      $authn_login_parts = split($authn_login, '/')
+      if $authn_login_parts[0] != 'host' {
+        fail('can only create hosts with host factory')
+      }
+      $host_details = conjur_manufacture_host(
+        $appliance_url, $authn_login_parts[1], $host_factory_token
+      )
+      $api_key = $host_details[api_key]
+    }
+    $token = conjur_token($appliance_url, $authn_login, $api_key)
   }
 }

@@ -1,9 +1,5 @@
 require 'spec_helper'
 describe 'conjur' do
-  context 'with default values for all parameters' do
-    it { should contain_class('conjur') }
-  end
-
   context 'with api key' do
     let(:params) do {
       appliance_url: 'https://conjur.test/api',
@@ -26,6 +22,24 @@ describe 'conjur' do
 
     it "uses the provided token" do
       expect(lookupvar('conjur::token')).to eq 'the provided token'
+    end
+  end
+
+  context 'with host factory token' do
+    let(:params) do {
+      appliance_url: 'https://conjur.test/api',
+      authn_login: 'host/test',
+      host_factory_token: 'the host factory token',
+    } end
+
+    it "creates the host using the host factory" do
+      allow_calling_puppet_function(:conjur_manufacture_host) \
+          .with(['https://conjur.test/api', 'test', 'the host factory token'])\
+          .and_return 'api_key' => 'the api key'
+      allow_calling_puppet_function(:conjur_token) \
+          .with(['https://conjur.test/api', 'host/test', 'the api key'])\
+          .and_return 'the token'
+      expect(lookupvar('conjur::token')).to eq 'the token'
     end
   end
 end

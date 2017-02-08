@@ -13,7 +13,8 @@
 class { conjur:
   appliance_url => "https://localhost:8443/api",
   authn_login => "host/pptest",
-  authn_api_key => "pj6qs7gbb6aek4r57a2evnz4v1jh3tj62g5vf4a2rmhyj52b5q9rb",
+  host_factory_token => "d3kh1p3d41z1canactk38rbhab1by4nqe6pxs5ggg3dcw3p2gb5r",
+  # authn_api_key => "18tk8g13ytj82h3dhaym38jtmhz7jbtb23htyezj1rbmkb81g255bc",
   ssl_certificate => @(EOT)
     -----BEGIN CERTIFICATE-----
     MIID7DCCAtSgAwIBAgIJAJyeKBfK89SvMA0GCSqGSIb3DQEBCwUAMD0xETAPBgNV
@@ -41,8 +42,8 @@ class { conjur:
     |-EOT
 }
 
-file { '/tmp/test.pem':
-  content => conjur_secret('test_secret'),
+file { '/tmp/db-password':
+  content => conjur_secret('inventory/db-password'),
   ensure => file,
   show_diff => false  # don't log file content!
 }

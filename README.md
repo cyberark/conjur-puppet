@@ -83,6 +83,10 @@ API key for a user or host.
 ##### `ssl_certificate`
 X509 certificate of the root CA of Conjur, PEM formatted.
 
+##### `host_factory_token`
+You can use a host factory token to obtain a host identity.
+Simply use this parameter to set it. The host record will be created in Conjur.
+
 ##### `authn_token`
 Raw (unencoded) Conjur token. This is usually only useful for testing.
 
