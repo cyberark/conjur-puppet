@@ -1,19 +1,20 @@
 require 'uri'
+require_relative 'validator'
 
 module Conjur
   module Puppet
-    class Client < Struct.new :uri
-      def self.[] appliance_url
-        uri = URI (appliance_url + '/') # in case there's no trailing slash
-        @clients ||= Hash.new do |h, k|
-          h[uri] = Client.new uri
+    class Client < Struct.new :uri, :cert
+      def initialize uri, cert
+        if uri.respond_to? :request_uri
+          @uri = uri
+        else
+          # not an URI instance, add slash in case it's ommited
+          @uri = URI (uri + '/')
         end
-        @clients[uri]
+        @cert = cert && OpenSSL::X509::Certificate.new(cert)
       end
 
-      def self.clear
-        @clients = nil
-      end
+      attr_reader :uri, :cert
 
       def authenticate login, key
         post "authn/users/" + URI.encode_www_form_component(login) + "/authenticate", key
@@ -26,7 +27,11 @@ module Conjur
       end
 
       def http
-        @http ||= ::Puppet::Network::HttpPool.http_ssl_instance uri.host, uri.port
+        @http ||= ::Puppet::Network::HttpPool.http_ssl_instance uri.host, uri.port, validator
+      end
+
+      def validator
+        @validator ||= Validator.new cert
       end
 
       def variable_value id, token: nil
@@ -34,8 +39,11 @@ module Conjur
       end
 
       def get path, token: nil
-        encoded_token = Base64.urlsafe_encode64 token
-        response = http.get (uri + path).request_uri, 'Authorization' => "Token token=\"#{encoded_token}\""
+        if token
+          encoded_token = Base64.urlsafe_encode64 token
+          headers = { 'Authorization' => "Token token=\"#{encoded_token}\"" }
+        end
+        response = http.get (uri + path).request_uri, headers
         raise Net::HTTPError.new response.message, response unless response.code =~ /^2/
         response.body
       end

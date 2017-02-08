@@ -45,9 +45,10 @@ This module provides the `conjur_secret` function, described above, and the `con
 For one-off hosts or test environments it may be preferable to create a host in Conjur and then directly assign its Conjur identity in this module.
 
     class { conjur:
-      appliance_url   => 'https://conjur.mycompany.com/api',
-      authn_login     => 'host/redis001',
-      authn_api_key   => 'f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3',
+      appliance_url => 'https://conjur.mycompany.com/api',
+      authn_login => 'host/redis001',
+      authn_api_key => 'f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3',
+      ssl_certificate => file('conjur-ca.pem')
     }
 
 ## Reference
@@ -79,15 +80,19 @@ User username or host name (prefixed with `host/`).
 ##### `authn_api_key`
 API key for a user or host.
 
+##### `ssl_certificate`
+X509 certificate of the root CA of Conjur, PEM formatted.
+
 ##### `authn_token`
 Raw (unencoded) Conjur token. This is usually only useful for testing.
 
 #### Example
 
     class { conjur:
-      appliance_url   => 'https://conjur.mycompany.com/api',
-      authn_login     => 'host/redis001',
-      authn_api_key   => 'f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3',
+      appliance_url => 'https://conjur.mycompany.com/api',
+      authn_login => 'host/redis001',
+      authn_api_key => 'f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3',
+      ssl_certificate => file('conjur-ca.pem')
     }
 
 ### `conjur_secret`

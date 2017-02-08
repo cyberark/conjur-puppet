@@ -16,10 +16,8 @@ shared_context "mock conjur connection", conjur: :mock do
 
   before do
     allow(Puppet::Network::HttpPool).to receive(:http_ssl_instance) \
-        .with('conjur.test', 443).and_return(conjur_connection)
+        .with('conjur.test', 443, anything).and_return(conjur_connection)
   end
-
-  after { Conjur::Puppet::Client.clear }
 
   def http_ok body
     Net::HTTPOK.new('1.1', '200', 'ok').tap do |resp|
