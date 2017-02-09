@@ -23,7 +23,7 @@ main() {
 }
 
 runInConjur() {
-  docker-compose exec conjur "$@"
+  docker-compose exec -T conjur "$@"
 }
 
 setup_conjur() {
