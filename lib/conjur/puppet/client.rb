@@ -51,9 +51,10 @@ module Conjur
         response.body
       end
 
-      def create_host id, token
+      def create_host id, token, options = {}
         response = post(
-          "host_factories/hosts?" + URI.encode_www_form(id: id), nil,
+          "host_factories/hosts?" + URI.encode_www_form(id: id),
+          options.to_json,
           encoded_token: token
         )
         JSON.load response
