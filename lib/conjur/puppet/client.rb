@@ -51,10 +51,14 @@ module Conjur
         response.body
       end
 
-      def create_host id, token, options = {}
+      def create_host id, token, annotations: {}
+        data = {id: id}
+        annotations.each do |k, v|
+          data["annotations[#{k}]"] = v
+        end
         response = post(
-          "host_factories/hosts?" + URI.encode_www_form(id: id),
-          options.to_json,
+          "host_factories/hosts?" + URI.encode_www_form(data),
+          nil,
           encoded_token: token
         )
         JSON.load response
