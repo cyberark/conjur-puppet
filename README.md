@@ -40,6 +40,28 @@ Hiera attributes can also be used to inform which secret should be fetched, depe
 
 This module provides the `conjur_secret` function, described above, and the `conjur` class, which can be configured to establish Conjur host identity on the node running Puppet.
 
+### Conjur host identity with Host Factory
+
+We recommend bootstrapping Conjur host identity using a Host Factory token. Nodes inherit the permissions of the layer for which the Host Factory token was generated.
+
+To use a Host Factory token with this module, set variables `authn_login` and `host_factory_token`. Do not set the variable `authn_api_key` when using `host_factory_token`; it is not required. `authn_login` should have a `host/` prefix; the part after the slash will be used as the node’s name in Conjur.
+
+    class { conjur:
+      account         => 'mycompany',
+      appliance_url   => 'https://conjur.mycompany.com/api',
+      authn_login     => 'host/redis001',
+      host_factory_token => '3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx',
+      ssl_certificate => @(EOT)
+        -----BEGIN CERTIFICATE-----
+        …
+        -----END CERTIFICATE-----
+        |-EOT
+    }
+
+By default, all nodes using this Puppet module to bootstrap identity with host_factory_token will have the following annotation set:
+
+    puppet: true
+
 ### Conjur host identity with API key
 
 For one-off hosts or test environments it may be preferable to create a host in Conjur and then directly assign its Conjur identity in this module.
