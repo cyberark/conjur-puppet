@@ -1,12 +1,12 @@
 # container volumes
-puppet/
-puppetdb/
-puppetdb-postgres/
+/puppet/
+/puppetdb/
+/puppetdb-postgres/
 
 # dev stuff
-conjur.pem
-rspec.xml
-.rvmrc*
-.bundle
-Gemfile.lock
+/conjur.pem
+/rspec.xml
+/.rvmrc*
+/.bundle
+/Gemfile.lock
 /pkg
