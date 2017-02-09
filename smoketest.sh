@@ -1,5 +1,15 @@
 #!/bin/bash -e
 
+NOKILL=${NOKILL:-"0"}
+
+finish() {
+  if [ "$NOKILL" == "0" ]; then
+    docker-compose down -v
+  fi
+}
+
+trap finish EXIT
+
 main() {
   echo "-----"
   echo "Conjur Puppet Demo"
@@ -26,7 +36,7 @@ setup_conjur() {
   echo "-----"
   echo "Loading Conjur policy"
   echo "-----"
-  runInConjur conjur policy load --as-group security_admin /src/examples/policy.yml
+  runInConjur conjur policy load --as-group security_admin /src/test/policy.yml
   runInConjur conjur variable values add inventory/db-password D7JGyGmCbDNCKYxgvpzz  # load the secret's value
 }
 
@@ -46,10 +56,11 @@ scenario1() {
     -e FACTER_AUTHN_LOGIN="$login" \
     -e FACTER_AUTHN_API_KEY="$api_key" \
     -e FACTER_APPLIANCE_URL='https://conjur/api' \
+    -e FACTER_SSL_CERTIFICATE="$(cat conjur.pem)" \
     -v $PWD:/src -w /src \
     --link puppet_conjur_1:conjur \
     puppet/puppet-agent-ubuntu \
-    apply --modulepath=spec/fixtures/modules examples/with_api_key.pp
+    apply --modulepath=spec/fixtures/modules test/scenario1.pp
 }
 
 scenario2() {
@@ -67,16 +78,18 @@ scenario2() {
     -e FACTER_AUTHN_LOGIN="$login" \
     -e FACTER_HOST_FACTORY_TOKEN="$host_factory_token" \
     -e FACTER_APPLIANCE_URL='https://conjur/api' \
+    -e FACTER_SSL_CERTIFICATE="$(cat conjur.pem)" \
     -v $PWD:/src -w /src \
     --link puppet_conjur_1:conjur \
     puppet/puppet-agent-ubuntu \
-    apply --modulepath=spec/fixtures/modules examples/with_host_factory_token.pp
+    apply --modulepath=spec/fixtures/modules test/scenario2.pp
 }
 
 scenario3() {
   echo "-----"
   echo "Scenario 3: Fetch a secret on a node with existing Conjur identity"
   echo "-----"
+
   echo "TODO"
 }
 

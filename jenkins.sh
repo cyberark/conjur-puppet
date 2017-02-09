@@ -24,3 +24,8 @@ echo "-----"
 echo "Testing module"
 echo "-----"
 runInDocker bundle exec rake spec
+
+echo "-----"
+echo "Running smoke tests"
+echo "-----"
+./smoketest.sh

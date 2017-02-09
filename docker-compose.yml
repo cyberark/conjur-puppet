@@ -6,7 +6,7 @@ conjur:
     CONJUR_AUTHN_API_KEY: secret
     CONJUR_ACCOUNT: cucumber
   volumes:
-    - ./examples:/src/examples
+    - .:/src
   ports:
     - 9443:443
   security_opt:
