@@ -1,5 +1,4 @@
 require 'puppet/ssl/validator'
-require 'pry'
 
 module Conjur
   module Puppet
