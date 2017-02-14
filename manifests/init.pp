@@ -17,11 +17,11 @@ class conjur (
       if $authn_login_parts[0] != 'host' {
         fail('can only create hosts with host factory')
       }
-      $host_details = conjur_manufacture_host(
+      $host_details = conjur::manufacture_host(
         $appliance_url, $authn_login_parts[1], $host_factory_token
       )
       $api_key = $host_details[api_key]
     }
-    $token = conjur_token($appliance_url, $authn_login, $api_key)
+    $token = conjur::token($appliance_url, $authn_login, $api_key)
   }
 }

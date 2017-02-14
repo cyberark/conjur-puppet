@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'conjur_secret', conjur: :mock do
+describe 'conjur::secret', conjur: :mock do
   it "fetches the given variable using token from conjur class" do
     expect_authorized_conjur_get('/api/variables/key/value') \
         .and_return http_ok 'variable value'

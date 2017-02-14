@@ -3,8 +3,9 @@ require 'conjur/puppet/client'
 require 'webrick'
 require 'webrick/https'
 
-describe Conjur::Puppet::Client do
-  subject(:client) { Conjur::Puppet::Client.new uri, cert }
+describe 'conjur::client' do
+  include RSpec::Puppet::FunctionExampleGroup
+  subject(:client) { find_function.execute uri, cert.to_pem }
 
   it "when the cert checks out it connects correctly" do
     expect { client.get 'test' }.to_not raise_error
@@ -18,7 +19,7 @@ describe Conjur::Puppet::Client do
   end
 
   let(:cert_hostname) { 'localhost' }
-  let(:uri) { URI "https://localhost:#{port}/api/" }
+  let(:uri) { "https://localhost:#{port}/api/" }
   let(:port) { 31390 }
 
   let(:server) do

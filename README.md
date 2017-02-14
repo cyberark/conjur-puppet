@@ -24,21 +24,21 @@ This module requires that you have a Conjur endpoint available to the Puppet nod
 
 ### Beginning with conjur
 
-This module provides a `conjur_secret` function that can be used to retrieve secrets from Conjur. Given a Conjur variable identifier, `conjur_secret` uses the node’s Conjur identity to resolve and return the variable’s value.
+This module provides a `conjur::secret` function that can be used to retrieve secrets from Conjur. Given a Conjur variable identifier, `conjur::secret` uses the node’s Conjur identity to resolve and return the variable’s value.
 
-    dbpass = conjur_secret('production/postgres/password')
+    dbpass = conjur::secret('production/postgres/password')
 
 Hiera attributes can also be used to inform which secret should be fetched, depending on the node running the Conjur module. For example, if `hiera('domain')` returns `app1.example.com` and a Conjur variable named `domains/app1.example.com/ssl-cert` exists, the SSL certificate can be retrieved and written to a file like so:
 
     file { '/etc/ssl/cert.pem':
-      content => conjur_secret("domains/%{hiera('domain')}/ssl-cert"),
+      content => conjur::secret("domains/%{hiera('domain')}/ssl-cert"),
       ensure => file,
       show_diff => false  # don't log file content!
     }
 
 ## Usage
 
-This module provides the `conjur_secret` function, described above, and the `conjur` class, which can be configured to establish Conjur host identity on the node running Puppet.
+This module provides the `conjur::secret` function, described above, and the `conjur` class, which can be configured to establish Conjur host identity on the node running Puppet.
 
 ### Conjur host identity with Host Factory
 
@@ -85,11 +85,11 @@ For one-off hosts or test environments it may be preferable to create a host in 
 
 #### Public Functions
 
-* `conjur_secret`
+* `conjur::secret`
 
 ### `::conjur`
 
-This class establishes Conjur host identity on the node so that secrets can be fetched from Conjur. Two files are written to the filesystem on the Puppet node when this class is used, conjur.conf and conjur.identity. These files allow the conjur_secret function to authenticate and authorize with Conjur.
+This class establishes Conjur host identity on the node so that secrets can be fetched from Conjur. Two files are written to the filesystem on the Puppet node when this class is used, conjur.conf and conjur.identity. These files allow the conjur::secret function to authenticate and authorize with Conjur.
 
 #### Parameters
 
@@ -121,7 +121,7 @@ Raw (unencoded) Conjur token. This is usually only useful for testing.
       ssl_certificate => file('conjur-ca.pem')
     }
 
-### `conjur_secret`
+### `conjur::secret`
 
 This function uses the node’s Conjur host identity to authenticate with Conjur and retrieve a secret that the node is authorized to fetch. The output of this function is a string that contains the value of the variable parameter. If the secret cannot be fetched an error is thrown.
 
@@ -132,7 +132,7 @@ The identifier of a Conjur variable to retrieve.
 
 #### Example
 
-    dbpass = conjur_secret('production/postgres/password')
+    dbpass = conjur::secret('production/postgres/password')
 
 ## Limitations
 

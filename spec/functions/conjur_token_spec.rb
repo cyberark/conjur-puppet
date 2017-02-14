@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'conjur_token', conjur: :mock do
+describe 'conjur::token', conjur: :mock do
   it "exchanges API key for token" do
     allow(conjur_connection).to receive(:post) \
         .with('/api/authn/users/alice/authenticate', 'the api key', nil) \

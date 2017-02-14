@@ -41,9 +41,10 @@ module RSpec::Puppet
       @envmod ||= Puppet::Parser::Functions.environment_module Puppet.lookup(:current_environment)
     end
 
-    def allow_calling_puppet_function name
-      Puppet::Parser::Functions.function name # to autoload
-      allow_any_instance_of(environment_module).to receive(:"real_function_#{name}")
+    def allow_calling_puppet_function name, method
+      loader = Puppet::Pops::Loaders.new adapter.current_environment
+      fun = loader.private_environment_loader.load :function, name
+      allow(fun).to receive(method)
     end
 
     def lookupvar name

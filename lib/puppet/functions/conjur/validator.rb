@@ -1,8 +1,24 @@
-require 'puppet/ssl/validator'
+# This function is really a Ruby class. Since we can't bind a class
+# to a Ruby constant (which would dirty the interpreter state),
+# we make it anonymous and make it possible to refer to using
+# a factory Puppet function.
+Puppet::Functions.create_function :'conjur::validator' do
+  dispatch(:klass) {}
 
-module Conjur
-  module Puppet
-    class Validator < ::Puppet::SSL::Validator
+  dispatch :new do
+    param 'String', :cert
+  end
+
+  def new cert
+    self.class.klass.new cert
+  end
+
+  def klass
+    self.class.klass
+  end
+
+  def self.klass
+    @klass = Class.new ::Puppet::SSL::Validator do
       def initialize cert
         @cert = cert
       end

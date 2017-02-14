@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'conjur_manufacture_host', conjur: :mock do
+describe 'conjur::manufacture_host', conjur: :mock do
   it "creates a host and returns the description hash" do
     allow(conjur_connection).to receive(:post) \
         .with(anything, nil,

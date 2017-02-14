@@ -1,9 +1,27 @@
-require 'uri'
-require_relative 'validator'
+# This function is really a Ruby class. Since we can't bind a class
+# to a Ruby constant (which would dirty the interpreter state),
+# we make it anonymous and make it possible to refer to using
+# a factory Puppet function.
+Puppet::Functions.create_function :'conjur::client' do
+  dispatch :new do
+    param 'String', :uri
+    param 'String', :cert
+  end
 
-module Conjur
-  module Puppet
-    class Client < Struct.new :uri, :cert
+  dispatch :new do
+    param 'String', :uri
+    # Apparently puppet dispatcher doesn't consider nil as 'param missing' and
+    # passes an undef instead. Allow that here, even if it's mostly used in tests.
+    optional_param 'Undef', :cert
+  end
+
+  def new uri, cert
+    self.class.klass.validator_class ||= call_function 'conjur::validator'
+    self.class.klass.new uri, cert
+  end
+
+  def self.klass
+    @klass ||= Class.new(Struct.new :uri, :cert) do
       def initialize uri, cert
         if uri.respond_to? :request_uri
           @uri = uri
@@ -34,7 +52,7 @@ module Conjur
       end
 
       def validator
-        @validator ||= Validator.new cert
+        @validator ||= self.class.validator_class.new cert
       end
 
       def variable_value id, token: nil
@@ -62,6 +80,10 @@ module Conjur
           encoded_token: token
         )
         JSON.load response
+      end
+
+      class << self
+        attr_accessor :validator_class
       end
     end
   end
