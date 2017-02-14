@@ -12,7 +12,7 @@ trap finish EXIT
 
 main() {
   echo "-----"
-  echo "Conjur Puppet Demo"
+  echo "Conjur Puppet Smoke Tests"
   echo "-----"
 
   setup_conjur

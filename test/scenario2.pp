@@ -7,12 +7,12 @@ class { conjur:
   ssl_certificate => $facts['ssl_certificate']
 }
 
-$secret = conjur_secret('inventory/db-password')
+$secret = conjur::secret('inventory/db-password')
 
 notify {"Writing this secret to file: $secret":}
 
 file { '/tmp/test.pem':
-  content => conjur_secret('inventory/db-password'),
+  content => conjur::secret('inventory/db-password'),
   ensure => file,
   show_diff => false  # don't log file content!
 }
