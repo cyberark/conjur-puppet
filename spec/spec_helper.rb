@@ -1,7 +1,6 @@
 require 'puppetlabs_spec_helper/module_spec_helper'
 require 'puppet/network/http/connection'
 require 'puppet/network/http_pool'
-require 'conjur/puppet/client'
 
 RSpec.configure do |config|
   config.mock_with :rspec do |mocks|

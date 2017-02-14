@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'conjur/puppet/client'
 require 'webrick'
 require 'webrick/https'
 
