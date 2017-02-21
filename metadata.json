@@ -9,6 +9,19 @@
   "issues_url": "https://github.com/conjur/puppet/issues",
   "dependencies": [
   ],
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "ubuntu",
+      "operatingsystemrelease": ["14.04", "16.04"]
+    },
+    {
+      "operatingsystem": "centos",
+      "operatingsystemrelease": ["6", "7"]
+    },
+    {
+      "operatingsystem": "debian",
+      "operatingsystemrelease": ["7", "8"]
+    }
+  ],
   "data_provider": null
 }
-
