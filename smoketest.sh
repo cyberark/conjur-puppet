@@ -2,6 +2,12 @@
 
 NOKILL=${NOKILL:-"0"}
 
+OSES=(
+  ubuntu
+  centos
+  debian
+)
+
 finish() {
   if [ "$NOKILL" == "0" ]; then
     docker-compose down -v
@@ -17,9 +23,11 @@ main() {
 
   setup_conjur
 
-  scenario1
-  scenario2
-  scenario3
+  for os in "${OSES[@]}"; do
+    scenario1 $os
+    scenario2 $os
+    scenario3 $os
+  done
 }
 
 runInConjur() {
@@ -41,8 +49,11 @@ setup_conjur() {
 }
 
 scenario1() {
+  local os="$1"
+
   echo "-----"
   echo "Scenario 1: Fetch a secret given a host name and API key"
+  echo "OS: $os"
   echo "-----"
   local node_name='puppet-node01'
 
@@ -59,13 +70,16 @@ scenario1() {
     -e FACTER_SSL_CERTIFICATE="$(cat conjur.pem)" \
     -v $PWD:/src -w /src \
     --link puppet_conjur_1:conjur \
-    puppet/puppet-agent-ubuntu \
+    puppet/puppet-agent-$os \
     apply --modulepath=spec/fixtures/modules test/scenario1.pp
 }
 
 scenario2() {
+  local os="$1"
+
   echo "-----"
   echo "Scenario 2: Fetch a secret given a host name and Host Factory token"
+  echo "OS: $os"
   echo "-----"
   local node_name='puppet-node02'
 
@@ -81,13 +95,16 @@ scenario2() {
     -e FACTER_SSL_CERTIFICATE="$(cat conjur.pem)" \
     -v $PWD:/src -w /src \
     --link puppet_conjur_1:conjur \
-    puppet/puppet-agent-ubuntu \
+    puppet/puppet-agent-$os \
     apply --modulepath=spec/fixtures/modules test/scenario2.pp
 }
 
 scenario3() {
+  local os="$1"
+
   echo "-----"
   echo "Scenario 3: Fetch a secret on a node with existing Conjur identity"
+  echo "OS: $os"
   echo "-----"
 
   echo "TODO"
