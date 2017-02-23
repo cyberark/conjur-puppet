@@ -2,6 +2,8 @@ require 'puppetlabs_spec_helper/module_spec_helper'
 require 'puppet/network/http/connection'
 require 'puppet/network/http_pool'
 
+require 'helpers/fs'
+
 RSpec.configure do |config|
   config.mock_with :rspec do |mocks|
     mocks.verify_doubled_constant_names = true
@@ -52,7 +54,7 @@ module RSpec::Puppet
       # So instead synthesize a catalog by adding a dummy file
       # with the contents equal to variable to look up, then get lookup
       # its content in the catalog. Slow and convoluted, but seems to work.
-      catalog = build_catalog 'test', {}, nil, """
+      catalog = build_catalog 'test', facts_hash('conjur'), nil, """
         #{test_manifest(:class)}
         file { var:
           content => $#{name}

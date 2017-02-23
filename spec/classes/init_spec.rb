@@ -1,4 +1,6 @@
 require 'spec_helper'
+require 'fakefs/spec_helpers'
+
 describe 'conjur' do
   context 'with api key' do
     let(:params) do {
@@ -41,6 +43,25 @@ describe 'conjur' do
           .with(include('uri' => 'https://conjur.test/api'), 'host/test', 'the api key')\
           .and_return 'the token'
       expect(lookupvar('conjur::token')).to eq 'the token'
+    end
+  end
+
+  context 'with preconfigured node' do
+    let(:params) {{ authn_token: 'just so it does not fail' }}
+    let(:facts) {{ conjur: Facter.fact(:conjur).value }}
+
+    include FsMock
+    before do
+      mock_file '/etc/conjur.conf', """
+        appliance_url: https://conjur.fact.test/api
+        cert_file: /etc/conjur.pem
+      """
+      mock_file '/etc/conjur.pem', "not really a cert"
+    end
+
+    it "uses settings from facts" do
+      expect(lookupvar('conjur::appliance_url')).to eq 'https://conjur.fact.test/api'
+      expect(lookupvar('conjur::ssl_certificate')).to eq 'not really a cert'
     end
   end
 end

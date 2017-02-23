@@ -51,11 +51,14 @@ Puppet::Functions.create_function :'conjur::client' do
         @http ||= ::Puppet::Network::HttpPool.http_ssl_instance uri.host, uri.port, validator
       end
 
-      attr_reader :validator
       # this is needed to thread the anonymous class through the blessing
       @validator_class = validator_class
       def self.extended obj
-        obj.instance_variable_set :@validator, @validator_class.new(obj.cert)
+        obj.instance_variable_set :@validator_class, @validator_class
+      end
+
+      def validator
+        @validator ||= @validator_class.new(cert)
       end
 
       def variable_value id, token: nil
