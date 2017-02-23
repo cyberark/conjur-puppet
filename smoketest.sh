@@ -24,7 +24,7 @@ main() {
   setup_conjur
 
   for os in "${OSES[@]}"; do
-    for i in `seq 3`; do
+    for i in `seq 4`; do
       scenario$i $os
     done
   done
@@ -110,6 +110,38 @@ scenario3() {
   echo "-----"
 
   echo "TODO"
+}
+
+scenario4() {
+  local os="$1"
+
+  echo "-----"
+  echo "Scenario 4: Fetch a secret given a host name and API key,"
+  echo "        with preconfigured Conjur endpoint"
+  echo "OS: $os"
+  echo "-----"
+  local node_name='puppet-node04'
+
+  runInConjur bash -c "[ -f node4.json ] || conjur host create --as-group security_admin $node_name 1> node4.json 2>/dev/null"
+  runInConjur bash -c "conjur layer hosts add inventory $node_name 2>/dev/null"
+
+  local login="host/$node_name"
+  local api_key=$(runInConjur jq -r '.api_key' node4.json | tr -d '\r')
+  local conjur_container=$(docker-compose ps -q conjur)
+
+  echo "
+    appliance_url: https://conjur/api
+    cert_file: /src/conjur.pem
+  " > conjur.conf
+
+  docker run --rm \
+    -e FACTER_AUTHN_LOGIN="$login" \
+    -e FACTER_AUTHN_API_KEY="$api_key" \
+    -v $PWD/conjur.conf:/etc/conjur.conf:ro \
+    -v $PWD:/src:ro -w /src \
+    --link $conjur_container:conjur \
+    puppet/puppet-agent-$os \
+    apply --modulepath=spec/fixtures/modules test/scenario4.pp
 }
 
 main "$@"

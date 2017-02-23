@@ -10,3 +10,4 @@
 /.bundle
 /Gemfile.lock
 /pkg
+/conjur.conf
