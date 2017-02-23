@@ -6,6 +6,8 @@ runInDocker() {
   docker run --rm -v $PWD:/src $IMAGE_NAME "$@"
 }
 
+rm -f Gemfile.lock  # can screw up ruby env in container
+
 echo "Building Docker image for testing"
 echo "-----"
 docker build -t $IMAGE_NAME .
