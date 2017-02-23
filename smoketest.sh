@@ -24,9 +24,9 @@ main() {
   setup_conjur
 
   for os in "${OSES[@]}"; do
-    scenario1 $os
-    scenario2 $os
-    scenario3 $os
+    for i in `seq 3`; do
+      scenario$i $os
+    done
   done
 }
 
@@ -62,6 +62,7 @@ scenario1() {
 
   local login="host/$node_name"
   local api_key=$(runInConjur jq -r '.api_key' node.json | tr -d '\r')
+  local conjur_container=$(docker-compose ps -q conjur)
 
   docker run --rm \
     -e FACTER_AUTHN_LOGIN="$login" \
@@ -69,7 +70,7 @@ scenario1() {
     -e FACTER_APPLIANCE_URL='https://conjur/api' \
     -e FACTER_SSL_CERTIFICATE="$(cat conjur.pem)" \
     -v $PWD:/src -w /src \
-    --link puppet_conjur_1:conjur \
+    --link $conjur_container:conjur \
     puppet/puppet-agent-$os \
     apply --modulepath=spec/fixtures/modules test/scenario1.pp
 }
@@ -87,6 +88,7 @@ scenario2() {
 
   local login="host/$node_name"
   local host_factory_token=$(runInConjur jq -r '.[].token' hftoken.json | tr -d '\r')
+  local conjur_container=$(docker-compose ps -q conjur)
 
   docker run --rm \
     -e FACTER_AUTHN_LOGIN="$login" \
@@ -94,7 +96,7 @@ scenario2() {
     -e FACTER_APPLIANCE_URL='https://conjur/api' \
     -e FACTER_SSL_CERTIFICATE="$(cat conjur.pem)" \
     -v $PWD:/src -w /src \
-    --link puppet_conjur_1:conjur \
+    --link $conjur_container:conjur \
     puppet/puppet-agent-$os \
     apply --modulepath=spec/fixtures/modules test/scenario2.pp
 }
