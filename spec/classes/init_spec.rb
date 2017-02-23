@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'fakefs/spec_helpers'
 
 describe 'conjur' do
   context 'with api key' do
