@@ -1,7 +1,6 @@
 # This function is really a Ruby class. Since we can't bind a class
 # to a Ruby constant (which would dirty the interpreter state),
-# we make it anonymous and make it possible to refer to using
-# a factory Puppet function.
+# we make it anonymous module and 'bless' a hash with it.
 Puppet::Functions.create_function :'conjur::client' do
   dispatch :new do
     param 'String', :uri
@@ -16,23 +15,24 @@ Puppet::Functions.create_function :'conjur::client' do
   end
 
   def new uri, cert
-    self.class.klass.validator_class ||= call_function 'conjur::validator'
-    self.class.klass.new uri, cert
+    {
+      'uri' => uri,
+      'cert' => cert
+    }.extend self.class.conjur_client_module
   end
 
-  def self.klass
-    @klass ||= Class.new(Struct.new :uri, :cert) do
-      def initialize uri, cert
-        if uri.respond_to? :request_uri
-          @uri = uri
-        else
-          # not an URI instance, add slash in case it's ommited
-          @uri = URI (uri + '/')
-        end
-        @cert = cert && OpenSSL::X509::Certificate.new(cert)
+  def self.conjur_client_module
+    # this is needed to thread the anonymous class through the blessing
+    validator_class = self.validator_class
+
+    @conjur_client_module ||= Module.new do
+      def uri
+        @uri ||= URI (self['uri'] + '/')
       end
 
-      attr_reader :uri, :cert
+      def cert
+        @cert ||= self['cert'] && OpenSSL::X509::Certificate.new(self['cert'])
+      end
 
       def authenticate login, key
         post "authn/users/" + URI.encode_www_form_component(login) + "/authenticate", key
@@ -51,8 +51,11 @@ Puppet::Functions.create_function :'conjur::client' do
         @http ||= ::Puppet::Network::HttpPool.http_ssl_instance uri.host, uri.port, validator
       end
 
-      def validator
-        @validator ||= self.class.validator_class.new cert
+      attr_reader :validator
+      # this is needed to thread the anonymous class through the blessing
+      @validator_class = validator_class
+      def self.extended obj
+        obj.instance_variable_set :@validator, @validator_class.new(obj.cert)
       end
 
       def variable_value id, token: nil
@@ -81,10 +84,43 @@ Puppet::Functions.create_function :'conjur::client' do
         )
         JSON.load response
       end
+    end
+  end
 
-      class << self
-        attr_accessor :validator_class
+  def self.validator_class
+    @validator_class ||= Class.new ::Puppet::SSL::Validator do
+      def initialize cert
+        @cert = cert
       end
+
+      def setup_connection conn
+        conn.verify_mode = OpenSSL::SSL::VERIFY_PEER
+        conn.verify_callback = self
+        conn.cert_store = cert_store
+        reset!
+      end
+
+      def cert_store
+        @cert_store ||= OpenSSL::X509::Store.new.tap do |store|
+          store.add_cert @cert if @cert
+        end
+      end
+
+      def call ok, store
+        @verify_errors << store.error_string unless ok
+        ok
+      end
+
+      def reset!
+        @verify_errors = []
+      end
+
+      def peer_certs
+        return [] unless @cert
+        [::Puppet::SSL::Certificate.from_instance(@cert)]
+      end
+
+      attr_reader :verify_errors
     end
   end
 end

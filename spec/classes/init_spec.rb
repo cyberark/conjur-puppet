@@ -9,7 +9,7 @@ describe 'conjur' do
 
     it "obtains token from the server" do
       allow_calling_puppet_function(:'conjur::token', :from_key) \
-          .with('https://conjur.test/api', 'host/test', 'the api key')\
+          .with(include('uri' => 'https://conjur.test/api'), 'host/test', 'the api key')\
           .and_return 'the token'
       expect(lookupvar('conjur::token')).to eq 'the token'
     end
@@ -17,6 +17,7 @@ describe 'conjur' do
 
   context 'with provided token' do
     let(:params) do {
+      appliance_url: 'https://conjur.test/api',
       authn_token: 'the provided token'
     } end
 
@@ -34,10 +35,10 @@ describe 'conjur' do
 
     it "creates the host using the host factory" do
       allow_calling_puppet_function(:'conjur::manufacture_host', :create) \
-          .with('https://conjur.test/api', 'test', 'the host factory token')\
+          .with(include('uri' => 'https://conjur.test/api'), 'test', 'the host factory token')\
           .and_return 'api_key' => 'the api key'
       allow_calling_puppet_function(:'conjur::token', :from_key) \
-          .with('https://conjur.test/api', 'host/test', 'the api key')\
+          .with(include('uri' => 'https://conjur.test/api'), 'host/test', 'the api key')\
           .and_return 'the token'
       expect(lookupvar('conjur::token')).to eq 'the token'
     end
