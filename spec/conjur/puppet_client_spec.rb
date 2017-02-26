@@ -4,11 +4,25 @@ require 'webrick/https'
 
 describe 'conjur::client' do
   include RSpec::Puppet::FunctionExampleGroup
-  subject(:client) { find_function.execute uri, (cert && cert.to_pem) }
+  let(:pem) { cert && cert.to_pem }
+  subject(:client) { find_function.execute uri, pem }
 
   context "with certificate for localhost" do
     it "when the cert checks out it connects correctly" do
       expect { client.get 'test' }.to_not raise_error
+    end
+
+    context "with a cert bundle" do
+      let(:pem) do
+        [
+          (make_cert 'unrelated.test').to_pem,
+          cert.to_pem,
+        ].join
+      end
+
+      it "trusts all certificates in the bundle" do
+        expect { client.get 'test' }.to_not raise_error
+      end
     end
 
     context "when the certificate doesn't verify" do
@@ -34,11 +48,11 @@ describe 'conjur::client' do
     before { @server_thread = Thread.new { server.start }; sleep 0.1 }
     after { server.shutdown; @server_thread.join }
 
-    let(:cert) do
+    def make_cert name
       cert = OpenSSL::X509::Certificate.new
       cert.version = 2
       cert.serial = 1
-      name = OpenSSL::X509::Name.new([['CN', cert_hostname]])
+      name = OpenSSL::X509::Name.new([['CN', name]])
       cert.subject = name
       cert.issuer = name
       cert.not_before = Time.now
@@ -47,6 +61,8 @@ describe 'conjur::client' do
       cert.sign(rsa, OpenSSL::Digest::SHA256.new)
       cert
     end
+
+    let(:cert) { make_cert cert_hostname }
 
     let(:rsa) do
       OpenSSL::PKey.read """

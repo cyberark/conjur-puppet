@@ -31,7 +31,12 @@ Puppet::Functions.create_function :'conjur::client' do
       end
 
       def cert
-        @cert ||= self['cert'] && OpenSSL::X509::Certificate.new(self['cert'])
+        cert_header = '-----BEGIN CERTIFICATE-----'.freeze
+        cert_footer = '-----END CERTIFICATE-----'.freeze
+        cert_re = /#{cert_header}\r?\n.*?\r?\n#{cert_footer}/m.freeze
+
+        @cert ||= self['cert'] && \
+            self['cert'].scan(cert_re).map(&OpenSSL::X509::Certificate.method(:new))
       end
 
       def authenticate login, key
@@ -93,7 +98,7 @@ Puppet::Functions.create_function :'conjur::client' do
   def self.validator_class
     @validator_class ||= Class.new ::Puppet::SSL::Validator do
       def initialize cert
-        @cert = cert
+        @certs = cert || []
       end
 
       def setup_connection conn
@@ -105,7 +110,7 @@ Puppet::Functions.create_function :'conjur::client' do
 
       def cert_store
         @cert_store ||= OpenSSL::X509::Store.new.tap do |store|
-          store.add_cert @cert if @cert
+          @certs.each &store.method(:add_cert)
         end
       end
 
@@ -119,8 +124,7 @@ Puppet::Functions.create_function :'conjur::client' do
       end
 
       def peer_certs
-        return [] unless @cert
-        [::Puppet::SSL::Certificate.from_instance(@cert)]
+        @certs.map &::Puppet::SSL::Certificate.method(:from_instance)
       end
 
       attr_reader :verify_errors
