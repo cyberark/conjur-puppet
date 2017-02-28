@@ -8,8 +8,6 @@ class conjur (
 ) inherits conjur::params {
   $client = conjur::client($appliance_url, $ssl_certificate)
 
-  notice $authn_token
-
   if $authn_token {
     $token = $authn_token
   } else {
