@@ -25,8 +25,9 @@ main() {
 
   for os in "${OSES[@]}"; do
     for i in `seq 4`; do
-      scenario$i $os
+      scenario$i $os &
     done
+    wait
   done
 
   echo "-----"
