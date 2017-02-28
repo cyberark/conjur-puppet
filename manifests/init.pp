@@ -1,10 +1,13 @@
 class conjur (
   String $appliance_url = $conjur::params::appliance_url,
   Optional[String] $authn_login = $conjur::params::authn_login,
-  Optional[Sensitive] $authn_api_key = $conjur::params::authn_api_key,
   Optional[String] $ssl_certificate = $conjur::params::ssl_certificate,
-  Optional[Sensitive] $authn_token = $conjur::params::authn_token,
-  Optional[Sensitive] $host_factory_token = $conjur::params::host_factory_token,
+
+  # NOTE these Anys are for compatibility with Puppet < 4.6, so that
+  # Sensitive can be used if supported and Strings if not.
+  Optional[Any] $authn_api_key = $conjur::params::authn_api_key,
+  Optional[Any] $authn_token = $conjur::params::authn_token,
+  Optional[Any] $host_factory_token = $conjur::params::host_factory_token,
 ) inherits conjur::params {
   $client = conjur::client($appliance_url, $ssl_certificate)
 

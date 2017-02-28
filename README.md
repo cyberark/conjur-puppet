@@ -33,14 +33,16 @@ Hiera attributes can also be used to inform which secret should be fetched, depe
     file { '/etc/ssl/cert.pem':
       content => conjur::secret("domains/%{hiera('domain')}/ssl-cert"),
       ensure => file
+      show_diff => false # only required for Puppet < 4.6
+      # diff will automatically get redacted in 4.6 if content is Sensitive
     }
 
-#### Sensitive data type
+#### Sensitive data type (Puppet >= 4.6)
 
-Note `conjur::secret` returns values wrapped in a `Sensitive` data type.
-In some contexts, such as string interpolation, it might cause surprising
-results (interpolating to `Sensitive [value redacted]`). This is intentional,
-as it makes it harder to accidentally mishandle secrets.
+Note in Puppet >= 4.6 `conjur::secret` returns values wrapped
+in a `Sensitive` data type. In some contexts, such as string interpolation,
+it might cause surprising results (interpolating to `Sensitive [value redacted]`).
+This is intentional, as it makes it harder to accidentally mishandle secrets.
 
 To use a secret as a string, you need to explicitly request it using the
 `unwrap` function; the result of the processing should be again wrapped in
@@ -51,12 +53,14 @@ if you can avoid it. Many resource types support `Sensitive` data type and
 handle it correctly. If a resource you're using does not, file a bug.
 
     $dbpass = conjur::secret('production/postgres/password')
+
+    # In Puppet 4.6, use Sensitive data type to handle anything sensitive
     $db_yaml = Sensitive("password: ${dbpass.unwrap}")
+
     file { '/etc/someservice/db.yaml':
-      content => $db_yaml,
+      content => $db_yaml, # this correctly handles both Sensitive and String
       ensure => file,
       mode => '0600', # remember to limit reading
-      # show_diff => false not required: content is Sensitive and will be redacted
     }
 
 ## Usage
@@ -116,8 +120,8 @@ This class establishes Conjur host identity on the node so that secrets can be f
 
 #### Note
 
-Several parameters (ie. API keys) are of `Sensitive` data type. To pass a
-normal string, you need to wrap it using `Sensitive("example")`.
+Several parameters (ie. API keys) are of `Sensitive` data type on Puppet >= 4.6.
+To pass a normal string, you need to wrap it using `Sensitive("example")`.
 
 #### Parameters
 
@@ -127,18 +131,19 @@ A Conjur endpoint with trailing `/api`.
 ##### `authn_login`
 User username or host name (prefixed with `host/`).
 
-##### `Sensitive authn_api_key`
-API key for a user or host.
+##### `authn_api_key`
+API key for a user or host. Must be `Sensitive` if supported.
 
 ##### `ssl_certificate`
 X509 certificate of the root CA of Conjur, PEM formatted.
 
-##### `Sensitive host_factory_token`
-You can use a host factory token to obtain a host identity.
+##### `host_factory_token`
+You can use a host factory token to obtain a host identity. Must be `Sensitive` if supported.
 Simply use this parameter to set it. The host record will be created in Conjur.
 
-##### `Sensitive authn_token`
+##### `authn_token`
 Raw (unencoded) Conjur token. This is usually only useful for testing.
+Must be `Sensitive` if supported.
 
 #### Example
 
@@ -153,7 +158,7 @@ Raw (unencoded) Conjur token. This is usually only useful for testing.
 
 This function uses the node’s Conjur host identity to authenticate with Conjur and retrieve a secret that the node is authorized to fetch. The output of this function is a string that contains the value of the variable parameter. If the secret cannot be fetched an error is thrown.
 
-The returned value is `Sensitive` data type (see notes above).
+The returned value is `Sensitive` data type if supported (see notes above).
 
 #### Parameters
 

@@ -33,7 +33,9 @@ main() {
   echo "Running Scenario 2 against Puppet agent 4.5"
   echo "This is required because the 'Sensitive' type is only supported in Puppet >= 4.6"
   echo "-----"
-  scenario2 ubuntu 1.5.2  # tag 1.5.2 of the puppet-agent-ubuntu image has Puppet 4.5 installed
+
+  # tag 1.5.2 of the puppet-agent-ubuntu image has Puppet 4.5 installed
+  scenario2 ubuntu 1.5.2 scenario2.5.pp
 }
 
 runInConjur() {
@@ -84,11 +86,13 @@ scenario1() {
 scenario2() {
   local os="$1"
   local tag=${2:-latest}
+  local manifest=${3:-scenario2.pp}
 
   echo "-----"
   echo "Scenario 2: Fetch a secret given a host name and Host Factory token"
   echo "OS: $os"
   echo "Tag: $tag"
+  echo "Manifest: $manifest"
   echo "-----"
   local node_name='puppet-node02'
 
@@ -106,7 +110,7 @@ scenario2() {
     -v $PWD:/src -w /src \
     --link $conjur_container:conjur \
     puppet/puppet-agent-$os:$tag \
-    apply --modulepath=spec/fixtures/modules test/scenario2.pp
+    apply --modulepath=spec/fixtures/modules test/$manifest
 }
 
 scenario3() {

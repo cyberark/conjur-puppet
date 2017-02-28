@@ -1,8 +1,11 @@
 Puppet::Functions.create_function :'conjur::secret' do
+  sensitive = Puppet::Pops::Types::PSensitiveType::Sensitive rescue String
+  send(:define_method, :sensitive) { sensitive }
+
   dispatch :secret do
     param 'Conjur::Endpoint', :client
     param 'String', :variable_id
-    param 'String', :token
+    param sensitive.name.split("::").last, :token
   end
 
   dispatch :with_defaults do
@@ -10,8 +13,8 @@ Puppet::Functions.create_function :'conjur::secret' do
   end
 
   def secret client, id, token
-    Puppet::Pops::Types::PSensitiveType::Sensitive.new \
-        client.variable_value id, token: token.unwrap
+    token = token.unwrap if token.respond_to? :unwrap
+    sensitive.new client.variable_value id, token: token
   end
 
   def with_defaults id
