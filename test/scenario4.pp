@@ -3,15 +3,14 @@
 
 class { conjur:
   authn_login => $facts['authn_login'],
-  authn_api_key => $facts['authn_api_key'],
+  authn_api_key => Sensitive($facts['authn_api_key']),
 }
 
 $secret = conjur::secret('inventory/db-password')
 
-notify {"Writing this secret to file: $secret":}
+notify {"Writing this secret to file: ${secret.unwrap}":}
 
 file { '/tmp/test.pem':
   content => conjur::secret('inventory/db-password'),
   ensure => file,
-  show_diff => false  # don't log file content!
 }

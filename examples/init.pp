@@ -13,8 +13,8 @@
 class { conjur:
   appliance_url => "https://localhost:8443/api",
   authn_login => "host/pphost",
-  host_factory_token => "21rzdwb2n4m6wb16tg3q03m572ac2gb3ktkgtpzw8146t77s2z2vbr7",
-  # authn_api_key => "dfh4c01pyhxej345zptd28vt8nr35m3dwf2m1g03m9vhpva1mkg4zy",
+  host_factory_token => Sensitive("21rzdwb2n4m6wb16tg3q03m572ac2gb3ktkgtpzw8146t77s2z2vbr7"),
+  # authn_api_key => Sensitive("dfh4c01pyhxej345zptd28vt8nr35m3dwf2m1g03m9vhpva1mkg4zy"),
   ssl_certificate => @(EOT)
     -----BEGIN CERTIFICATE-----
     MIID7DCCAtSgAwIBAgIJAJyeKBfK89SvMA0GCSqGSIb3DQEBCwUAMD0xETAPBgNV

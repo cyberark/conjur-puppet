@@ -26,14 +26,37 @@ This module requires that you have a Conjur endpoint available to the Puppet nod
 
 This module provides a `conjur::secret` function that can be used to retrieve secrets from Conjur. Given a Conjur variable identifier, `conjur::secret` uses the node’s Conjur identity to resolve and return the variable’s value.
 
-    dbpass = conjur::secret('production/postgres/password')
+    $dbpass = conjur::secret('production/postgres/password')
 
 Hiera attributes can also be used to inform which secret should be fetched, depending on the node running the Conjur module. For example, if `hiera('domain')` returns `app1.example.com` and a Conjur variable named `domains/app1.example.com/ssl-cert` exists, the SSL certificate can be retrieved and written to a file like so:
 
     file { '/etc/ssl/cert.pem':
       content => conjur::secret("domains/%{hiera('domain')}/ssl-cert"),
+      ensure => file
+    }
+
+#### Sensitive data type
+
+Note `conjur::secret` returns values wrapped in a `Sensitive` data type.
+In some contexts, such as string interpolation, it might cause surprising
+results (interpolating to `Sensitive [value redacted]`). This is intentional,
+as it makes it harder to accidentally mishandle secrets.
+
+To use a secret as a string, you need to explicitly request it using the
+`unwrap` function; the result of the processing should be again wrapped in
+a `Sensitive` value.
+
+In particular, you should not pass unwrapped secrets as resource parameters
+if you can avoid it. Many resource types support `Sensitive` data type and
+handle it correctly. If a resource you're using does not, file a bug.
+
+    $dbpass = conjur::secret('production/postgres/password')
+    $db_yaml = Sensitive("password: ${dbpass.unwrap}")
+    file { '/etc/someservice/db.yaml':
+      content => $db_yaml,
       ensure => file,
-      show_diff => false  # don't log file content!
+      mode => '0600', # remember to limit reading
+      # show_diff => false not required: content is Sensitive and will be redacted
     }
 
 ## Usage
@@ -50,7 +73,7 @@ To use a Host Factory token with this module, set variables `authn_login` and `h
       account         => 'mycompany',
       appliance_url   => 'https://conjur.mycompany.com/api',
       authn_login     => 'host/redis001',
-      host_factory_token => '3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx',
+      host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
       ssl_certificate => @(EOT)
         -----BEGIN CERTIFICATE-----
         …
@@ -69,7 +92,7 @@ For one-off hosts or test environments it may be preferable to create a host in 
     class { conjur:
       appliance_url => 'https://conjur.mycompany.com/api',
       authn_login => 'host/redis001',
-      authn_api_key => 'f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3',
+      authn_api_key => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
       ssl_certificate => file('conjur-ca.pem')
     }
 
@@ -91,6 +114,11 @@ For one-off hosts or test environments it may be preferable to create a host in 
 
 This class establishes Conjur host identity on the node so that secrets can be fetched from Conjur. Two files are written to the filesystem on the Puppet node when this class is used, conjur.conf and conjur.identity. These files allow the conjur::secret function to authenticate and authorize with Conjur.
 
+#### Note
+
+Several parameters (ie. API keys) are of `Sensitive` data type. To pass a
+normal string, you need to wrap it using `Sensitive("example")`.
+
 #### Parameters
 
 ##### `appliance_url`
@@ -99,17 +127,17 @@ A Conjur endpoint with trailing `/api`.
 ##### `authn_login`
 User username or host name (prefixed with `host/`).
 
-##### `authn_api_key`
+##### `Sensitive authn_api_key`
 API key for a user or host.
 
 ##### `ssl_certificate`
 X509 certificate of the root CA of Conjur, PEM formatted.
 
-##### `host_factory_token`
+##### `Sensitive host_factory_token`
 You can use a host factory token to obtain a host identity.
 Simply use this parameter to set it. The host record will be created in Conjur.
 
-##### `authn_token`
+##### `Sensitive authn_token`
 Raw (unencoded) Conjur token. This is usually only useful for testing.
 
 #### Example
@@ -117,13 +145,15 @@ Raw (unencoded) Conjur token. This is usually only useful for testing.
     class { conjur:
       appliance_url => 'https://conjur.mycompany.com/api',
       authn_login => 'host/redis001',
-      authn_api_key => 'f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3',
+      authn_api_key => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
       ssl_certificate => file('conjur-ca.pem')
     }
 
 ### `conjur::secret`
 
 This function uses the node’s Conjur host identity to authenticate with Conjur and retrieve a secret that the node is authorized to fetch. The output of this function is a string that contains the value of the variable parameter. If the secret cannot be fetched an error is thrown.
+
+The returned value is `Sensitive` data type (see notes above).
 
 #### Parameters
 

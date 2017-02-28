@@ -6,7 +6,7 @@ gem 'puppet', puppetversion
 gem 'puppetlabs_spec_helper', '>= 1.0.0'
 gem 'puppet-lint', '~> 2.1.0'
 gem 'facter', '>= 1.7.0'
-gem 'rspec-puppet'
+gem 'rspec-puppet', git: 'https://github.com/conjur/rspec-puppet.git', tag: 'v2.5.0-support-sensitive'
 gem 'rspec_junit_formatter'
 
 # rspec must be v2 for ruby 1.8.7

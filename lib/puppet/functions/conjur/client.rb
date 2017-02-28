@@ -68,7 +68,7 @@ Puppet::Functions.create_function :'conjur::client' do
 
       def variable_value id, token: nil
         get "variables/" + URI.encode_www_form_component(id) + "/value",
-            encoded_token: Base64.urlsafe_encode64(token)
+            encoded_token: Base64.urlsafe_encode64(token.unwrap)
       end
 
       def get path, encoded_token: nil

@@ -1,6 +1,6 @@
 # v1 file, for Jenkins compatibility
 conjur:
-  image: registry2.itci.conjur.net/conjur-appliance-cuke-master:4.9-stable
+  image: appliance-cuke-master
   environment:
     CONJUR_AUTHN_LOGIN: admin
     CONJUR_AUTHN_API_KEY: secret
