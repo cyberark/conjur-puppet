@@ -6,3 +6,5 @@ WORKDIR /src
 
 COPY Gemfile /src/Gemfile
 RUN bundle
+
+COPY . /src
