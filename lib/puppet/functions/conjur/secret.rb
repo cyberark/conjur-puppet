@@ -11,7 +11,7 @@ Puppet::Functions.create_function :'conjur::secret' do
 
   def secret client, id, token
     Puppet::Pops::Types::PSensitiveType::Sensitive.new \
-        client.variable_value id, token: token
+        client.variable_value id, token: token.unwrap
   end
 
   def with_defaults id
