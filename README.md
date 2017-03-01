@@ -78,11 +78,7 @@ To use a Host Factory token with this module, set variables `authn_login` and `h
       appliance_url   => 'https://conjur.mycompany.com/api',
       authn_login     => 'host/redis001',
       host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
-      ssl_certificate => @(EOT)
-        -----BEGIN CERTIFICATE-----
-        …
-        -----END CERTIFICATE-----
-        |-EOT
+      ssl_certificate => file('/etc/conjur.pem')
     }
 
 By default, all nodes using this Puppet module to bootstrap identity with host_factory_token will have the following annotation set:
@@ -135,7 +131,8 @@ User username or host name (prefixed with `host/`).
 API key for a user or host. Must be `Sensitive` if supported.
 
 ##### `ssl_certificate`
-X509 certificate of the root CA of Conjur, PEM formatted.
+Content of the X509 certificate of the root CA of Conjur, PEM formatted.
+When using Puppet's `file` function, the path to the cert must be absolute.
 
 ##### `host_factory_token`
 You can use a host factory token to obtain a host identity. Must be `Sensitive` if supported.
@@ -218,4 +215,3 @@ A couple notes:
    ```
 
    Note that if you want to run manifests directly then need to be mounted into the container.
-
