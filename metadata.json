@@ -2,7 +2,7 @@
   "name": "conjur-conjur",
   "version": "1.0.0-alpha",
   "author": "conjur",
-  "summary": "Securely use secrets stored in Conjur",
+  "summary": "Register nodes as Conjur hosts and securely use secrets stored in Conjur",
   "license": "Apache-2.0",
   "source": "https://github.com/conjur/puppet",
   "project_page": "https://github.com/conjur/puppet",
@@ -23,5 +23,10 @@
       "operatingsystemrelease": ["7", "8"]
     }
   ],
-  "data_provider": null
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 4.0.0 < 5.0.0"
+    }
+  ]
 }
