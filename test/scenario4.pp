@@ -8,7 +8,7 @@ class { 'conjur':
 
 $secret = conjur::secret('inventory/db-password')
 
-notify {"Writing this secret to file: ${secret}.unwrap":}
+notify {"Writing this secret to file: ${secret.unwrap}":}
 
 file { '/tmp/test.pem':
   ensure  => file,
