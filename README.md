@@ -69,7 +69,8 @@ This module provides the `conjur::secret` function, described above, and the `co
 
 ### Conjur host identity with Host Factory
 
-We recommend bootstrapping Conjur host identity using a Host Factory token. Nodes inherit the permissions of the layer for which the Host Factory token was generated.
+We recommend bootstrapping Conjur host identity using a [Host Factory](https://developer.conjur.net/reference/services/host_factory) token.
+Nodes inherit the permissions of the layer for which the Host Factory token was generated.
 
 To use a Host Factory token with this module, set variables `authn_login` and `host_factory_token`. Do not set the variable `authn_api_key` when using `host_factory_token`; it is not required. `authn_login` should have a `host/` prefix; the part after the slash will be used as the node’s name in Conjur.
 
