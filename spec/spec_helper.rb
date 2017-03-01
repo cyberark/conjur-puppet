@@ -12,11 +12,11 @@ end
 
 shared_context "mock conjur connection", conjur: :mock do
   let(:conjur_connection) do
-    instance_double 'Puppet::Network::HTTP::Connection', 'connection to Conjur'
+    instance_double 'Net::HTTP', 'connection to Conjur'
   end
 
   before do
-    allow(Puppet::Network::HttpPool).to receive(:http_ssl_instance) \
+    allow(Net::HTTP).to receive(:start) \
         .with('conjur.test', 443, anything).and_return(conjur_connection)
   end
 
