@@ -1,3 +1,6 @@
+require 'puppetlabs_spec_helper/rake_tasks' # needed for some module packaging tasks
+require 'puppet_blacksmith/rake_tasks'
+
 if RUBY_VERSION >= '1.9'
   require 'rubocop/rake_task'
   RuboCop::RakeTask.new
@@ -26,6 +29,15 @@ desc 'Run unit tests'
 task :spec do
   sh "rspec --pattern --pattern spec/**/*.rb --exclude-pattern spec/fixtures/**/*_spec.rb "\
      "--format documentation --format RspecJunitFormatter --out rspec.xml"
+end
+
+desc 'Release the module to Puppet Forge'
+task :release do
+  Rake::Task['module:clean'].invoke
+  sh 'puppet module build .'
+  sh 'ls -lh pkg/*tar.gz'
+  sh 'tar -tvf pkg/conjur-conjur*.tar.gz'
+  Rake::Task['module:push'].invoke
 end
 
 desc 'Build a nightly package'

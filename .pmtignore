@@ -1,0 +1,15 @@
+code/
+examples/
+pkg/
+spec/
+test/
+docker-compose.*
+*.sh
+TODO
+Rakefile
+Dockerfile
+conjur.pem
+conjur.conf
+Gemfile*
+secrets.yml
+rspec.xml

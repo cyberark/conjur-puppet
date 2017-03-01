@@ -10,12 +10,12 @@
 # https://docs.puppet.com/guides/tests_smoke.html
 #
 
-class { conjur:
-  appliance_url => "https://localhost:8443/api",
-  authn_login => "host/pphost",
-  host_factory_token => Sensitive("21rzdwb2n4m6wb16tg3q03m572ac2gb3ktkgtpzw8146t77s2z2vbr7"),
+class { 'conjur':
+  appliance_url      => 'https://localhost:8443/api',
+  authn_login        => 'host/pphost',
+  host_factory_token => Sensitive('21rzdwb2n4m6wb16tg3q03m572ac2gb3ktkgtpzw8146t77s2z2vbr7'),
   # authn_api_key => Sensitive("dfh4c01pyhxej345zptd28vt8nr35m3dwf2m1g03m9vhpva1mkg4zy"),
-  ssl_certificate => @(EOT)
+  ssl_certificate    => @(EOT)
     -----BEGIN CERTIFICATE-----
     MIID7DCCAtSgAwIBAgIJAJyeKBfK89SvMA0GCSqGSIb3DQEBCwUAMD0xETAPBgNV
     BAoTCGN1Y3VtYmVyMRIwEAYDVQQLEwlDb25qdXIgQ0ExFDASBgNVBAMTC2N1a2Ut
@@ -43,7 +43,7 @@ class { conjur:
 }
 
 file { '/tmp/db-password':
-  content => conjur::secret('inventory/db-password'),
-  ensure => file,
+  ensure    => file,
+  content   => conjur::secret('inventory/db-password'),
   show_diff => false  # don't log file content!
 }
