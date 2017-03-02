@@ -1,19 +1,32 @@
 {
   "name": "conjur-conjur",
-  "version": "0.0.4",
-  "author": "Conjur Inc.",
-  "summary": "Conjur",
-  "license": "Apache 2.0",
-  "source": "https://github.com/conjurinc/puppet",
-  "project_page": "https://github.com/conjurinc/puppet",
-  "issues_url": "https://github.com/conjurinc/puppet/issues",
+  "version": "1.0.0",
+  "author": "conjur",
+  "summary": "Register nodes as Conjur hosts and securely use secrets stored in Conjur",
+  "license": "Apache-2.0",
+  "source": "https://github.com/conjur/puppet",
+  "project_page": "https://github.com/conjur/puppet",
+  "issues_url": "https://github.com/conjur/puppet/issues",
+  "dependencies": [
+  ],
   "operatingsystem_support": [
     {
-    "operatingsystem":"RedHat",
-    "operatingsystemrelease":[ "5.0", "6.0" ]
+      "operatingsystem": "ubuntu",
+      "operatingsystemrelease": ["14.04", "16.04"]
+    },
+    {
+      "operatingsystem": "centos",
+      "operatingsystemrelease": ["6", "7"]
+    },
+    {
+      "operatingsystem": "debian",
+      "operatingsystemrelease": ["7", "8"]
     }
   ],
-  "dependencies": [
-    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">= 4.0.0 < 5.0.0"
+    }
   ]
 }

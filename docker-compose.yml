@@ -1,0 +1,13 @@
+# v1 file, for Jenkins compatibility
+conjur:
+  image: registry2.itci.conjur.net/conjur-appliance-cuke-master:4.9-stable
+  environment:
+    CONJUR_AUTHN_LOGIN: admin
+    CONJUR_AUTHN_API_KEY: secret
+    CONJUR_ACCOUNT: cucumber
+  volumes:
+    - .:/src
+  ports:
+    - 9443:443
+  security_opt:
+    - seccomp:unconfined

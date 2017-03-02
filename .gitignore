@@ -1,2 +1,14 @@
-pkg
-Gemfile.lock
+# container volumes
+/puppet/
+/puppetdb/
+/puppetdb-postgres/
+
+# dev stuff
+/conjur.pem
+/rspec.xml
+/.rvmrc*
+/.bundle
+/Gemfile.lock
+/pkg
+/conjur.conf
+/tmp/

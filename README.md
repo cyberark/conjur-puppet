@@ -1,134 +1,204 @@
 # conjur
 
+[![Version](https://img.shields.io/puppetforge/v/conjur/conjur.svg)](https://forge.puppet.com/conjur/conjur)
+
 #### Table of Contents
 
-1. [Overview](#overview)
-2. [Module Description - What the module does and why it is useful](#module-description)
-3. [Setup - The basics of getting started with hostidentity](#setup)
-    * [What hostidentity affects](#what-hostidentity-affects)
+1. [Description](#description)
+1. [Setup - The basics of getting started with conjur](#setup)
+    * [What conjur affects](#what-conjur-affects)
     * [Setup requirements](#setup-requirements)
-    * [Beginning with hostidentity](#beginning-with-hostidentity)
-4. [Usage - Configuration options and additional functionality](#usage)
-5. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
-5. [Limitations - OS compatibility, etc.](#limitations)
-6. [Development - Guide for contributing to the module](#development)
+    * [Beginning with conjur](#beginning-with-conjur)
+1. [Usage - Configuration options and additional functionality](#usage)
+1. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
+1. [Limitations - OS compatibility, etc.](#limitations)
+1. [Development - Guide for contributing to the module](#development)
 
-## Overview
+## Description
 
-This module helps to integrate [Conjur](http://www.conjur.net) security solution
-with Puppet-driven configuration, thus allowing you to use externally-stored,
-access-controlled, audited secrets with minimal trust; the secrets
-never end up on the master and are fetched directly by the client.
-
-Tested on CentOS 6.5 with Puppet 3.7.1. Will probably work on any EL.
-
-## Module Description
-
-[Conjur](http://www.conjur.net) allows you to store secrets in an encrypted
-database and control access to them; a host then can use its own security
-credentials and identity to securely fetch the secrets and use them in configuration.
-
-This module handles
-- installing Conjur client,
-- configuring it,
-- creating a host identity with Conjur host factory,
-- fetching secrets and using them in config files.
+This is the official Puppet module for [Conjur](https://conjur.com), a robust identity and access management platform. This module simplifies the operations of establishing Conjur host identity and allows authorized Puppet nodes to fetch secrets from Conjur.
 
 ## Setup
 
-### What hostidentity affects
-
-* conjur client package,
-* conjur config and identity files - `/etc/conjur.{conf,identity}`,
-* any config files you conjurize.
-
 ### Setup Requirements
 
-You should have a Conjur server configured with either a precreated identity
-for the host or, alternatively, a host factory set up. You'll need the Conjur TLS
-certificate, account info and endpoint URL, and either a host API key or a host
-factory token.
+This module requires that you have a Conjur endpoint available to the Puppet nodes using this module.
 
 ### Beginning with conjur
 
-To install the Conjur client and host identity:
+This module provides a `conjur::secret` function that can be used to retrieve secrets from Conjur. Given a Conjur variable identifier, `conjur::secret` uses the node’s Conjur identity to resolve and return the variable’s value.
 
-    class { conjur:
-      conjur_url => 'https://master.conjur.um.pl.eu.org/api'
-      conjur_certificate => file("conjur/example.pem"),
-      conjur_account => hatest,
+    $dbpass = conjur::secret('production/postgres/password')
 
-      host_id => hftest,
+Hiera attributes can also be used to inform which secret should be fetched, depending on the node running the Conjur module. For example, if `hiera('domain')` returns `app1.example.com` and a Conjur variable named `domains/app1.example.com/ssl-cert` exists, the SSL certificate can be retrieved and written to a file like so:
 
-      host_key => '3bfqryknzbbmh1j3ecftgyac9w22677hw27z9yns3rcf29h3w2hvgn',
-      # alternatively, use a host factory token:
-      hostfactory_token => '3bfqryknzbbmh1j3ecftgyac9w22677hw27z9yns3rcf29h3w2hvgn'
+    file { '/etc/ssl/cert.pem':
+      content => conjur::secret("domains/%{hiera('domain')}/ssl-cert"),
+      ensure => file
+      show_diff => false # only required for Puppet < 4.6
+      # diff will automatically get redacted in 4.6 if content is Sensitive
+    }
+
+#### Sensitive data type (Puppet >= 4.6)
+
+Note in Puppet >= 4.6 `conjur::secret` returns values wrapped
+in a `Sensitive` data type. In some contexts, such as string interpolation,
+it might cause surprising results (interpolating to `Sensitive [value redacted]`).
+This is intentional, as it makes it harder to accidentally mishandle secrets.
+
+To use a secret as a string, you need to explicitly request it using the
+`unwrap` function; the result of the processing should be again wrapped in
+a `Sensitive` value.
+
+In particular, you should not pass unwrapped secrets as resource parameters
+if you can avoid it. Many resource types support `Sensitive` data type and
+handle it correctly. If a resource you're using does not, file a bug.
+
+    $dbpass = conjur::secret('production/postgres/password')
+
+    # In Puppet 4.6, use Sensitive data type to handle anything sensitive
+    $db_yaml = Sensitive("password: ${dbpass.unwrap}")
+
+    file { '/etc/someservice/db.yaml':
+      content => $db_yaml, # this correctly handles both Sensitive and String
+      ensure => file,
+      mode => '0600', # remember to limit reading
     }
 
 ## Usage
 
-### Secrets from Conjur variables
+This module provides the `conjur::secret` function, described above, and the `conjur` class, which can be configured to establish Conjur host identity on the node running Puppet.
 
-Wherever there is a secret (password, API key, etc.) being stored in a config file,
-you can instead use `conjur_variable` function to tie it in and then use `conjurize_file`
-resource to process it. This allows using secrets from Conjur with non-Conjur-aware resources,
-for example:
+### Pre-established host identity
 
-    $planet = conjur_variable('planet')
+For best security properties, use [conjurize](https://developer.conjur.net/key_concepts/machine_identity.html) or a similar method to establish host identity before running Puppet to configure. This way Puppet master only ever handles a temporary access token instead of real, permanent Conjur credentials of the hosts it manages.
 
-    file { '/etc/hello.txt':
-      content => "Hello $planet!\n"
+If a host is so pre-configured, the settings and credentials are automatically obtained and used. In this case, all that is needed to use `conjur::secret` is a simple
+
+    include conjur
+
+### Conjur host identity with Host Factory
+
+If pre-establishing host identity is unfeasible, we instead recommend bootstrapping Conjur host identity using a [Host Factory](https://developer.conjur.net/reference/services/host_factory) token. Nodes inherit the permissions of the layer for which the Host Factory token was generated.
+
+To use a Host Factory token with this module, set variables `authn_login` and `host_factory_token`. Do not set the variable `authn_api_key` when using `host_factory_token`; it is not required. `authn_login` should have a `host/` prefix; the part after the slash will be used as the node’s name in Conjur.
+
+    class { conjur:
+      account         => 'mycompany',
+      appliance_url   => 'https://conjur.mycompany.com/api',
+      authn_login     => 'host/redis001',
+      host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
+      ssl_certificate => file('/etc/conjur.pem')
     }
 
-    conjurize_file { '/etc/hello.txt':
-      variable_map => {
-        planet => "!var puppetdemo/planet"
-      }
+By default, all nodes using this Puppet module to bootstrap identity with host_factory_token will have the following annotation set:
+
+    puppet: true
+
+### Conjur host identity with API key
+
+For one-off hosts or test environments it may be preferable to create a host in Conjur and then directly assign its Conjur identity in this module.
+
+    class { conjur:
+      appliance_url => 'https://conjur.mycompany.com/api',
+      authn_login => 'host/redis001',
+      authn_api_key => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
+      ssl_certificate => file('/conjur-ca.pem')
     }
 
 ## Reference
 
 ### Classes
 
-- `conjur::client`: Installs the Conjur client
-- `conjur::host_identity`: Configures the Conjur client and sets up host identity
+#### Public Classes
+
+* `::conjur`
 
 ### Functions
 
-#### conjur_variable
+#### Public Functions
 
-A placeholder to use in config files to be substituted by a secret fetched from Conjur.
+* `conjur::secret`
 
-### Providers
+### `::conjur`
 
-#### conjur_gem
+This class establishes Conjur host identity on the node so that secrets can be fetched from Conjur. The identity and Conjur endpoint configuration can be pre-configured on a host using `/etc/conjur.conf` and `/etc/conjur.identity` or provided as parameters. The identity can also be bootstrapped using a host factory token.
 
-A package provider to install gems in Conjur embedded Ruby environment.
+#### Note
 
-#### conjurize_file
+Several parameters (ie. API keys) are of `Sensitive` data type on Puppet >= 4.6.
+To pass a normal string, you need to wrap it using `Sensitive("example")`.
 
-Alters an existing `File` resource by substituting `conjur_variable`s according to
-a given variable map.
+#### Parameters
 
-##### `variable_map`
+##### `appliance_url`
+A Conjur endpoint with trailing `/api`.
 
-Sets up a mapping from named variables in the config file to variables stored on the
-conjur server, ie.
+##### `authn_login`
+User username or host name (prefixed with `host/`).
 
-    variable_map => {
-      mysql_password => '!var puppet-1.0/mysql/password'
+##### `authn_api_key`
+API key for a user or host. Must be `Sensitive` if supported.
+
+##### `ssl_certificate`
+Content of the X509 certificate of the root CA of Conjur, PEM formatted.
+When using Puppet's `file` function, the path to the cert must be absolute.
+
+##### `host_factory_token`
+You can use a host factory token to obtain a host identity. Must be `Sensitive` if supported.
+Simply use this parameter to set it. The host record will be created in Conjur.
+
+##### `authn_token`
+Raw (unencoded) Conjur token. This is usually only useful for testing.
+Must be `Sensitive` if supported.
+
+#### Example
+
+    # use a pre-existing Conjur configuration host identity
+    include conjur
+
+    # using an host factory token
+    class { conjur:
+      appliance_url => 'https://conjur.mycompany.com/api',
+      authn_login => 'host/redis001',
+      host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
+      ssl_certificate => file('conjur-ca.pem')
     }
 
-This will replace `conjur_variable('mysql_password')` in the conjurized file with the
-contents of `puppet-1.0/mysql/password` Conjur variable.
+    # same, but /etc/conjur.conf and certificate are already on a host
+    # (eg. baked into a base image)
+    class { conjur:
+      authn_login => 'host/redis001',
+      host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
+    }
 
-Note the !var prefix; this is directly translated to yaml mapping file, please consult Conjur
-documentation for further details on that.
+    # using an API key
+    class { conjur:
+      appliance_url => 'https://conjur.mycompany.com/api',
+      authn_login => 'host/redis001',
+      authn_api_key => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
+      ssl_certificate => file('conjur-ca.pem')
+    }
+
+### `conjur::secret`
+
+This function uses the node’s Conjur host identity to authenticate with Conjur and retrieve a secret that the node is authorized to fetch. The output of this function is a string that contains the value of the variable parameter. If the secret cannot be fetched an error is thrown.
+
+The returned value is `Sensitive` data type if supported (see notes above).
+
+#### Parameters
+
+##### `variable`
+The identifier of a Conjur variable to retrieve.
+
+#### Example
+
+    dbpass = conjur::secret('production/postgres/password')
 
 ## Limitations
 
-In this development release only CentOS is currently supported.
+See metadata.json for supported platforms
 
 ## Development
 
-Feel free to submit pull requests.
+Open an issue or fork this project and open a Pull Request.

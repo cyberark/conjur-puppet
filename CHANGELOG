@@ -1,5 +1,0 @@
-0.0.4
-- fixed another instance of the same bug
-
-0.0.2
-- fixed a bug in host identity manifest preventing usage of host factory

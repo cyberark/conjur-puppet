@@ -1,0 +1,62 @@
+version: "2"
+
+services:
+  puppet:
+    container_name: puppet
+    hostname: puppet
+    image: puppet/puppetserver
+    ports:
+      - 8140
+    volumes:
+      - ./code:/etc/puppetlabs/code/
+      - .:/etc/puppetlabs/code/environments/production/modules/conjur
+    # In some environments puppetdb host gets cert for puppetdb.local.
+    # Make sure the connection works either way.
+    environment:
+      - PUPPETDB_SERVER_URLS=https://puppetdb.local:8081,https://puppetdb:8081
+    links:
+      - puppetdb:puppetdb.local
+
+  puppetdbpostgres:
+    container_name: postgres
+    image: puppet/puppetdb-postgres
+    environment:
+      - POSTGRES_PASSWORD=puppetdb
+      - POSTGRES_USER=puppetdb
+      - POSTGRES_DB=puppetdb
+    expose:
+      - 5432
+
+  puppetdb:
+    container_name: puppetdb
+    hostname: puppetdb
+    image: puppet/puppetdb
+    ports:
+      - 8080
+      - 8081
+
+  puppetboard:
+    image: puppet/puppetboard
+    ports:
+      - 8000
+
+  puppetexplorer:
+    container_name: puppetexplorer
+    image: puppet/puppetexplorer
+    ports:
+      - 8080:80
+    read_only: true
+
+  conjur:
+    hostname: conjur
+    image: registry2.itci.conjur.net/conjur-appliance-cuke-master:4.9-stable
+    environment:
+      CONJUR_AUTHN_LOGIN: admin
+      CONJUR_AUTHN_API_KEY: secret
+      CONJUR_ACCOUNT: cucumber
+    volumes:
+      - .:/src
+    ports:
+      - 9443:443
+    security_opt:
+      - seccomp:unconfined
