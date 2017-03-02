@@ -11,3 +11,4 @@
 /Gemfile.lock
 /pkg
 /conjur.conf
+/tmp/
