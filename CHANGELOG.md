@@ -2,11 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0] (unreleased)
+## [1.0.0] 2017-03-02
 
-This release is a complete revamp of the module.
+v1.0.0 is a complete revamp of the module.
+This release includes several **breaking changes**.
 
-TODO add more details
+See [README.md](README.md) for complete details.
 
 ## [0.0.4] - 2015-05-11
 - fixed another instance of the same bug
