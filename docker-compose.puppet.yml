@@ -38,7 +38,7 @@ services:
   puppetboard:
     image: puppet/puppetboard
     ports:
-      - 8000
+      - 8081:8000
 
   puppetexplorer:
     container_name: puppetexplorer

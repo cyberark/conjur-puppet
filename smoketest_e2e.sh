@@ -30,6 +30,7 @@ convergeNode() {
   local node_name='node01'
 
   runInConjur bash -c "[ -f node.json ] || conjur host create --as-group security_admin $node_name 1> node.json 2>/dev/null"
+  runInConjur bash -c "conjur resource annotate host:$node_name puppet true"
   runInConjur bash -c "conjur layer hosts add inventory $node_name 2>/dev/null"
 
   local login="host/$node_name"
