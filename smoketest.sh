@@ -24,7 +24,7 @@ main() {
   setup_conjur
 
   for os in "${OSES[@]}"; do
-    for i in `seq 4`; do
+    for i in `seq 3`; do
       scenario$i $os
     done
   done
@@ -120,18 +120,6 @@ scenario3() {
   echo "Scenario 3: Fetch a secret on a node with existing Conjur identity"
   echo "OS: $os"
   echo "-----"
-
-  echo "TODO"
-}
-
-scenario4() {
-  local os="$1"
-
-  echo "-----"
-  echo "Scenario 4: Fetch a secret given a host name and API key,"
-  echo "        with preconfigured Conjur endpoint"
-  echo "OS: $os"
-  echo "-----"
   local node_name='puppet-node04'
 
   runInConjur bash -c "[ -f node4.json ] || conjur host create --as-group security_admin $node_name 1> node4.json 2>/dev/null"
@@ -141,19 +129,32 @@ scenario4() {
   local api_key=$(runInConjur jq -r '.api_key' node4.json | tr -d '\r')
   local conjur_container=$(docker-compose ps -q conjur)
 
+  TMPDIR="$PWD/tmp"
+  mkdir -p $TMPDIR
+
+  local config_file="$TMPDIR/conjur.conf"
+  local identity_file="$TMPDIR/conjur.identity"
+
   echo "
     appliance_url: https://conjur/api
     cert_file: /src/conjur.pem
-  " > conjur.conf
+  " > $config_file
+
+  echo "
+    machine conjur
+    login $login
+    password $api_key
+  " > $identity_file
 
   docker run --rm \
-    -e FACTER_AUTHN_LOGIN="$login" \
-    -e FACTER_AUTHN_API_KEY="$api_key" \
-    -v $PWD/conjur.conf:/etc/conjur.conf:ro \
+    -v $config_file:/etc/conjur.conf:ro \
+    -v $identity_file:/etc/conjur.identity:ro \
     -v $PWD:/src:ro -w /src \
     --link $conjur_container:conjur \
     puppet/puppet-agent-$os:latest \
-    apply --modulepath=spec/fixtures/modules test/scenario4.pp
+    apply --modulepath=spec/fixtures/modules test/scenario3.pp
+
+  rm -rf $TMPDIR
 }
 
 main "$@"

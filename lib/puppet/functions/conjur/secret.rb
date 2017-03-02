@@ -14,7 +14,7 @@ Puppet::Functions.create_function :'conjur::secret' do
 
   def secret client, id, token
     token = token.unwrap if token.respond_to? :unwrap
-    sensitive.new client.variable_value id, token: token
+    sensitive.new client.variable_value id, token
   end
 
   def with_defaults id

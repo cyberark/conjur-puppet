@@ -67,10 +67,17 @@ handle it correctly. If a resource you're using does not, file a bug.
 
 This module provides the `conjur::secret` function, described above, and the `conjur` class, which can be configured to establish Conjur host identity on the node running Puppet.
 
+### Pre-established host identity
+
+For best security properties, use [conjurize](https://developer.conjur.net/key_concepts/machine_identity.html) or a similar method to establish host identity before running Puppet to configure. This way Puppet master only ever handles a temporary access token instead of real, permanent Conjur credentials of the hosts it manages.
+
+If a host is so pre-configured, the settings and credentials are automatically obtained and used. In this case, all that is needed to use `conjur::secret` is a simple
+
+    include conjur
+
 ### Conjur host identity with Host Factory
 
-We recommend bootstrapping Conjur host identity using a [Host Factory](https://developer.conjur.net/reference/services/host_factory) token.
-Nodes inherit the permissions of the layer for which the Host Factory token was generated.
+If pre-establishing host identity is unfeasible, we instead recommend bootstrapping Conjur host identity using a [Host Factory](https://developer.conjur.net/reference/services/host_factory) token. Nodes inherit the permissions of the layer for which the Host Factory token was generated.
 
 To use a Host Factory token with this module, set variables `authn_login` and `host_factory_token`. Do not set the variable `authn_api_key` when using `host_factory_token`; it is not required. `authn_login` should have a `host/` prefix; the part after the slash will be used as the node’s name in Conjur.
 
@@ -113,7 +120,7 @@ For one-off hosts or test environments it may be preferable to create a host in 
 
 ### `::conjur`
 
-This class establishes Conjur host identity on the node so that secrets can be fetched from Conjur. Two files are written to the filesystem on the Puppet node when this class is used, conjur.conf and conjur.identity. These files allow the conjur::secret function to authenticate and authorize with Conjur.
+This class establishes Conjur host identity on the node so that secrets can be fetched from Conjur. The identity and Conjur endpoint configuration can be pre-configured on a host using `/etc/conjur.conf` and `/etc/conjur.identity` or provided as parameters. The identity can also be bootstrapped using a host factory token.
 
 #### Note
 
@@ -145,6 +152,25 @@ Must be `Sensitive` if supported.
 
 #### Example
 
+    # use a pre-existing Conjur configuration host identity
+    include conjur
+
+    # using an host factory token
+    class { conjur:
+      appliance_url => 'https://conjur.mycompany.com/api',
+      authn_login => 'host/redis001',
+      host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
+      ssl_certificate => file('conjur-ca.pem')
+    }
+
+    # same, but /etc/conjur.conf and certificate are already on a host
+    # (eg. baked into a base image)
+    class { conjur:
+      authn_login => 'host/redis001',
+      host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
+    }
+
+    # using an API key
     class { conjur:
       appliance_url => 'https://conjur.mycompany.com/api',
       authn_login => 'host/redis001',
