@@ -1,5 +1,7 @@
 # conjur
 
+[![Version](https://img.shields.io/puppetforge/v/conjur/conjur.svg)](https://forge.puppet.com/conjur/conjur)
+
 #### Table of Contents
 
 1. [Description](#description)
