@@ -1,10 +1,7 @@
 # Scenario 4: Fetch a secret given a host name and API key,
-# with preconfigured Conjur endpoint
+# with preconfigured Conjur identity
 
-class { 'conjur':
-  authn_login   => $facts['authn_login'],
-  authn_api_key => Sensitive($facts['authn_api_key']),
-}
+include conjur
 
 $secret = conjur::secret('inventory/db-password')
 
