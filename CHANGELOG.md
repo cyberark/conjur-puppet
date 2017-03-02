@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.0.0] 2017-03-02
+## [1.0.0] - 2017-03-02
 
 v1.0.0 is a complete revamp of the module.
 This release includes several **breaking changes**.
