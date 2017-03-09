@@ -13,7 +13,7 @@ class conjur (
 
   file { '/etc/conjur.conf':
     replace => false,
-    content => "appliance_url: $appliance_url\ncert_file: /etc/conjur.pem"
+    content => "appliance_url: ${appliance_url}\ncert_file: /etc/conjur.pem"
   }
 
   file { '/etc/conjur.pem':
