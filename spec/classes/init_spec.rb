@@ -6,13 +6,22 @@ describe 'conjur' do
       appliance_url: 'https://conjur.test/api',
       authn_login: 'host/test',
       authn_api_key: sensitive('the api key'),
+      ssl_certificate: 'the cert goes here'
     } end
 
-    it "obtains token from the server" do
+    before do
       allow_calling_puppet_function(:'conjur::token', :from_key) \
-          .with(include('uri' => 'https://conjur.test/api'), 'host/test', sensitive('the api key'))\
-          .and_return sensitive('the token')
+        .with(include('uri' => 'https://conjur.test/api/'), 'host/test', sensitive('the api key'))\
+        .and_return sensitive('the token')
+    end
+
+    it "obtains token from the server" do
       expect(lookupvar('conjur::token')).to eq sensitive('the token')
+    end
+
+    it "stores the configuration and identity on the node" do
+      expect(subject).to contain_file('/etc/conjur.conf')
+      expect(subject).to contain_file('/etc/conjur.identity')
     end
   end
 
@@ -34,14 +43,23 @@ describe 'conjur' do
       host_factory_token: sensitive('the host factory token'),
     } end
 
-    it "creates the host using the host factory" do
+    before do
       allow_calling_puppet_function(:'conjur::manufacture_host', :create) \
-          .with(include('uri' => 'https://conjur.test/api'), 'test', sensitive('the host factory token'))\
+          .with(include('uri' => 'https://conjur.test/api/'), 'test', sensitive('the host factory token'))\
           .and_return 'api_key' => sensitive('the api key')
       allow_calling_puppet_function(:'conjur::token', :from_key) \
-          .with(include('uri' => 'https://conjur.test/api'), 'host/test', sensitive('the api key'))\
+          .with(include('uri' => 'https://conjur.test/api/'), 'host/test', sensitive('the api key'))\
           .and_return sensitive('the token')
+    end
+
+    it "creates the host using the host factory" do
       expect(lookupvar('conjur::token')).to eq sensitive('the token')
+    end
+
+    it "stores the configuration and identity on the node" do
+      expect(subject).to contain_file('/etc/conjur.conf')
+      expect(subject).to contain_file('/etc/conjur.identity').with_content \
+          %r(machine https://conjur.test/api/authn\s+login host/test\s+password the api key)
     end
   end
 

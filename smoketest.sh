@@ -24,7 +24,7 @@ main() {
   setup_conjur
 
   for os in "${OSES[@]}"; do
-    for i in `seq 3`; do
+    for i in $(seq 4); do
       scenario$i $os
     done
   done
@@ -155,6 +155,39 @@ scenario3() {
     apply --modulepath=spec/fixtures/modules test/scenario3.pp
 
   rm -rf $TMPDIR
+}
+
+scenario4() {
+  local os="$1"
+  local tag=${2:-latest}
+
+  echo "-----"
+  echo "Scenario 4: Fetch a secret given a host name and Host Factory token, then use that identity"
+  echo "OS: $os"
+  echo "Tag: $tag"
+  echo "Manifest: $manifest"
+  echo "-----"
+  local node_name='puppet-node04'
+
+  runInConjur bash -c "[ -f hftoken.json ] || conjur hostfactory tokens create inventory 1> hftoken.json"
+
+  local login="host/$node_name"
+  local host_factory_token=$(runInConjur jq -r '.[].token' hftoken.json | tr -d '\r')
+  local conjur_container=$(docker-compose ps -q conjur)
+
+  docker run --rm -i \
+    -v $PWD:/src -w /src \
+    --link $conjur_container:conjur \
+    --entrypoint sh \
+    -e FACTER_AUTHN_LOGIN="$login" \
+    -e FACTER_HOST_FACTORY_TOKEN="$host_factory_token" \
+    -e FACTER_APPLIANCE_URL='https://conjur/api' \
+    -e FACTER_SSL_CERTIFICATE="$(cat conjur.pem)" \
+    puppet/puppet-agent-$os:$tag <<< \
+    "
+      puppet apply --modulepath=spec/fixtures/modules test/scenario2.pp &&
+      puppet apply --modulepath=spec/fixtures/modules test/scenario3.pp
+    "
 }
 
 main "$@"

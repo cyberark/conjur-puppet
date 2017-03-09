@@ -17,8 +17,9 @@ Puppet::Functions.create_function :'conjur::client' do
   end
 
   def new uri, cert
+    uri = URI (uri + '/')
     {
-      'uri' => uri,
+      'uri' => uri.to_s,
       'cert' => cert
     }.extend self.class.conjur_client_module
   end
@@ -26,7 +27,7 @@ Puppet::Functions.create_function :'conjur::client' do
   def self.conjur_client_module
     @conjur_client_module ||= Module.new do
       def uri
-        @uri ||= URI (self['uri'] + '/')
+        @uri ||= URI self['uri']
       end
 
       def cert
