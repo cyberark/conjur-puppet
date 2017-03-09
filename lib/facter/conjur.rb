@@ -21,9 +21,9 @@ Facter.add :conjur do
           when 'machine'
             found = value.start_with?(uri.to_s) || value == uri.host
           when 'login'
-            login = value
+            login = value if found
           when 'password'
-            password = value
+            password = value if found
           end
           return [login, password] if login && password
         end
