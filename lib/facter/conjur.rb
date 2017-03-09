@@ -21,9 +21,9 @@ Facter.add :conjur do
           when 'machine'
             found = value.start_with?(uri.to_s) || value == uri.host
           when 'login'
-            login = value
+            login = value if found
           when 'password'
-            password = value
+            password = value if found
           end
           return [login, password] if login && password
         end
@@ -89,8 +89,9 @@ Facter.add :conjur do
 
     begin
       netrc_path = config['netrc_path'] || '/etc/conjur.identity'
-      if url = config['appliance_url']
+      if (url = config['appliance_url']) && File.exist?(netrc_path)
         creds = credentials netrc_path, url
+        fail "credentials not found in #{netrc_path}" unless creds
         config['authn_login'] = creds.first
         token = authenticate url, config['ssl_certificate'], creds
         if standalone?

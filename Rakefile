@@ -19,10 +19,8 @@ task :validate do
   end
 end
 
-desc 'Lint module and metadata'
-task :lint do
-  sh 'metadata-json-lint --no-fail-on-warnings metadata.json'
-  sh 'puppet-lint --relative --no-autoloader_layout-check .'
+PuppetLint::RakeTask.new :lint do |config|
+  config.disable_checks = ['documentation', 'arrow_alignment']
 end
 
 desc 'Run unit tests'
