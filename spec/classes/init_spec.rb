@@ -58,8 +58,9 @@ describe 'conjur' do
 
     it "stores the configuration and identity on the node" do
       expect(subject).to contain_file('/etc/conjur.conf')
-      expect(subject).to contain_file('/etc/conjur.identity').with_content \
+      expect(subject).to contain_file('/etc/conjur.identity').with_content(
           %r(machine https://conjur.test/api/authn\s+login host/test\s+password the api key)
+      ).with_mode('0400')
     end
   end
 
