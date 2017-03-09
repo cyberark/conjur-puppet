@@ -120,13 +120,13 @@ scenario3() {
   echo "Scenario 3: Fetch a secret on a node with existing Conjur identity"
   echo "OS: $os"
   echo "-----"
-  local node_name='puppet-node04'
+  local node_name='puppet-node03'
 
-  runInConjur bash -c "[ -f node4.json ] || conjur host create --as-group security_admin $node_name 1> node4.json 2>/dev/null"
+  runInConjur bash -c "[ -f node3.json ] || conjur host create --as-group security_admin $node_name 1> node3.json 2>/dev/null"
   runInConjur bash -c "conjur layer hosts add inventory $node_name 2>/dev/null"
 
   local login="host/$node_name"
-  local api_key=$(runInConjur jq -r '.api_key' node4.json | tr -d '\r')
+  local api_key=$(runInConjur jq -r '.api_key' node3.json | tr -d '\r')
   local conjur_container=$(docker-compose ps -q conjur)
 
   TMPDIR="$PWD/tmp"
