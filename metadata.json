@@ -1,6 +1,6 @@
 {
   "name": "conjur-conjur",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "conjur",
   "summary": "Register nodes as Conjur hosts and securely use secrets stored in Conjur",
   "license": "Apache-2.0",
