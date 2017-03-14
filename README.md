@@ -16,7 +16,7 @@
 
 ## Description
 
-This is the official Puppet module for [Conjur](https://conjur.com), a robust identity and access management platform. This module simplifies the operations of establishing Conjur host identity and allows authorized Puppet nodes to fetch secrets from Conjur.
+This is the official Puppet module for [Conjur](https://www.conjur.com), a robust identity and access management platform. This module simplifies the operations of establishing Conjur host identity and allows authorized Puppet nodes to fetch secrets from Conjur.
 
 ## Setup
 
