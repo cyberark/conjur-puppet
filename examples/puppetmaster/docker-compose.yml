@@ -9,7 +9,7 @@ services:
       - 8140
     volumes:
       - ./code:/etc/puppetlabs/code/
-      - .:/etc/puppetlabs/code/environments/production/modules/conjur
+      - ../../.:/etc/puppetlabs/code/environments/production/modules/conjur
     # In some environments puppetdb host gets cert for puppetdb.local.
     # Make sure the connection works either way.
     environment:
@@ -49,13 +49,11 @@ services:
 
   conjur:
     hostname: conjur
-    image: registry2.itci.conjur.net/conjur-appliance-cuke-master:4.9-stable
+    image: registry.tld/conjur-appliance-cuke-master:4.9-stable
     environment:
       CONJUR_AUTHN_LOGIN: admin
       CONJUR_AUTHN_API_KEY: secret
       CONJUR_ACCOUNT: cucumber
-    volumes:
-      - .:/src
     ports:
       - 9443:443
     security_opt:
