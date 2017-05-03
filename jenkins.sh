@@ -9,8 +9,7 @@ docker run --rm \
   puppet-test \
   bash -c 'umask 0000; bundle --quiet && bundle exec rake test'
 
-#
-# echo "-----"
-# echo "Running smoke tests"
-# echo "-----"
-# ./smoketest.sh
+echo "-----"
+echo "Running smoke tests"
+echo "-----"
+pushd test &&  ./smoketest.sh && popd
