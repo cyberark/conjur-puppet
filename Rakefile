@@ -29,3 +29,12 @@ end
 PuppetLint::RakeTask.new :lint  # Not sure why I have to do this, but task gives no output otherwise
 
 task :test => [:syntax_validate, :lint, :spec]
+
+desc 'Release the module to Puppet Forge'
+task :release do
+  Rake::Task['module:clean'].invoke
+  sh 'puppet module build .'
+  sh 'ls -lh pkg/*tar.gz'
+  sh 'tar -tvf pkg/conjur-conjur*.tar.gz'
+  Rake::Task['module:push'].invoke
+end
