@@ -1,8 +1,8 @@
 # examples
 
-This directory holds executable examples that illustrate the different ways to use the Conjur Puppet module.
+This directory holds executable examples of the different ways to use the Conjur Puppet module.
 
-The module is flexible enough to accomodate several different workflows.
+The module is flexible enough to accommodate several different workflows (scenarios).
 The manifests in this directory illustrate different scenarios.
 [smoketest.sh](smoketest.sh) uses docker-compose to test these scenarios.
 
