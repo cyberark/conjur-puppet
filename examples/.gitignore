@@ -1,3 +1,4 @@
 conjur.pem
 node*.json
 hftoken.json
+tmp/

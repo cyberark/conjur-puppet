@@ -12,4 +12,4 @@ docker run --rm \
 echo "-----"
 echo "Running smoke tests"
 echo "-----"
-pushd test &&  ./smoketest.sh && popd
+pushd examples &&  ./smoketest.sh && popd

@@ -10,7 +10,7 @@ OSES=(
 
 finish() {
   if [ "$NOKILL" == "0" ]; then
-    rm -f conjur.pem node*.json
+    rm -f conjur.pem node*.json hftoken.json
     docker-compose down -v
   fi
 }
@@ -81,7 +81,7 @@ scenario1() {
     -v "$PWD/../:/src/conjur" -w /src/conjur \
     --link $conjur_container:conjur \
     puppet/puppet-agent-$os:latest \
-    apply --modulepath=/src test/scenario1.pp
+    apply --modulepath=/src examples/scenario1.pp
 }
 
 scenario2() {
@@ -111,7 +111,7 @@ scenario2() {
     -v "$PWD/../:/src/conjur" -w /src/conjur \
     --link $conjur_container:conjur \
     puppet/puppet-agent-$os:$tag \
-    apply --modulepath=/src test/$manifest
+    apply --modulepath=/src examples/$manifest
 }
 
 scenario3() {
@@ -138,7 +138,7 @@ scenario3() {
 
   echo "
     appliance_url: https://conjur/api
-    cert_file: /src/conjur/test/conjur.pem
+    cert_file: /src/conjur/examples/conjur.pem
   " > $config_file
 
   echo "
@@ -153,7 +153,7 @@ scenario3() {
     -v "$PWD/../:/src/conjur" -w /src/conjur \
     --link $conjur_container:conjur \
     puppet/puppet-agent-$os:latest \
-    apply --modulepath=/src test/scenario3.pp
+    apply --modulepath=/src examples/scenario3.pp
 
   rm -rf $TMPDIR
 }
@@ -186,8 +186,8 @@ scenario4() {
     -e FACTER_SSL_CERTIFICATE="$(cat conjur.pem)" \
     puppet/puppet-agent-$os:$tag <<< \
     "
-      puppet apply --modulepath=/src test/scenario2.pp &&
-      puppet apply --modulepath=/src test/scenario3.pp
+      puppet apply --modulepath=/src examples/scenario2.pp &&
+      puppet apply --modulepath=/src examples/scenario3.pp
     "
 }
 
