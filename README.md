@@ -6,7 +6,6 @@
 
 1. [Description](#description)
 1. [Setup - The basics of getting started with conjur](#setup)
-    * [What conjur affects](#what-conjur-affects)
     * [Setup requirements](#setup-requirements)
     * [Beginning with conjur](#beginning-with-conjur)
 1. [Usage - Configuration options and additional functionality](#usage)
@@ -28,16 +27,20 @@ This module requires that you have a Conjur endpoint available to the Puppet nod
 
 This module provides a `conjur::secret` function that can be used to retrieve secrets from Conjur. Given a Conjur variable identifier, `conjur::secret` uses the node’s Conjur identity to resolve and return the variable’s value.
 
-    $dbpass = conjur::secret('production/postgres/password')
+```puppet
+$dbpass = conjur::secret('production/postgres/password')
+```
 
 Hiera attributes can also be used to inform which secret should be fetched, depending on the node running the Conjur module. For example, if `hiera('domain')` returns `app1.example.com` and a Conjur variable named `domains/app1.example.com/ssl-cert` exists, the SSL certificate can be retrieved and written to a file like so:
 
-    file { '/etc/ssl/cert.pem':
-      content => conjur::secret("domains/%{hiera('domain')}/ssl-cert"),
-      ensure => file
-      show_diff => false # only required for Puppet < 4.6
-      # diff will automatically get redacted in 4.6 if content is Sensitive
-    }
+```puppet
+file { '/etc/ssl/cert.pem':
+  content   => conjur::secret("domains/%{hiera('domain')}/ssl-cert"),
+  ensure    => file
+  show_diff => false # only required for Puppet < 4.6
+  # diff will automatically get redacted in 4.6 if content is Sensitive
+}
+```
 
 #### Sensitive data type (Puppet >= 4.6)
 
@@ -54,16 +57,18 @@ In particular, you should not pass unwrapped secrets as resource parameters
 if you can avoid it. Many resource types support `Sensitive` data type and
 handle it correctly. If a resource you're using does not, file a bug.
 
-    $dbpass = conjur::secret('production/postgres/password')
+```puppet
+$dbpass = conjur::secret('production/postgres/password')
 
-    # In Puppet 4.6, use Sensitive data type to handle anything sensitive
-    $db_yaml = Sensitive("password: ${dbpass.unwrap}")
+# In Puppet 4.6, use Sensitive data type to handle anything sensitive
+$db_yaml = Sensitive("password: ${dbpass.unwrap}")
 
-    file { '/etc/someservice/db.yaml':
-      content => $db_yaml, # this correctly handles both Sensitive and String
-      ensure => file,
-      mode => '0600', # remember to limit reading
-    }
+file { '/etc/someservice/db.yaml':
+  content => $db_yaml, # this correctly handles both Sensitive and String
+  ensure  => file,
+  mode    => '0600', # remember to limit reading
+}
+```
 
 ## Usage
 
@@ -75,7 +80,9 @@ For best security properties, use [conjurize](https://developer.conjur.net/key_c
 
 If a host is so pre-configured, the settings and credentials are automatically obtained and used. In this case, all that is needed to use `conjur::secret` is a simple
 
-    include conjur
+```puppet
+include conjur
+```
 
 ### Conjur host identity with Host Factory
 
@@ -83,28 +90,34 @@ If pre-establishing host identity is unfeasible, we instead recommend bootstrapp
 
 To use a Host Factory token with this module, set variables `authn_login` and `host_factory_token`. Do not set the variable `authn_api_key` when using `host_factory_token`; it is not required. `authn_login` should have a `host/` prefix; the part after the slash will be used as the node’s name in Conjur.
 
-    class { conjur:
-      account         => 'mycompany',
-      appliance_url   => 'https://conjur.mycompany.com/api',
-      authn_login     => 'host/redis001',
-      host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
-      ssl_certificate => file('/etc/conjur.pem')
-    }
+```puppet
+class { conjur:
+  account            => 'mycompany',
+  appliance_url      => 'https://conjur.mycompany.com/api',
+  authn_login        => 'host/redis001',
+  host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
+  ssl_certificate    => file('/etc/conjur.pem')
+}
+```
 
 By default, all nodes using this Puppet module to bootstrap identity with host_factory_token will have the following annotation set:
 
-    puppet: true
+```yaml
+puppet: true
+```
 
 ### Conjur host identity with API key
 
 For one-off hosts or test environments it may be preferable to create a host in Conjur and then directly assign its Conjur identity in this module.
 
-    class { conjur:
-      appliance_url => 'https://conjur.mycompany.com/api',
-      authn_login => 'host/redis001',
-      authn_api_key => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
-      ssl_certificate => file('/conjur-ca.pem')
-    }
+```puppet
+class { conjur:
+  appliance_url   => 'https://conjur.mycompany.com/api',
+  authn_login     => 'host/redis001',
+  authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
+  ssl_certificate => file('/conjur-ca.pem')
+}
+```
 
 ## Reference
 
@@ -152,33 +165,35 @@ Simply use this parameter to set it. The host record will be created in Conjur.
 Raw (unencoded) Conjur token. This is usually only useful for testing.
 Must be `Sensitive` if supported.
 
-#### Example
+#### Examples
 
-    # use a pre-existing Conjur configuration host identity
-    include conjur
+```puppet
+# use a pre-existing Conjur configuration host identity
+include conjur
 
-    # using an host factory token
-    class { conjur:
-      appliance_url => 'https://conjur.mycompany.com/api',
-      authn_login => 'host/redis001',
-      host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
-      ssl_certificate => file('conjur-ca.pem')
-    }
+# using an host factory token
+class { conjur:
+  appliance_url      => 'https://conjur.mycompany.com/api',
+  authn_login        => 'host/redis001',
+  host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
+  ssl_certificate    => file('conjur-ca.pem')
+}
 
-    # same, but /etc/conjur.conf and certificate are already on a host
-    # (eg. baked into a base image)
-    class { conjur:
-      authn_login => 'host/redis001',
-      host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
-    }
+# same, but /etc/conjur.conf and certificate are already on a host
+# (eg. baked into a base image)
+class { conjur:
+  authn_login        => 'host/redis001',
+  host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
+}
 
-    # using an API key
-    class { conjur:
-      appliance_url => 'https://conjur.mycompany.com/api',
-      authn_login => 'host/redis001',
-      authn_api_key => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
-      ssl_certificate => file('conjur-ca.pem')
-    }
+# using an API key
+class { conjur:
+  appliance_url   => 'https://conjur.mycompany.com/api',
+  authn_login     => 'host/redis001',
+  authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
+  ssl_certificate => file('conjur-ca.pem')
+}
+```
 
 ### `conjur::secret`
 
@@ -193,7 +208,9 @@ The identifier of a Conjur variable to retrieve.
 
 #### Example
 
-    dbpass = conjur::secret('production/postgres/password')
+```puppet
+dbpass = conjur::secret('production/postgres/password')
+```
 
 ## Limitations
 
