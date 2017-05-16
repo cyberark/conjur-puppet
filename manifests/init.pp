@@ -39,11 +39,11 @@ class conjur (
     }
 
     file { '/etc/conjur.identity':
-      replace => false,
-      mode => '0400',
-      backup => false,
+      replace   => false,
+      mode      => '0400',
+      backup    => false,
       show_diff => false,
-      content => conjur::netrc($client[uri], $authn_login, $api_key)
+      content   => conjur::netrc($client[uri], $authn_login, $api_key)
     }
 
     $token = $client.conjur::token($authn_login, $api_key)
