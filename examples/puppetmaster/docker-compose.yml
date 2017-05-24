@@ -56,5 +56,7 @@ services:
       CONJUR_ACCOUNT: cucumber
     ports:
       - 9443:443
+    volumes:
+      - .:/src
     security_opt:
       - seccomp:unconfined

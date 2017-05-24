@@ -2,8 +2,6 @@
 
 # Launches a full Puppet stack and converges a node against it
 
-COMPOSE_FILE='docker-compose.puppet.yml'
-
 main() {
   startServices
   setupConjur
@@ -11,18 +9,18 @@ main() {
 }
 
 runInConjur() {
-  docker-compose -f $COMPOSE_FILE exec -T conjur "$@"
+  docker-compose exec -T conjur "$@"
 }
 
 startServices() {
-  docker-compose -f $COMPOSE_FILE up -d
+  docker-compose up -d
 }
 
 setupConjur() {
   runInConjur /opt/conjur/evoke/bin/wait_for_conjur > /dev/null
   runInConjur cat /opt/conjur/etc/ssl/ca.pem > conjur.pem
 
-  runInConjur conjur policy load --as-group security_admin /src/test/policy.yml
+  runInConjur conjur policy load --as-group security_admin /src/policy.yml
   runInConjur conjur variable values add inventory/db-password D7JGyGmCbDNCKYxgvpzz  # load the secret's value
 }
 
@@ -55,7 +53,7 @@ convergeNode() {
   " > $identity_file
 
   docker run --rm \
-    --net puppet_default \
+    --net puppetmaster_default \
     -e 'FACTER_CONJUR_SMOKE_TEST=true' \
     -v $config_file:/etc/conjur.conf:ro \
     -v $identity_file:/etc/conjur.identity:ro \
