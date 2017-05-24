@@ -2,6 +2,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.0] - 2017-05-24
+- Cleanup and refactor of project files. No behavior change.
+
 ## [1.0.1] - 2017-03-10
 - Store Conjur configuration and identity on the node, if not present.
 
