@@ -2,6 +2,7 @@
 /puppet/
 /puppetdb/
 /puppetdb-postgres/
+/spec/output/
 
 # dev stuff
 /conjur.pem

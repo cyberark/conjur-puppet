@@ -1,0 +1,6 @@
+version: '2'
+services:
+  test-runner:
+    build: .
+    volumes:
+      - ./spec/output:/conjur/spec/output
