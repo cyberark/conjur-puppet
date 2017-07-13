@@ -9,7 +9,7 @@ OSES=(
 )
 
 finish() {
-  if [ "$NOKILL" == "0" ]; then
+  if [ "$NOKILL" != "0" ]; then
     rm -f conjur.pem node*.json hftoken.json
     docker-compose down -v
   fi
