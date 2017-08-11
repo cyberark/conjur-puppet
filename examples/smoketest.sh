@@ -8,10 +8,30 @@ OSES=(
   debian
 )
 
+COMPOSE_PROJECT_NAME=puppet-smoketest
+
+# make sure on Jenkins if something goes wrong the
+# build doesn't fail because of leftovers from previous tries
+if [ -n "$BUILD_NUMBER" ]; then
+   COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME-$BUILD_NUMBER
+fi
+
+export COMPOSE_PROJECT_NAME
+
+ALL_OK=1
+
 finish() {
   if [ "$NOKILL" != "0" ]; then
     rm -f conjur.pem node*.json hftoken.json
     docker-compose down -v
+  fi
+  test $ALL_OK -eq 1 || exit 1
+}
+
+try() {
+  if ! ("$@"); then
+    echo "\"$*\" failed"
+    ALL_OK=0
   fi
 }
 
@@ -26,7 +46,7 @@ main() {
 
   for os in "${OSES[@]}"; do
     for i in $(seq 4); do
-      scenario$i $os
+      try scenario$i $os
     done
   done
 
@@ -36,7 +56,7 @@ main() {
   echo "-----"
 
   # tag 1.5.2 of the puppet-agent-ubuntu image has Puppet 4.5 installed
-  scenario2 ubuntu 1.5.2 scenario2.5.pp
+  try scenario2 ubuntu 1.5.2 scenario2.5.pp
 }
 
 runInConjur() {
