@@ -5,13 +5,14 @@
 #### Table of Contents
 
 1. [Description](#description)
-1. [Setup - The basics of getting started with conjur](#setup)
+2. [Setup - The basics of getting started with conjur](#setup)
     * [Setup requirements](#setup-requirements)
     * [Beginning with conjur](#beginning-with-conjur)
-1. [Usage - Configuration options and additional functionality](#usage)
-1. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
-1. [Limitations - OS compatibility, etc.](#limitations)
-1. [Development - Guide for contributing to the module](#development)
+3. [Usage - Configuration options and additional functionality](#usage)
+4. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
+5. [Limitations - OS compatibility, etc.](#limitations)
+6. [Development - Guide for contributing to the module](#development)
+7. [Support - "Puppet Supported" details and contact info](#support)
 
 ## Description
 
@@ -219,3 +220,14 @@ See metadata.json for supported platforms
 ## Development
 
 Open an issue or fork this project and open a Pull Request.
+
+## Support
+
+Please note, that this is a “Partner Supported” module, which means that  technical customer support for this module
+is solely provided by Conjur.
+
+Puppet does not provide support for any Partner Supported modules. Technical support for the Conjur module can be reached via these channels: 
+ 
+Formal requests: https://conjur.zendesk.com
+ 
+Informal requests: support@conjur.com 
