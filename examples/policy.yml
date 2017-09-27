@@ -12,3 +12,11 @@
       role: [ !layer ]
       resource: *db-password
       privilege: [ read, execute ]
+
+    - &hosts
+      - !host /puppet-node01
+      - !host /puppet-node03
+
+    - !grant
+      role: !layer
+      member: *hosts

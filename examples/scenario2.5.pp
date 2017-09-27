@@ -5,7 +5,8 @@ class { 'conjur':
   appliance_url      => $facts['appliance_url'],
   authn_login        => $facts['authn_login'],
   host_factory_token => $facts['host_factory_token'],
-  ssl_certificate    => $facts['ssl_certificate']
+  ssl_certificate    => $facts['ssl_certificate'],
+  version => Integer($facts['conjur_version']),
 }
 
 $secret = conjur::secret('inventory/db-password')

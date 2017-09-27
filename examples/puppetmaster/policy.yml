@@ -12,3 +12,12 @@
       role: [ !layer ]
       resource: *db-password
       privilege: [ read, execute ]
+
+    - !host &h
+      id: /node01
+      annotations:
+        puppet: true
+
+    - !grant
+      role: !layer
+      member: [ *h ]

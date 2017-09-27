@@ -9,30 +9,31 @@ main() {
 }
 
 runInConjur() {
-  docker-compose exec -T conjur "$@"
+  docker-compose exec -T cli "$@"
 }
 
 startServices() {
   docker-compose up -d
 }
 
-setupConjur() {
-  runInConjur /opt/conjur/evoke/bin/wait_for_conjur > /dev/null
-  runInConjur cat /opt/conjur/etc/ssl/ca.pem > conjur.pem
+wait_for_conjur() {
+  docker-compose exec -T conjur bash -c 'while ! curl -sI localhost > /dev/null; do sleep 1; done'
+}
 
-  runInConjur conjur policy load --as-group security_admin /src/policy.yml
+setupConjur() {
+  wait_for_conjur
+  docker-compose exec -T conjur conjurctl account create cucumber || :
+  docker-compose exec -T conjur conjurctl policy load cucumber /src/policy.yml
+  docker-compose up -d cli
+  docker-compose exec -T cli conjur authn login -psecret admin
   runInConjur conjur variable values add inventory/db-password D7JGyGmCbDNCKYxgvpzz  # load the secret's value
 }
 
 convergeNode() {
   local node_name='node01'
 
-  runInConjur bash -c "[ -f node.json ] || conjur host create --as-group security_admin $node_name 1> node.json 2>/dev/null"
-  runInConjur bash -c "conjur resource annotate host:$node_name puppet true"
-  runInConjur bash -c "conjur layer hosts add inventory $node_name 2>/dev/null"
-
   local login="host/$node_name"
-  local api_key=$(runInConjur jq -r '.api_key' node.json | tr -d '\r')
+  local api_key=$(runInConjur conjur host rotate_api_key -h $node_name)
 
   # write the conjurize files to a tempdir so they can be mounted
   TMPDIR="$PWD/tmp"
@@ -42,8 +43,9 @@ convergeNode() {
   local identity_file="$TMPDIR/conjur.identity"
 
   echo "
-    appliance_url: https://conjur/api
-    cert_file: /src/conjur.pem
+    appliance_url: http://conjur/
+    version: 5
+    account: cucumber
   " > $config_file
 
   echo "
