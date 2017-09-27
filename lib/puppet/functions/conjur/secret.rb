@@ -4,6 +4,7 @@ Puppet::Functions.create_function :'conjur::secret' do
 
   dispatch :secret do
     param 'Conjur::Endpoint', :client
+    param 'String', :account
     param 'String', :variable_id
     param sensitive.name.split("::").last, :token
   end
@@ -12,13 +13,13 @@ Puppet::Functions.create_function :'conjur::secret' do
     param 'String', :variable_id
   end
 
-  def secret client, id, token
+  def secret client, account, id, token
     token = token.unwrap if token.respond_to? :unwrap
-    sensitive.new client.variable_value id, token
+    sensitive.new client.variable_value account, id, token
   end
 
   def with_defaults id
     scope = closure_scope
-    secret scope['conjur::client'], id, scope['conjur::token']
+    secret scope['conjur::client'], scope['conjur::authn_account'], id, scope['conjur::token']
   end
 end

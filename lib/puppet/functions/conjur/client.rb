@@ -6,20 +6,23 @@ require 'net/http'
 Puppet::Functions.create_function :'conjur::client' do
   dispatch :new do
     param 'String', :uri
+    param 'Integer', :version
     param 'String', :cert
   end
 
   dispatch :new do
     param 'String', :uri
+    param 'Integer', :version
     # Apparently puppet dispatcher doesn't consider nil as 'param missing' and
     # passes an undef instead. Allow that here, even if it's mostly used in tests.
     optional_param 'Undef', :cert
   end
 
-  def new uri, cert
+  def new uri, version, cert
     uri = URI (uri + '/')
     {
       'uri' => uri.to_s,
+      'version' => version,
       'cert' => cert
     }.extend self.class.conjur_client_module
   end
@@ -45,8 +48,19 @@ Puppet::Functions.create_function :'conjur::client' do
         end
       end
 
-      def authenticate login, key
-        post "authn/users/" + URI.encode_www_form_component(login) + "/authenticate", key
+      def version
+        @version ||= self['version']
+      end
+
+      def authenticate login, key, account = nil
+        case version
+        when 4
+          account = 'users'
+        when 5
+          raise ArgumentError, "account is required for v5" unless account
+        end
+        post ['authn', account, login, 'authenticate'].
+            map(&URI.method(:encode_www_form_component)).join('/'), key
       end
 
       def post path, content, encoded_token = nil
@@ -64,9 +78,15 @@ Puppet::Functions.create_function :'conjur::client' do
             cert_store: cert_store
       end
 
-      def variable_value id, token = nil
-        get "variables/" + URI.encode_www_form_component(id) + "/value",
-            Base64.urlsafe_encode64(token)
+      def variable_value account, id, token = nil
+        path = case version
+          when 4
+            ['variables', URI.encode_www_form_component(id), 'value']
+          when 5
+            raise ArgumentError, "account is required for v5" unless account
+            ['secrets', account, 'variable', id]
+          end.join('/')
+        get path, Base64.urlsafe_encode64(token)
       end
 
       def get path, encoded_token = nil

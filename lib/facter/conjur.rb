@@ -39,14 +39,29 @@ Facter.add :conjur do
     end
 
     def cert_store certs
-      OpenSSL::X509::Store.new.tap do |store|
+      certs && OpenSSL::X509::Store.new.tap do |store|
         find_certs(certs).each &store.method(:add_cert)
       end
     end
 
+    def authentication_path login
+      account = case version
+        when 5
+          config['account'] or raise ArgumentError, "account is required for v5"
+        else
+          'users'
+        end
+      ['authn', account, login, 'authenticate'].
+          map(&URI.method(:encode_www_form_component)).join('/')
+    end
+
+    def version
+      @version ||= config['version'] || 4
+    end
+
     def authenticate url, certs, credentials
       login, key = credentials
-      uri = URI(url + '/') + "authn/users/#{URI.encode_www_form_component(login)}/authenticate"
+      uri = URI(url + '/') + authentication_path(login)
       Net::HTTP.start uri.host, uri.port, use_ssl: uri.scheme == 'https', cert_store: cert_store(certs) do |http|
         response = http.post uri.request_uri, key
         raise Net::HTTPError.new response.message, response unless response.code =~ /^2/
@@ -77,7 +92,7 @@ Facter.add :conjur do
 
     def encrypt_for_master data
       cipher_name = 'AES-256-CBC'
-      cipher = OpenSSL::Cipher::Cipher.new(cipher_name)
+      cipher = OpenSSL::Cipher.new(cipher_name)
       encryptor = OpenSSL::PKCS7.encrypt([ puppet_certificate ], data, cipher, OpenSSL::PKCS7::BINARY)
       encryptor.to_pem
     end

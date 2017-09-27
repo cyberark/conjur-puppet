@@ -16,7 +16,7 @@
 
 ## Description
 
-This is the official Puppet module for [Conjur](https://www.conjur.com), a robust identity and access management platform. This module simplifies the operations of establishing Conjur host identity and allows authorized Puppet nodes to fetch secrets from Conjur.
+This is the official Puppet module for [Conjur](https://www.conjur.org), a robust identity and access management platform. This module simplifies the operations of establishing Conjur host identity and allows authorized Puppet nodes to fetch secrets from Conjur.
 
 ## Setup
 
@@ -145,8 +145,11 @@ To pass a normal string, you need to wrap it using `Sensitive("example")`.
 
 #### Parameters
 
+##### `account`
+Conjur account authority name. Optional for v4, required for v5.
+
 ##### `appliance_url`
-A Conjur endpoint with trailing `/api`.
+A Conjur endpoint (with trailing `/api` for v4).
 
 ##### `authn_login`
 User username or host name (prefixed with `host/`).
@@ -165,6 +168,10 @@ Simply use this parameter to set it. The host record will be created in Conjur.
 ##### `authn_token`
 Raw (unencoded) Conjur token. This is usually only useful for testing.
 Must be `Sensitive` if supported.
+
+##### `version`
+Conjur API version. Defaults to 4.
+Set to 5 if you're using the open source Conjur edition.
 
 #### Examples
 

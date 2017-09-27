@@ -1,12 +1,12 @@
 {
   "name": "conjur-conjur",
-  "version": "1.1.0",
-  "author": "conjur",
+  "version": "1.2.0",
+  "author": "CyberArk",
   "summary": "Register nodes as Conjur hosts and securely use secrets stored in Conjur",
   "license": "Apache-2.0",
-  "source": "https://github.com/conjur/puppet",
-  "project_page": "https://github.com/conjur/puppet",
-  "issues_url": "https://github.com/conjur/puppet/issues",
+  "source": "https://github.com/cyberark/conjur-puppet",
+  "project_page": "https://github.com/cyberark/conjur-puppet",
+  "issues_url": "https://github.com/cyberark/conjur-puppet/issues",
   "dependencies": [
   ],
   "operatingsystem_support": [
