@@ -15,7 +15,7 @@ class conjur::config_files inherits conjur {
       $conjur::appliance_url,
       $conjur::version,
       $conjur::authn_account,
-      $conjur::cert_file
+      $cert_file
     )
   }
 
