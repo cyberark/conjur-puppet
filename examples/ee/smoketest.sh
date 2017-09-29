@@ -8,7 +8,7 @@ OSES=(
   debian
 )
 
-COMPOSE_PROJECT_NAME=puppet-smoketest
+COMPOSE_PROJECT_NAME=puppet-v4-smoketest
 
 # make sure on Jenkins if something goes wrong the
 # build doesn't fail because of leftovers from previous tries
