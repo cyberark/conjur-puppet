@@ -1,9 +1,9 @@
 class conjur::config_files inherits conjur {
-  if $ssl_certificate {
+  if $conjur::ssl_certificate {
     $cert_file = '/etc/conjur.pem'
     file { $cert_file:
       replace => false,
-      content => $ssl_certificate
+      content => $conjur::ssl_certificate
     }
   } else {
     $cert_file = undef
@@ -11,17 +11,22 @@ class conjur::config_files inherits conjur {
 
   file { '/etc/conjur.conf':
     replace => false,
-    content => conjur::config_yml($appliance_url, $version, $authn_account, $cert_file)
+    content => conjur::config_yml(
+      $conjur::appliance_url,
+      $conjur::version,
+      $conjur::authn_account,
+      $conjur::cert_file
+    )
   }
 
 
-  if $api_key {
+  if $conjur::api_key {
     file { '/etc/conjur.identity':
       replace   => false,
       mode      => '0400',
       backup    => false,
       show_diff => false,
-      content   => conjur::netrc($client[uri], $authn_login, $api_key)
+      content   => conjur::netrc($conjur::client[uri], $conjur::authn_login, $conjur::api_key)
     }
   }
 }

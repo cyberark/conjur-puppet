@@ -6,7 +6,7 @@ class { 'conjur':
   authn_login        => $facts['authn_login'],
   host_factory_token => $facts['host_factory_token'],
   ssl_certificate    => $facts['ssl_certificate'],
-  version => Integer($facts['conjur_version']),
+  version            => Integer($facts['conjur_version']),
 }
 
 $secret = conjur::secret('inventory/db-password')
