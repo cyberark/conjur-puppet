@@ -17,15 +17,17 @@ pipeline {
     }
 
     stage('Run smoke tests') {
-      steps {
-        parallel: (
-          "Conjur v5": {
+      parallel {
+        stage('Test with Conjur v5') {
+          steps {
             dir('examples') {
               sh './smoketest.sh'
             }
-          },
+          }
+        }
 
-          "Conjur Enterprise v4": {
+        stage('Test with Conjur Enterprise v4') {
+          steps {
             dir('examples/ee') {
               sh './smoketest.sh'
             }
