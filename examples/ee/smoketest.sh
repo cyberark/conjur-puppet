@@ -98,10 +98,10 @@ scenario1() {
     -e FACTER_AUTHN_API_KEY="$api_key" \
     -e FACTER_APPLIANCE_URL='https://conjur/api' \
     -e FACTER_SSL_CERTIFICATE="$(cat conjur.pem)" \
-    -v "$PWD/../:/src/conjur" -w /src/conjur \
+    -v "$PWD/../../:/src/conjur" -w /src/conjur \
     --link $conjur_container:conjur \
     puppet/puppet-agent-$os:latest \
-    apply --modulepath=/src examples/scenario1.pp
+    apply --modulepath=/src examples/ee/scenario1.pp
 }
 
 scenario2() {
@@ -128,10 +128,10 @@ scenario2() {
     -e FACTER_HOST_FACTORY_TOKEN="$host_factory_token" \
     -e FACTER_APPLIANCE_URL='https://conjur/api' \
     -e FACTER_SSL_CERTIFICATE="$(cat conjur.pem)" \
-    -v "$PWD/../:/src/conjur" -w /src/conjur \
+    -v "$PWD/../../:/src/conjur" -w /src/conjur \
     --link $conjur_container:conjur \
     puppet/puppet-agent-$os:$tag \
-    apply --modulepath=/src examples/$manifest
+    apply --modulepath=/src examples/ee/$manifest
 }
 
 scenario3() {
@@ -158,7 +158,7 @@ scenario3() {
 
   echo "
     appliance_url: https://conjur/api
-    cert_file: /src/conjur/examples/conjur.pem
+    cert_file: /src/conjur/examples/ee/conjur.pem
   " > $config_file
 
   echo "
@@ -170,10 +170,10 @@ scenario3() {
   docker run --rm \
     -v $config_file:/etc/conjur.conf:ro \
     -v $identity_file:/etc/conjur.identity:ro \
-    -v "$PWD/../:/src/conjur" -w /src/conjur \
+    -v "$PWD/../../:/src/conjur" -w /src/conjur \
     --link $conjur_container:conjur \
     puppet/puppet-agent-$os:latest \
-    apply --modulepath=/src examples/scenario3.pp
+    apply --modulepath=/src examples/ee/scenario3.pp
 
   rm -rf $TMPDIR
 }
@@ -197,7 +197,7 @@ scenario4() {
   local conjur_container=$(docker-compose ps -q conjur)
 
   docker run --rm -i \
-    -v "$PWD/../:/src/conjur" -w /src/conjur \
+    -v "$PWD/../../:/src/conjur" -w /src/conjur \
     --link $conjur_container:conjur \
     --entrypoint sh \
     -e FACTER_AUTHN_LOGIN="$login" \
@@ -206,8 +206,8 @@ scenario4() {
     -e FACTER_SSL_CERTIFICATE="$(cat conjur.pem)" \
     puppet/puppet-agent-$os:$tag <<< \
     "
-      puppet apply --modulepath=/src examples/scenario2.pp &&
-      puppet apply --modulepath=/src examples/scenario3.pp
+      puppet apply --modulepath=/src examples/ee/scenario2.pp &&
+      puppet apply --modulepath=/src examples/ee/scenario3.pp
     "
 }
 
