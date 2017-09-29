@@ -1,7 +1,7 @@
 version: '2'
 services:
   conjur:
-    image: cyberark/conjur:0.1.0-stable
+    image: cyberark/conjur
     environment:
       CONJUR_ADMIN_PASSWORD: secret
       DATABASE_URL: postgres://postgres@db
