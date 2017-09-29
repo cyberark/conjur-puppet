@@ -18,6 +18,7 @@ if [ -n "$BUILD_NUMBER" ]; then
 fi
 
 export COMPOSE_PROJECT_NAME
+NETNAME=${COMPOSE_PROJECT_NAME//-/}_default
 
 ALL_OK=1
 
@@ -108,7 +109,7 @@ scenario1() {
   local api_key=$(runInConjur conjur host rotate_api_key -h $node_name)
 
   docker run --rm \
-    --network puppetsmoketest_default \
+    --network $NETNAME \
     -e FACTER_AUTHN_LOGIN="$login" \
     -e FACTER_CONJUR_VERSION=5 \
     -e FACTER_AUTHN_API_KEY="$api_key" \
@@ -137,7 +138,7 @@ scenario2() {
   local host_factory_token=$(runInConjur jq -r '.[].token' hftoken.json | tr -d '\r')
 
   docker run --rm \
-    --network puppetsmoketest_default \
+    --network $NETNAME \
     -e FACTER_AUTHN_LOGIN="$login" \
     -e FACTER_CONJUR_VERSION=5 \
     -e FACTER_HOST_FACTORY_TOKEN="$host_factory_token" \
@@ -178,7 +179,7 @@ scenario3() {
   " > $identity_file
 
   docker run --rm \
-    --network puppetsmoketest_default \
+    --network $NETNAME \
     -v $config_file:/etc/conjur.conf:ro \
     -v $identity_file:/etc/conjur.identity:ro \
     -v "$PWD/../:/src/conjur" -w /src/conjur \
@@ -206,7 +207,7 @@ scenario4() {
   local host_factory_token=$(runInConjur jq -r '.[].token' hftoken.json | tr -d '\r')
 
   docker run --rm -i \
-    --network puppetsmoketest_default \
+    --network $NETNAME \
     -v "$PWD/../:/src/conjur" -w /src/conjur \
     --entrypoint sh \
     -e FACTER_AUTHN_LOGIN="$login" \

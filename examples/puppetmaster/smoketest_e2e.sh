@@ -2,6 +2,17 @@
 
 # Launches a full Puppet stack and converges a node against it
 
+COMPOSE_PROJECT_NAME=puppet-smoketeste2e
+
+# make sure on Jenkins if something goes wrong the
+# build doesn't fail because of leftovers from previous tries
+if [ -n "$BUILD_NUMBER" ]; then
+   COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME-$BUILD_NUMBER
+fi
+
+export COMPOSE_PROJECT_NAME
+NETNAME=${COMPOSE_PROJECT_NAME//-/}_default
+
 main() {
   startServices
   setupConjur
@@ -55,7 +66,7 @@ convergeNode() {
   " > $identity_file
 
   docker run --rm \
-    --net puppetmaster_default \
+    --net $NETNAME \
     -e 'FACTER_CONJUR_SMOKE_TEST=true' \
     -v $config_file:/etc/conjur.conf:ro \
     -v $identity_file:/etc/conjur.identity:ro \
