@@ -1,0 +1,14 @@
+version: '2'
+services:
+  conjur:
+    image: registry.tld/conjur-appliance-cuke-master:4.9-stable
+    environment:
+      CONJUR_AUTHN_LOGIN: admin
+      CONJUR_AUTHN_API_KEY: secret
+      CONJUR_ACCOUNT: cucumber
+    volumes:
+      - .:/src
+    working_dir: /src
+    security_opt:
+      - seccomp:unconfined
+    network_mode: bridge

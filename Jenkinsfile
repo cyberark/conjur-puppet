@@ -16,10 +16,20 @@ pipeline {
       }
     }
 
-    stage('Run EC2 smoke test') {
+    stage('Run smoke tests') {
       steps {
-        dir('examples') {
-          sh './smoketest.sh'
+        parallel: (
+          "Conjur v5": {
+            dir('examples') {
+              sh './smoketest.sh'
+            }
+          },
+
+          "Conjur Enterprise v4": {
+            dir('examples/ee') {
+              sh './smoketest.sh'
+            }
+          }
         }
       }
     }
