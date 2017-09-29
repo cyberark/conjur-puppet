@@ -8,6 +8,7 @@ RSpec.configure do |config|
   config.mock_with :rspec do |mocks|
     mocks.verify_doubled_constant_names = true
   end
+  config.default_facts = { conjur_version: 4 }
 end
 
 shared_context "mock conjur connection", conjur: :mock do
@@ -32,6 +33,11 @@ shared_context "mock conjur connection", conjur: :mock do
 
   def expect_authorized_conjur_get path
     expect(conjur_connection).to receive(:get).with path,
+      'Authorization' => 'Token token="dGhlIHRva2Vu"' # "the token" b64d
+  end
+
+  def allow_authorized_conjur_get path
+    allow(conjur_connection).to receive(:get).with path,
       'Authorization' => 'Token token="dGhlIHRva2Vu"' # "the token" b64d
   end
 end

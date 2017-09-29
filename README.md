@@ -16,7 +16,7 @@
 
 ## Description
 
-This is the official Puppet module for [Conjur](https://www.conjur.com), a robust identity and access management platform. This module simplifies the operations of establishing Conjur host identity and allows authorized Puppet nodes to fetch secrets from Conjur.
+This is the official Puppet module for [Conjur](https://www.conjur.org), a robust identity and access management platform. This module simplifies the operations of establishing Conjur host identity and allows authorized Puppet nodes to fetch secrets from Conjur.
 
 ## Setup
 
@@ -94,10 +94,11 @@ To use a Host Factory token with this module, set variables `authn_login` and `h
 ```puppet
 class { conjur:
   account            => 'mycompany',
-  appliance_url      => 'https://conjur.mycompany.com/api',
+  appliance_url      => 'https://conjur.mycompany.com/',
   authn_login        => 'host/redis001',
   host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
   ssl_certificate    => file('/etc/conjur.pem')
+  version            => 5,
 }
 ```
 
@@ -113,10 +114,30 @@ For one-off hosts or test environments it may be preferable to create a host in 
 
 ```puppet
 class { conjur:
-  appliance_url   => 'https://conjur.mycompany.com/api',
+  appliance_url   => 'https://conjur.mycompany.com/',
   authn_login     => 'host/redis001',
   authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
   ssl_certificate => file('/conjur-ca.pem')
+  version         => 5,
+}
+```
+
+### Conjur Enterprise Edition
+
+If you're using this module to establish host identity with Conjur Enterprise
+Edition version 4.x, you should use `version => 4`. (This is also the default
+for backwards compatibility reasons.) Also note that the `appliance_url` will
+need to include the `/api/` suffix.
+
+For example:
+
+```puppet
+class { conjur:
+  appliance_url      => 'https://conjur.mycompany.com/api/',
+  authn_login        => 'host/redis001',
+  host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
+  ssl_certificate    => file('/etc/conjur.pem')
+  version            => 4,
 }
 ```
 
@@ -145,8 +166,11 @@ To pass a normal string, you need to wrap it using `Sensitive("example")`.
 
 #### Parameters
 
+##### `account`
+Conjur account authority name. Optional for v4, required for v5.
+
 ##### `appliance_url`
-A Conjur endpoint with trailing `/api`.
+A Conjur endpoint (with trailing `/api` for v4).
 
 ##### `authn_login`
 User username or host name (prefixed with `host/`).
@@ -166,6 +190,11 @@ Simply use this parameter to set it. The host record will be created in Conjur.
 Raw (unencoded) Conjur token. This is usually only useful for testing.
 Must be `Sensitive` if supported.
 
+##### `version`
+Conjur API version. Should be set to 5 unless you're using Conjur Enterprise 4.x.
+
+Defaults to 4 for backward compatibility reasons. (This will change in a future version.)
+
 #### Examples
 
 ```puppet
@@ -174,10 +203,11 @@ include conjur
 
 # using an host factory token
 class { conjur:
-  appliance_url      => 'https://conjur.mycompany.com/api',
+  appliance_url      => 'https://conjur.mycompany.com/',
   authn_login        => 'host/redis001',
   host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
   ssl_certificate    => file('conjur-ca.pem')
+  version            => 5,
 }
 
 # same, but /etc/conjur.conf and certificate are already on a host
@@ -189,10 +219,12 @@ class { conjur:
 
 # using an API key
 class { conjur:
-  appliance_url   => 'https://conjur.mycompany.com/api',
+  account         => 'mycompany',
+  appliance_url   => 'https://conjur.mycompany.com/',
   authn_login     => 'host/redis001',
   authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
   ssl_certificate => file('conjur-ca.pem')
+  version         => 5,
 }
 ```
 

@@ -1,6 +1,7 @@
 class conjur::params {
   $conjur_config = $facts['conjur'].lest ||{{}}
 
+  $account = $conjur_config['account']
   $appliance_url = $conjur_config['appliance_url']
   $authn_login = $conjur_config['authn_login']
   $authn_api_key = undef
@@ -11,4 +12,5 @@ class conjur::params {
     $token.conjur::decrypt
   }}
   $host_factory_token = undef
+  $version = $conjur_config['version'].lest || { 4 }
 }

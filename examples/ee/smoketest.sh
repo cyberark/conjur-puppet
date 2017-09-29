@@ -1,7 +1,6 @@
 #!/bin/bash -e
 
 NOKILL=${NOKILL:-"0"}
-# FAIL_FAST=yes # to quit on first error
 
 OSES=(
   ubuntu
@@ -9,7 +8,7 @@ OSES=(
   debian
 )
 
-COMPOSE_PROJECT_NAME=puppet-smoketest
+COMPOSE_PROJECT_NAME=puppet-v4-smoketest
 
 # make sure on Jenkins if something goes wrong the
 # build doesn't fail because of leftovers from previous tries
@@ -18,7 +17,6 @@ if [ -n "$BUILD_NUMBER" ]; then
 fi
 
 export COMPOSE_PROJECT_NAME
-NETNAME=${COMPOSE_PROJECT_NAME//-/}_default
 
 ALL_OK=1
 
@@ -30,18 +28,12 @@ finish() {
   test $ALL_OK -eq 1 || exit 1
 }
 
-if [ -z "$FAIL_FAST" ]; then
-  try() {
-    if ! ("$@"); then
-      echo "\"$*\" failed"
-      ALL_OK=0
-    fi
-  }
-else
-  try() {
-    "$@"
-  }
-fi
+try() {
+  if ! ("$@"); then
+    echo "\"$*\" failed"
+    ALL_OK=0
+  fi
+}
 
 trap finish EXIT
 
@@ -68,31 +60,20 @@ main() {
 }
 
 runInConjur() {
-  docker-compose exec -T cli "$@"
-}
-
-wait_for_conjur() {
-  docker-compose exec -T conjur bash -c 'while ! curl -sI localhost > /dev/null; do sleep 1; done'
-}
-
-init_conjur() {
-  docker-compose exec -T conjur conjurctl account create cucumber || :
-  docker-compose exec -T conjur conjurctl policy load cucumber /src/policy.yml
-  docker-compose up -d cli
-  docker-compose exec -T cli conjur authn login -psecret admin
+  docker-compose exec -T conjur "$@"
 }
 
 setup_conjur() {
   echo "Starting Conjur"
   echo "-----"
   docker-compose up -d conjur
+  runInConjur /opt/conjur/evoke/bin/wait_for_conjur > /dev/null
+  runInConjur cat /opt/conjur/etc/ssl/ca.pem > conjur.pem
 
   echo "-----"
   echo "Loading Conjur policy"
   echo "-----"
-
-  wait_for_conjur
-  init_conjur
+  runInConjur conjur policy load --as-group security_admin policy.yml
   runInConjur conjur variable values add inventory/db-password D7JGyGmCbDNCKYxgvpzz  # load the secret's value
 }
 
@@ -105,18 +86,22 @@ scenario1() {
   echo "-----"
   local node_name='puppet-node01'
 
+  runInConjur bash -c "[ -f node.json ] || conjur host create --as-group security_admin $node_name 1> node.json 2>/dev/null"
+  runInConjur bash -c "conjur layer hosts add inventory $node_name 2>/dev/null"
+
   local login="host/$node_name"
-  local api_key=$(runInConjur conjur host rotate_api_key -h $node_name)
+  local api_key=$(runInConjur jq -r '.api_key' node.json | tr -d '\r')
+  local conjur_container=$(docker-compose ps -q conjur)
 
   docker run --rm \
-    --network $NETNAME \
     -e FACTER_AUTHN_LOGIN="$login" \
-    -e FACTER_CONJUR_VERSION=5 \
     -e FACTER_AUTHN_API_KEY="$api_key" \
-    -e FACTER_APPLIANCE_URL='http://conjur/' \
-    -v "$PWD/../:/src/conjur" -w /src/conjur \
+    -e FACTER_APPLIANCE_URL='https://conjur/api' \
+    -e FACTER_SSL_CERTIFICATE="$(cat conjur.pem)" \
+    -v "$PWD/../../:/src/conjur" -w /src/conjur \
+    --link $conjur_container:conjur \
     puppet/puppet-agent-$os:latest \
-    apply --modulepath=/src examples/scenario1.pp
+    apply --modulepath=/src examples/ee/scenario1.pp
 }
 
 scenario2() {
@@ -136,16 +121,17 @@ scenario2() {
 
   local login="host/$node_name"
   local host_factory_token=$(runInConjur jq -r '.[].token' hftoken.json | tr -d '\r')
+  local conjur_container=$(docker-compose ps -q conjur)
 
   docker run --rm \
-    --network $NETNAME \
     -e FACTER_AUTHN_LOGIN="$login" \
-    -e FACTER_CONJUR_VERSION=5 \
     -e FACTER_HOST_FACTORY_TOKEN="$host_factory_token" \
-    -e FACTER_APPLIANCE_URL='http://conjur/' \
-    -v "$PWD/../:/src/conjur" -w /src/conjur \
+    -e FACTER_APPLIANCE_URL='https://conjur/api' \
+    -e FACTER_SSL_CERTIFICATE="$(cat conjur.pem)" \
+    -v "$PWD/../../:/src/conjur" -w /src/conjur \
+    --link $conjur_container:conjur \
     puppet/puppet-agent-$os:$tag \
-    apply --modulepath=/src examples/$manifest
+    apply --modulepath=/src examples/ee/$manifest
 }
 
 scenario3() {
@@ -157,8 +143,12 @@ scenario3() {
   echo "-----"
   local node_name='puppet-node03'
 
+  runInConjur bash -c "[ -f node3.json ] || conjur host create --as-group security_admin $node_name 1> node3.json 2>/dev/null"
+  runInConjur bash -c "conjur layer hosts add inventory $node_name 2>/dev/null"
+
   local login="host/$node_name"
-  local api_key=$(runInConjur conjur host rotate_api_key -h $node_name)
+  local api_key=$(runInConjur jq -r '.api_key' node3.json | tr -d '\r')
+  local conjur_container=$(docker-compose ps -q conjur)
 
   TMPDIR="$PWD/tmp"
   mkdir -p $TMPDIR
@@ -167,9 +157,8 @@ scenario3() {
   local identity_file="$TMPDIR/conjur.identity"
 
   echo "
-    appliance_url: http://conjur/
-    version: 5
-    account: cucumber
+    appliance_url: https://conjur/api
+    cert_file: /src/conjur/examples/ee/conjur.pem
   " > $config_file
 
   echo "
@@ -179,12 +168,12 @@ scenario3() {
   " > $identity_file
 
   docker run --rm \
-    --network $NETNAME \
     -v $config_file:/etc/conjur.conf:ro \
     -v $identity_file:/etc/conjur.identity:ro \
-    -v "$PWD/../:/src/conjur" -w /src/conjur \
+    -v "$PWD/../../:/src/conjur" -w /src/conjur \
+    --link $conjur_container:conjur \
     puppet/puppet-agent-$os:latest \
-    apply --modulepath=/src examples/scenario3.pp
+    apply --modulepath=/src examples/ee/scenario3.pp
 
   rm -rf $TMPDIR
 }
@@ -205,19 +194,20 @@ scenario4() {
 
   local login="host/$node_name"
   local host_factory_token=$(runInConjur jq -r '.[].token' hftoken.json | tr -d '\r')
+  local conjur_container=$(docker-compose ps -q conjur)
 
   docker run --rm -i \
-    --network $NETNAME \
-    -v "$PWD/../:/src/conjur" -w /src/conjur \
+    -v "$PWD/../../:/src/conjur" -w /src/conjur \
+    --link $conjur_container:conjur \
     --entrypoint sh \
     -e FACTER_AUTHN_LOGIN="$login" \
-    -e FACTER_CONJUR_VERSION=5 \
     -e FACTER_HOST_FACTORY_TOKEN="$host_factory_token" \
-    -e FACTER_APPLIANCE_URL='http://conjur/' \
+    -e FACTER_APPLIANCE_URL='https://conjur/api' \
+    -e FACTER_SSL_CERTIFICATE="$(cat conjur.pem)" \
     puppet/puppet-agent-$os:$tag <<< \
     "
-      puppet apply --modulepath=/src examples/scenario2.pp &&
-      puppet apply --modulepath=/src examples/scenario3.pp
+      puppet apply --modulepath=/src examples/ee/scenario2.pp &&
+      puppet apply --modulepath=/src examples/ee/scenario3.pp
     "
 }
 

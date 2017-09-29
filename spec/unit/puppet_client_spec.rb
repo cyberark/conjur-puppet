@@ -5,7 +5,8 @@ require 'webrick/https'
 describe 'conjur::client' do
   include RSpec::Puppet::FunctionExampleGroup
   let(:pem) { cert && cert.to_pem }
-  subject(:client) { find_function.execute uri, pem }
+  let(:version) { 4 }
+  subject(:client) { find_function.execute uri, version, pem }
 
   context "with certificate for localhost" do
     it "when the cert checks out it connects correctly" do
@@ -108,14 +109,32 @@ xLU2GspOjINCXuUBvSamEanZpWTYjHshPqVZKlsoV1A=
     end
 
     describe '#authenticate' do
+      shared_examples "authentication" do
         it "exchanges API key for token" do
-    allow(conjur_connection).to receive(:post) \
-        .with('/api/authn/users/alice/authenticate', 'the api key', nil) \
-        .and_return http_ok 'the token'
+          expect(subject.authenticate 'alice', 'the api key', 'test')\
+              .to eq 'the token'
+        end
+      end
 
-    expect(subject.authenticate 'alice', 'the api key')\
-        .to eq 'the token'
-  end
+      context "with Conjur v4 API" do
+        before do
+          allow(conjur_connection).to receive(:post) \
+              .with('/api/authn/users/alice/authenticate', 'the api key', nil) \
+              .and_return http_ok 'the token'
+        end
+
+        include_examples "authentication"
+      end
+
+      context "with Conjur v5 API" do
+        before do
+          allow(conjur_connection).to receive(:post) \
+              .with('/api/authn/test/alice/authenticate', 'the api key', nil) \
+              .and_return http_ok 'the token'
+        end
+        let(:version) { 5 }
+        include_examples "authentication"
+      end
 
   it "correctly encodes username" do
     allow(conjur_connection).to receive(:post) \
