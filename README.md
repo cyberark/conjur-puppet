@@ -1,6 +1,6 @@
 # conjur
 
-[![Version](https://img.shields.io/puppetforge/v/conjur/conjur.svg)](https://forge.puppet.com/conjur/conjur)
+[![Version](https://img.shields.io/puppetforge/v/cyberark/conjur.svg)](https://forge.puppet.com/cyberark/conjur)
 
 #### Table of Contents
 
@@ -258,8 +258,8 @@ Open an issue or fork this project and open a Pull Request.
 Please note, that this is a "Partner Supported" module, which means that  technical customer support for this module
 is solely provided by Conjur.
 
-Puppet does not provide support for any Partner Supported modules. Technical support for the Conjur module can be reached via these channels: 
- 
+Puppet does not provide support for any Partner Supported modules. Technical support for the Conjur module can be reached via these channels:
+
 Formal requests: https://conjur.zendesk.com
- 
-Informal requests: support@conjur.com 
+
+Informal requests: support@conjur.com

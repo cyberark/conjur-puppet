@@ -36,6 +36,6 @@ task :release do
   Rake::Task['module:clean'].invoke
   sh 'puppet module build .'
   sh 'ls -lh pkg/*tar.gz'
-  sh 'tar -tvf pkg/conjur-conjur*.tar.gz'
+  sh 'tar -tvf pkg/cyberark-conjur*.tar.gz'
   Rake::Task['module:push'].invoke
 end

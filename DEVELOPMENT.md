@@ -13,7 +13,7 @@ To release a new version of the module to the Puppet Forge:
 3. Commit and push these changes.
 4. Create a tag and push it (`git tag <VERSION> && git push --tags`)
 5. Run [release.sh](release.sh).
-6. View the updated module: https://forge.puppet.com/conjur/conjur
+6. View the updated module: https://forge.puppet.com/cyberark/conjur
 
 You must be connected to conjurops v2 to fetch the secrets used to publish.
 

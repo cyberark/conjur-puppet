@@ -1,5 +1,5 @@
 {
-  "name": "conjur-conjur",
+  "name": "cyberark-conjur",
   "version": "1.2.0",
   "author": "CyberArk",
   "summary": "Register nodes as Conjur hosts and securely use secrets stored in Conjur",
