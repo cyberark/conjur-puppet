@@ -89,6 +89,8 @@ include conjur
 
 If pre-establishing host identity is unfeasible, we instead recommend bootstrapping Conjur host identity using a [Host Factory](https://developer.conjur.net/reference/services/host_factory) token. Nodes inherit the permissions of the layer for which the Host Factory token was generated.
 
+Note when used in this manner, the host factory token will only be used on the initial Puppet run, to establish identity which is then stored on the host. Subsequent runs will use that for Conjur authentication on the node side (at the time of collecting facts) and only provide the Puppet master with a temporary token to fetch the secrets with.
+
 To use a Host Factory token with this module, set variables `authn_login` and `host_factory_token`. Do not set the variable `authn_api_key` when using `host_factory_token`; it is not required. `authn_login` should have a `host/` prefix; the part after the slash will be used as the node’s name in Conjur.
 
 ```puppet
@@ -155,9 +157,15 @@ class { conjur:
 
 * [`conjur::secret`](#conjursecret): Retrieve a secret using the host identity.
 
+### Facts
+
+#### Private facts
+
+* [`conjur`](#conjur-fact): Reports current node configuration and identity.
+
 ### `::conjur` class
 
-This class establishes Conjur host identity on the node so that secrets can be fetched from Conjur. The identity and Conjur endpoint configuration can be pre-configured on a host using `/etc/conjur.conf` and `/etc/conjur.identity` or provided as parameters. The identity can also be bootstrapped using a host factory token.
+This class establishes Conjur host identity on the node so that secrets can be fetched from Conjur. The identity and Conjur endpoint configuration can be pre-configured on a host using `/etc/conjur.conf` and `/etc/conjur.identity` (by the way of [`conjur` fact](#conjur-fact)) or provided as parameters. The identity can also be bootstrapped using a host factory token.
 
 #### Note
 
@@ -244,6 +252,15 @@ The identifier of a Conjur variable to retrieve.
 ```puppet
 dbpass = conjur::secret('production/postgres/password')
 ```
+
+### `conjur` fact
+
+This internal, structured fact is used to inform the master of the current node Conjur configuration and identity.
+
+Preestablishing configuration and identity is the recommended way of using this module, for example by pre-baking the configuration into a base image and bootstrapping the identity using an orchestration solution (see [Usage](#usage) section). If used this way, the Puppet master only has access to the 8-minute bearer token issued for the host and never handles long-term credentials.
+
+- If the node is preconfigured with Conjur settings, they're reported in this fact and they're used as defaults by the `::conjur` class.
+- If additionally the host has a Conjur identity pre-configured (eg. API key in `/etc/conjur.identity`), node uses that to authenticate to Conjur. It gets back the standard temporary Conjur token which is encrypted with the Puppet master public TLS key and reported in this fact. This ensures only the master (with the corresponding private key) can decrypt and use it.
 
 ## Limitations
 
