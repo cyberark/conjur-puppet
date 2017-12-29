@@ -37,7 +37,7 @@ Hiera attributes can also be used to inform which secret should be fetched, depe
 ```puppet
 file { '/etc/ssl/cert.pem':
   content   => conjur::secret("domains/%{hiera('domain')}/ssl-cert"),
-  ensure    => file
+  ensure    => file,
   show_diff => false # only required for Puppet < 4.6
   # diff will automatically get redacted in 4.6 if content is Sensitive
 }
@@ -67,7 +67,7 @@ $db_yaml = Sensitive("password: ${dbpass.unwrap}")
 file { '/etc/someservice/db.yaml':
   content => $db_yaml, # this correctly handles both Sensitive and String
   ensure  => file,
-  mode    => '0600', # remember to limit reading
+  mode    => '0600' # remember to limit reading
 }
 ```
 
@@ -97,8 +97,8 @@ class { conjur:
   appliance_url      => 'https://conjur.mycompany.com/',
   authn_login        => 'host/redis001',
   host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
-  ssl_certificate    => file('/etc/conjur.pem')
-  version            => 5,
+  ssl_certificate    => file('/etc/conjur.pem'),
+  version            => 5
 }
 ```
 
@@ -117,8 +117,8 @@ class { conjur:
   appliance_url   => 'https://conjur.mycompany.com/',
   authn_login     => 'host/redis001',
   authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
-  ssl_certificate => file('/conjur-ca.pem')
-  version         => 5,
+  ssl_certificate => file('/conjur-ca.pem'),
+  version         => 5
 }
 ```
 
@@ -136,8 +136,8 @@ class { conjur:
   appliance_url      => 'https://conjur.mycompany.com/api/',
   authn_login        => 'host/redis001',
   host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
-  ssl_certificate    => file('/etc/conjur.pem')
-  version            => 4,
+  ssl_certificate    => file('/etc/conjur.pem'),
+  version            => 4
 }
 ```
 
@@ -147,15 +147,15 @@ class { conjur:
 
 #### Public Classes
 
-* `::conjur`
+* [`::conjur`](#conjur-class): Establishes a host identity on the node.
 
 ### Functions
 
 #### Public Functions
 
-* `conjur::secret`
+* [`conjur::secret`](#conjursecret): Retrieve a secret using the host identity.
 
-### `::conjur`
+### `::conjur` class
 
 This class establishes Conjur host identity on the node so that secrets can be fetched from Conjur. The identity and Conjur endpoint configuration can be pre-configured on a host using `/etc/conjur.conf` and `/etc/conjur.identity` or provided as parameters. The identity can also be bootstrapped using a host factory token.
 
@@ -206,15 +206,15 @@ class { conjur:
   appliance_url      => 'https://conjur.mycompany.com/',
   authn_login        => 'host/redis001',
   host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
-  ssl_certificate    => file('conjur-ca.pem')
-  version            => 5,
+  ssl_certificate    => file('conjur-ca.pem'),
+  version            => 5
 }
 
 # same, but /etc/conjur.conf and certificate are already on a host
 # (eg. baked into a base image)
 class { conjur:
   authn_login        => 'host/redis001',
-  host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
+  host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3')
 }
 
 # using an API key
@@ -223,8 +223,8 @@ class { conjur:
   appliance_url   => 'https://conjur.mycompany.com/',
   authn_login     => 'host/redis001',
   authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
-  ssl_certificate => file('conjur-ca.pem')
-  version         => 5,
+  ssl_certificate => file('conjur-ca.pem'),
+  version         => 5
 }
 ```
 
