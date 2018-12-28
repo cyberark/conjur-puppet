@@ -36,8 +36,8 @@ Hiera attributes can also be used to inform which secret should be fetched, depe
 
 ```puppet
 file { '/etc/ssl/cert.pem':
-  content   => conjur::secret("domains/%{hiera('domain')}/ssl-cert"),
   ensure    => file,
+  content   => conjur::secret("domains/%{hiera('domain')}/ssl-cert"),
   show_diff => false # only required for Puppet < 4.6
   # diff will automatically get redacted in 4.6 if content is Sensitive
 }
@@ -65,8 +65,8 @@ $dbpass = conjur::secret('production/postgres/password')
 $db_yaml = Sensitive("password: ${dbpass.unwrap}")
 
 file { '/etc/someservice/db.yaml':
-  content => $db_yaml, # this correctly handles both Sensitive and String
   ensure  => file,
+  content => $db_yaml, # this correctly handles both Sensitive and String
   mode    => '0600' # remember to limit reading
 }
 ```
@@ -94,7 +94,7 @@ Note when used in this manner, the host factory token will only be used on the i
 To use a Host Factory token with this module, set variables `authn_login` and `host_factory_token`. Do not set the variable `authn_api_key` when using `host_factory_token`; it is not required. `authn_login` should have a `host/` prefix; the part after the slash will be used as the node’s name in Conjur.
 
 ```puppet
-class { conjur:
+class { 'conjur':
   account            => 'mycompany',
   appliance_url      => 'https://conjur.mycompany.com/',
   authn_login        => 'host/redis001',
@@ -115,7 +115,7 @@ puppet: true
 For one-off hosts or test environments it may be preferable to create a host in Conjur and then directly assign its Conjur identity in this module.
 
 ```puppet
-class { conjur:
+class { 'conjur':
   appliance_url   => 'https://conjur.mycompany.com/',
   authn_login     => 'host/redis001',
   authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
@@ -134,7 +134,7 @@ need to include the `/api/` suffix.
 For example:
 
 ```puppet
-class { conjur:
+class { 'conjur':
   appliance_url      => 'https://conjur.mycompany.com/api/',
   authn_login        => 'host/redis001',
   host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
@@ -149,7 +149,7 @@ class { conjur:
 
 #### Public Classes
 
-* [`::conjur`](#conjur-class): Establishes a host identity on the node.
+* [`conjur`](#conjur-class): Establishes a host identity on the node.
 
 ### Functions
 
@@ -163,7 +163,7 @@ class { conjur:
 
 * [`conjur`](#conjur-fact): Reports current node configuration and identity.
 
-### `::conjur` class
+### `conjur` class
 
 This class establishes Conjur host identity on the node so that secrets can be fetched from Conjur. The identity and Conjur endpoint configuration can be pre-configured on a host using `/etc/conjur.conf` and `/etc/conjur.identity` (by the way of [`conjur` fact](#conjur-fact)) or provided as parameters. The identity can also be bootstrapped using a host factory token.
 
@@ -210,7 +210,7 @@ Defaults to 4 for backward compatibility reasons. (This will change in a future 
 include conjur
 
 # using an host factory token
-class { conjur:
+class { 'conjur':
   appliance_url      => 'https://conjur.mycompany.com/',
   authn_login        => 'host/redis001',
   host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
@@ -220,13 +220,13 @@ class { conjur:
 
 # same, but /etc/conjur.conf and certificate are already on a host
 # (eg. baked into a base image)
-class { conjur:
+class { 'conjur':
   authn_login        => 'host/redis001',
   host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3')
 }
 
 # using an API key
-class { conjur:
+class { 'conjur':
   account         => 'mycompany',
   appliance_url   => 'https://conjur.mycompany.com/',
   authn_login     => 'host/redis001',
