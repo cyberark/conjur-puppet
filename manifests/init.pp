@@ -24,7 +24,7 @@ class conjur (
       $api_key = $authn_api_key
       $authn_account = $account
     } elsif $host_factory_token {
-      $authn_login_parts = $authn_login.split('/',2)
+      $authn_login_parts = split($authn_login, '/', 2)
       if $authn_login_parts[0] != 'host' {
         fail('can only create hosts with host factory')
       }
