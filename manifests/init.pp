@@ -24,12 +24,12 @@ class conjur (
       $api_key = $authn_api_key
       $authn_account = $account
     } elsif $host_factory_token {
-      $authn_login_parts = split($authn_login, '/', 2)
-      if $authn_login_parts[0] != 'host' {
+      $authn_login_parts = split($authn_login, '(.*?)\/(.*)')
+      if $authn_login_parts[1] != 'host' {
         fail('can only create hosts with host factory')
       }
       $host_details = $client.conjur::manufacture_host(
-        $authn_login_parts[1], $host_factory_token
+        $authn_login_parts[2], $host_factory_token
       )
       $api_key = $host_details[api_key]
       $authn_account = split($host_details[id], ':')[0]
