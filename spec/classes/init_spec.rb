@@ -46,8 +46,8 @@ describe 'conjur' do
 
     before do
       allow_calling_puppet_function(:'conjur::manufacture_host', :create) \
-          .with(include('uri' => 'https://conjur.test/api/'), 'test', sensitive('the host factory token'))\
-          .and_return 'api_key' => sensitive('the api key'), 'id' => 'testacct:host:test'
+          .with(include('uri' => 'https://conjur.test/api/'), 'prod/test', sensitive('the host factory token'))\
+          .and_return 'api_key' => sensitive('the api key'), 'id' => 'testacct:host:prod/test'
       allow_calling_puppet_function(:'conjur::token', :from_key) \
           .with(include('uri' => 'https://conjur.test/api/'), 'host/prod/test', sensitive('the api key'), 'testacct')\
           .and_return sensitive('the token')
