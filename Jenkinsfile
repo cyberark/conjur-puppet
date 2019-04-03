@@ -7,6 +7,10 @@ pipeline {
     timestamps()
   }
 
+  triggers {
+    cron(getDailyCronString())
+  }
+
   stages {
     stage('Lint and unit test module') {
       steps {
