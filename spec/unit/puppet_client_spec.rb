@@ -29,7 +29,7 @@ describe 'conjur::client' do
     context "when the certificate doesn't verify" do
       let(:cert_hostname) { 'not.localhost' }
       it "it errors out" do
-        expect { client.get 'test' }.to raise_error /does not match/
+        expect { client.get 'test' }.to raise_error /verify failed/
       end
     end
 

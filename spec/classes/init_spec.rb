@@ -17,7 +17,7 @@ describe 'conjur' do
     end
 
     it "obtains token from the server" do
-      expect(lookupvar('conjur::token')).to eq sensitive('the token')
+      expect(lookupvar('conjur::token')).to eq 'the token'
     end
 
     it "stores the configuration and identity on the node" do
@@ -54,14 +54,17 @@ describe 'conjur' do
     end
 
     it "creates the host using the host factory" do
-      expect(lookupvar('conjur::token')).to eq sensitive('the token')
+      expect(lookupvar('conjur::token')).to eq 'the token'
     end
 
     it "stores the configuration and identity on the node" do
       expect(subject).to contain_file('/etc/conjur.conf')
-      expect(subject).to contain_file('/etc/conjur.identity').with_content(
-          %r(machine https://conjur.test/api/authn\s+login host/test\s+password the api key)
-      ).with_mode('0400')
+      expect(subject).to contain_file('/etc/conjur.identity')
+
+      # rspec-puppet parameter matchers don't work with some puppet versions
+      expect(catalogue.resource('File[/etc/conjur.identity]').parameters).to include \
+        content: matching(%r(machine https://conjur.test/api/authn\s+login host/test\s+password the api key)),
+        mode: '0400'
     end
   end
 

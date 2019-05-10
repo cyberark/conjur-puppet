@@ -60,12 +60,12 @@ module RSpec::Puppet
       # So instead synthesize a catalog by adding a dummy file
       # with the contents equal to variable to look up, then get lookup
       # its content in the catalog. Slow and convoluted, but seems to work.
-      catalog = build_catalog 'test', facts_hash('conjur'), nil, """
+      catalog = build_catalog 'test', facts_hash('conjur'), nil, nil, """
         #{test_manifest(:class)}
         file { var:
           content => $#{name}
         }
-      """, nil
+      """, nil, {}
       catalog.resource('File[var]')[:content]
     end
   end
