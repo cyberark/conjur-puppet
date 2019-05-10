@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe 'conjur' do
+  let(:site_pp_str) {} # can't find a better way to skip fixture manifests
+
   context 'with api key' do
     let(:params) do {
       appliance_url: 'https://conjur.test/api',
