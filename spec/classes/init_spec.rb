@@ -70,15 +70,14 @@ describe 'conjur' do
 
   context 'with preconfigured node' do
     let(:params) {{ authn_token: sensitive('just so it does not fail') }}
-    let(:facts) {{ conjur: Facter.fact(:conjur).value }}
-
-    include FsMock
-    before do
-      mock_file '/etc/conjur.conf', """
-        appliance_url: https://conjur.fact.test/api
-        cert_file: /etc/conjur.pem
-      """
-      mock_file '/etc/conjur.pem', "not really a cert"
+    let(:facts) do
+      {
+        conjur: {
+          appliance_url: "https://conjur.fact.test/api",
+          cert_file: "/etc/conjur.pem",
+          ssl_certificate: "not really a cert"
+        }
+      }
     end
 
     it "uses settings from facts" do
