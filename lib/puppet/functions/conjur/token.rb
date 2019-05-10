@@ -3,7 +3,7 @@ Puppet::Functions.create_function :'conjur::token' do
     param 'Conjur::Endpoint', :client
     param 'String[1]', :login
     param 'Sensitive[String[1]]', :key
-    optional_param 'String', :account
+    optional_param 'Optional[String]', :account
     return_type 'Sensitive'
   end
 
