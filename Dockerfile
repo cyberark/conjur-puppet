@@ -1,4 +1,4 @@
-FROM ruby:2.2
+FROM ruby:2.4
 MAINTAINER Conjur Inc
 
 RUN mkdir /conjur
