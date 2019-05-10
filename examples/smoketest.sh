@@ -57,14 +57,6 @@ main() {
       try scenario$i $os
     done
   done
-
-  echo "-----"
-  echo "Running Scenario 2 against Puppet agent 4.5"
-  echo "This is required because the 'Sensitive' type is only supported in Puppet >= 4.6"
-  echo "-----"
-
-  # tag 1.5.2 of the puppet-agent-ubuntu image has Puppet 4.5 installed
-  try scenario2 ubuntu 1.5.2 scenario2.5.pp
 }
 
 runInConjur() {

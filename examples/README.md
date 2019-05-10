@@ -24,5 +24,4 @@ Reference material:
 
 - [scenario1.pp](scenario1.pp) - Fetch a secret given a host name and API key.
 - [scenario2.pp](scenario2.pp) - Fetch a secret given a host name and Host Factory token.
-- [scenario2.5.pp](scenario2.5.pp) - Fetch a secret given a host name and Host Factory token, Puppet <=4.5.
 - [scenario3.pp](scenario3.pp) - Fetch a secret with preconfigured Conjur identity.
