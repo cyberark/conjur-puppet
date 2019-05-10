@@ -9,16 +9,16 @@ OSES=(
   debian
 )
 
-COMPOSE_PROJECT_NAME=puppet-smoketest
+COMPOSE_PROJECT_NAME=puppet_smoketest
 
 # make sure on Jenkins if something goes wrong the
 # build doesn't fail because of leftovers from previous tries
 if [ -n "$BUILD_NUMBER" ]; then
-   COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME-$BUILD_NUMBER
+   COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}_${BUILD_NUMBER}
 fi
 
 export COMPOSE_PROJECT_NAME
-NETNAME=${COMPOSE_PROJECT_NAME//-/}_default
+NETNAME=${COMPOSE_PROJECT_NAME}_default
 
 ALL_OK=1
 
