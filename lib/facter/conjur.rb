@@ -59,9 +59,16 @@ Facter.add :conjur do
       @version ||= config['version'] || 4
     end
 
+    # A common mistake is to omit the trailing slash in an uri.
+    # Conjur API is always at a directory level, so make sure it's right.
+    def directory_uri url
+      url += '/' unless url.end_with? '/'
+      URI url
+    end
+
     def authenticate url, certs, credentials
       login, key = credentials
-      uri = URI(url + '/') + authentication_path(login)
+      uri = directory_uri(url) + authentication_path(login)
       Net::HTTP.start uri.host, uri.port, use_ssl: uri.scheme == 'https', cert_store: cert_store(certs) do |http|
         response = http.post uri.request_uri, key
         raise Net::HTTPError.new response.message, response unless response.code =~ /^2/

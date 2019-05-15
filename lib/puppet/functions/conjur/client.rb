@@ -19,9 +19,11 @@ Puppet::Functions.create_function :'conjur::client' do
   end
 
   def new uri, version, cert
-    uri = URI (uri + '/')
+    # A common mistake is to omit the trailing slash in the Conjur address.
+    # Conjur API is always at a directory level, so make sure it's right.
+    uri += '/' unless uri.end_with? '/'
     {
-      'uri' => uri.to_s,
+      'uri' => uri,
       'version' => version,
       'cert' => cert
     }.extend self.class.conjur_client_module
