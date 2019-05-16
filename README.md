@@ -43,12 +43,12 @@ file { '/etc/ssl/cert.pem':
 }
 ```
 
-#### Sensitive data type (Puppet >= 4.6)
+#### Sensitive data type
 
-Note in Puppet >= 4.6 `conjur::secret` returns values wrapped
-in a `Sensitive` data type. In some contexts, such as string interpolation,
-it might cause surprising results (interpolating to `Sensitive [value redacted]`).
-This is intentional, as it makes it harder to accidentally mishandle secrets.
+Note `conjur::secret` returns values wrapped in a `Sensitive` data type. In
+some contexts, such as string interpolation, it might cause surprising results
+(interpolating to `Sensitive [value redacted]`). This is intentional, as it
+makes it more difficult to accidentally mishandle secrets.
 
 To use a secret as a string, you need to explicitly request it using the
 `unwrap` function; the result of the processing should be again wrapped in
@@ -61,7 +61,7 @@ handle it correctly. If a resource you're using does not, file a bug.
 ```puppet
 $dbpass = conjur::secret('production/postgres/password')
 
-# In Puppet 4.6, use Sensitive data type to handle anything sensitive
+# Use Sensitive data type to handle anything sensitive
 $db_yaml = Sensitive("password: ${dbpass.unwrap}")
 
 file { '/etc/someservice/db.yaml':
@@ -169,7 +169,7 @@ This class establishes Conjur host identity on the node so that secrets can be f
 
 #### Note
 
-Several parameters (ie. API keys) are of `Sensitive` data type on Puppet >= 4.6.
+Several parameters (ie. API keys) are of `Sensitive` data type.
 To pass a normal string, you need to wrap it using `Sensitive("example")`.
 
 #### Parameters
@@ -178,7 +178,7 @@ To pass a normal string, you need to wrap it using `Sensitive("example")`.
 Conjur account authority name. Optional for v4, required for v5.
 
 ##### `appliance_url`
-A Conjur endpoint (with trailing `/api` for v4).
+A Conjur endpoint (with trailing `/api/` for v4).
 
 ##### `authn_login`
 User username or host name (prefixed with `host/`).
@@ -191,12 +191,12 @@ Content of the X509 certificate of the root CA of Conjur, PEM formatted.
 When using Puppet's `file` function, the path to the cert must be absolute.
 
 ##### `host_factory_token`
-You can use a host factory token to obtain a host identity. Must be `Sensitive` if supported.
+You can use a host factory token to obtain a host identity. Must be `Sensitive`.
 Simply use this parameter to set it. The host record will be created in Conjur.
 
 ##### `authn_token`
 Raw (unencoded) Conjur token. This is usually only useful for testing.
-Must be `Sensitive` if supported.
+Must be `Sensitive`.
 
 ##### `version`
 Conjur API version. Should be set to 5 unless you're using Conjur Enterprise 4.x.
@@ -240,7 +240,7 @@ class { 'conjur':
 
 This function uses the node’s Conjur host identity to authenticate with Conjur and retrieve a secret that the node is authorized to fetch. The output of this function is a string that contains the value of the variable parameter. If the secret cannot be fetched an error is thrown.
 
-The returned value is `Sensitive` data type if supported (see notes above).
+The returned value is `Sensitive` data type.
 
 #### Parameters
 

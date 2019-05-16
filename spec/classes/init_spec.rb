@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe 'conjur' do
+  let(:site_pp_str) {} # can't find a better way to skip fixture manifests
+
   context 'with api key' do
     let(:params) do {
       appliance_url: 'https://conjur.test/api',
@@ -17,7 +19,7 @@ describe 'conjur' do
     end
 
     it "obtains token from the server" do
-      expect(lookupvar('conjur::token')).to eq sensitive('the token')
+      expect(lookupvar('conjur::token')).to eq 'the token'
     end
 
     it "stores the configuration and identity on the node" do
@@ -54,28 +56,30 @@ describe 'conjur' do
     end
 
     it "creates the host using the host factory" do
-      expect(lookupvar('conjur::token')).to eq sensitive('the token')
+      expect(lookupvar('conjur::token')).to eq 'the token'
     end
 
     it "stores the configuration and identity on the node" do
       expect(subject).to contain_file('/etc/conjur.conf')
-      expect(subject).to contain_file('/etc/conjur.identity').with_content(
-          %r(machine https://conjur.test/api/authn\s+login host/test\s+password the api key)
-      ).with_mode('0400')
+      expect(subject).to contain_file('/etc/conjur.identity')
+
+      # rspec-puppet parameter matchers don't work with some puppet versions
+      expect(catalogue.resource('File[/etc/conjur.identity]').parameters).to include \
+        content: matching(%r(machine https://conjur.test/api/authn\s+login host/test\s+password the api key)),
+        mode: '0400'
     end
   end
 
   context 'with preconfigured node' do
     let(:params) {{ authn_token: sensitive('just so it does not fail') }}
-    let(:facts) {{ conjur: Facter.fact(:conjur).value }}
-
-    include FsMock
-    before do
-      mock_file '/etc/conjur.conf', """
-        appliance_url: https://conjur.fact.test/api
-        cert_file: /etc/conjur.pem
-      """
-      mock_file '/etc/conjur.pem', "not really a cert"
+    let(:facts) do
+      {
+        conjur: {
+          appliance_url: "https://conjur.fact.test/api",
+          cert_file: "/etc/conjur.pem",
+          ssl_certificate: "not really a cert"
+        }
+      }
     end
 
     it "uses settings from facts" do
