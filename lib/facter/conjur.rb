@@ -1,33 +1,10 @@
+require 'conjur/config'
+require 'conjur/identity'
+
 Facter.add :conjur do
   setcode do
     def config
-      @config ||= if File.exist? '/etc/conjur.conf'
-        c = YAML.load File.read '/etc/conjur.conf'
-        c['ssl_certificate'] ||= File.read c['cert_file'] \
-            if c['cert_file']
-        c
-      else
-        {}
-      end
-    end
-
-    def credentials netrc_path, url
-      uri = URI.parse url
-      File.open netrc_path do |netrc|
-        found = login = password = nil
-        netrc.each_line do |line|
-          key, value, _ = line.split
-          case key
-          when 'machine'
-            found = value.start_with?(uri.to_s) || value == uri.host
-          when 'login'
-            login = value if found
-          when 'password'
-            password = value if found
-          end
-          return [login, password] if login && password
-        end
-      end
+      @config ||= Conjur::Config.load
     end
 
     def find_certs certs
@@ -110,10 +87,10 @@ Facter.add :conjur do
     end
 
     begin
-      netrc_path = config['netrc_path'] || '/etc/conjur.identity'
-      if (url = config['appliance_url']) && File.exist?(netrc_path)
-        creds = credentials netrc_path, url
-        fail "credentials not found in #{netrc_path}" unless creds
+      if (url = config['appliance_url'])
+        creds = Conjur::Identity.load(config)
+        raise 'Conjur identity not found on system' unless creds
+
         config['authn_login'] = creds.first
         token = authenticate url, config['ssl_certificate'], creds
         if standalone?
