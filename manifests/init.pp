@@ -36,5 +36,6 @@ class conjur (
     $token = $client.conjur::token($authn_login, $api_key, $authn_account)
   }
 
-  require conjur::config_files
+  require conjur::config::files
+  require conjur::identity::files
 }
