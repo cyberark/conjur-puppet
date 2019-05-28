@@ -8,6 +8,7 @@
   "project_page": "https://github.com/cyberark/conjur-puppet",
   "issues_url": "https://github.com/cyberark/conjur-puppet/issues",
   "dependencies": [
+    { "name":"puppetlabs/registry","version_requirement":">= 2.1.0" }
   ],
   "operatingsystem_support": [
     {
@@ -21,6 +22,15 @@
     {
       "operatingsystem": "debian",
       "operatingsystemrelease": ["7", "8"]
+    },
+    {
+      "operatingsystem": "Windows",
+      "operatingsystemrelease": [
+        "Server 2008 R2",
+        "Server 2012 R2",
+        "Server 2016",
+        "Server 2019"
+      ]
     }
   ],
   "requirements": [

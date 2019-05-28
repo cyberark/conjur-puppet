@@ -1,10 +1,11 @@
 module Conjur
   module Config
     CONFIG_FILE_PATH = '/etc/conjur.conf'.freeze
+    REG_KEY_NAME = 'Software\CyberArk\Conjur'.freeze
 
     class << self
       def load
-        from_file
+        Puppet.features.microsoft_windows? ? from_registry : from_file
       end
 
       def from_file
@@ -16,6 +17,23 @@ module Conjur
         else
           {}
         end
+      end
+
+      def from_registry
+        raise 'Conjur::Config#from_registry is only supported on Windows' \
+          unless Puppet.features.microsoft_windows?
+
+        require 'win32/registry'
+        values = []
+        Win32::Registry::HKEY_LOCAL_MACHINE.open(REG_KEY_NAME) do |reg|
+          reg.each_value do |name, _type, data|
+            # Convert registry value names from camel case to underscores
+            # e.g. ApplianceUrl => appliance_url
+            values << [name.gsub(/(.)([A-Z])/, '\1_\2').downcase, data]
+          end
+        end
+
+        values.to_h
       end
     end
   end
