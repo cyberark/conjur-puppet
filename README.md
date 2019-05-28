@@ -77,12 +77,47 @@ This module provides the `conjur::secret` function, described above, and the `co
 
 ### Pre-established host identity
 
-For best security properties, use [conjurize](https://developer.conjur.net/key_concepts/machine_identity.html) or a similar method to establish host identity before running Puppet to configure. This way Puppet master only ever handles a temporary access token instead of real, permanent Conjur credentials of the hosts it manages.
+For best security properties, use [conjurize](https://www.conjur.org/get-started/machine-identity.html) or a similar method to establish host identity before running Puppet to configure. This way Puppet master only ever handles a temporary access token instead of real, permanent Conjur credentials of the hosts it manages.
 
 If a host is so pre-configured, the settings and credentials are automatically obtained and used. In this case, all that is needed to use `conjur::secret` is a simple
 
 ```puppet
 include conjur
+```
+
+#### <a name="windows"></a>Pre-establish Host Identity on Windows Hosts
+
+Connection settings for Conjur are stored in the Windows Registry under the key `HKLM\Software\CyberArk\Conjur`.
+The values available to set are:
+
+| Value Name | Value Type | Description |
+|-|-|-|
+| Account | REG_SZ | Conjur account specified during Conjur setup. |
+| ApplianceUrl | REG_SZ | Conjur API endpoint. |
+| SslCertificate | REG_SZ | public Conjur SSL cert. |
+| Version | REG_DWORD | Conjure API version. Defaults to `5`. |
+
+These may be set using Powershell:
+
+```powershell
+> reg ADD HKLM\Software\CyberArk\Conjur /v ApplianceUrl /t REG_SZ /d https://master.conjur.net
+The operation completed successfully.
+  > reg ADD HKLM\Software\CyberArk\Conjur /v Version /t REG_DWORD /d 5
+The operation completed successfully.
+  > reg ADD HKLM\Software\CyberArk\Conjur /v Account /t REG_SZ /d myorg
+The operation completed successfully.
+  > reg ADD HKLM\Software\CyberArk\Conjur /v SslCertificate /t REG_SZ /d "-----BEGIN CERTIFICATE-----..."
+The operation completed successfully.
+```
+
+Credentials for Conjur are stored in the Windows Credential Manager. The credential `Target` is the Conjur authentication URL (e.g. `https://conjur.myorg.net/authn`). The username is the host ID, with a `host/` prefix (e.g. `host/my-host`). The credential password is the host's API key.
+
+This may be set using Powershell:
+ ```powershell
+> cmdkey /generic:https://conjur.net/authn /user:hosts/my-host /pass
+Enter the password for 'hosts/my-host' to connect to 'https://conjur.net/authn': # {Prompt for API Key}
+
+CMDKEY: Credential added successfully.
 ```
 
 ### Conjur host identity with Host Factory
@@ -99,8 +134,7 @@ class { 'conjur':
   appliance_url      => 'https://conjur.mycompany.com/',
   authn_login        => 'host/redis001',
   host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
-  ssl_certificate    => file('/etc/conjur.pem'),
-  version            => 5
+  ssl_certificate    => file('/etc/conjur.pem')
 }
 ```
 
@@ -119,27 +153,7 @@ class { 'conjur':
   appliance_url   => 'https://conjur.mycompany.com/',
   authn_login     => 'host/redis001',
   authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
-  ssl_certificate => file('/conjur-ca.pem'),
-  version         => 5
-}
-```
-
-### Conjur Enterprise Edition
-
-If you're using this module to establish host identity with Conjur Enterprise
-Edition version 4.x, you should use `version => 4`. (This is also the default
-for backwards compatibility reasons.) Also note that the `appliance_url` will
-need to include the `/api/` suffix.
-
-For example:
-
-```puppet
-class { 'conjur':
-  appliance_url      => 'https://conjur.mycompany.com/api/',
-  authn_login        => 'host/redis001',
-  host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
-  ssl_certificate    => file('/etc/conjur.pem'),
-  version            => 4
+  ssl_certificate => file('/conjur-ca.pem')
 }
 ```
 
