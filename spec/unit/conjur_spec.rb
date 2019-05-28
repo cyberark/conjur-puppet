@@ -3,6 +3,7 @@ require 'spec_helper'
 describe 'conjur fact' do
   include FsMock
   subject!(:fact) { Facter.fact :conjur }
+  before(:each) { Facter.clear }
 
   before do
     mock_file '/etc/conjur.conf', """
@@ -10,10 +11,46 @@ describe 'conjur fact' do
       cert_file: /etc/conjur.pem
     """
     mock_file '/etc/conjur.pem', "not really a cert"
+
+    file_identity = ['myuser', 'myapikey']
+
+    allow(Conjur::Identity).to receive(:from_file)
+                          .and_return(file_identity)
   end
 
   it "reads appliance url and cert" do
-    expect(fact.value['appliance_url']).to eq 'https://conjur.fact.test/api'
-    expect(fact.value['ssl_certificate']).to eq 'not really a cert'
+    expect(fact.value).to eq(
+      "appliance_url" => "https://conjur.fact.test/api",
+      "cert_file" => "/etc/conjur.pem",
+      "ssl_certificate" => "not really a cert",
+      "authn_login" => "myuser"
+    )
+  end
+
+  context 'when the platform is Windows' do
+    before do
+      Puppet.features.stub(:microsoft_windows?) { true }
+
+      registry_values = {
+        "appliance_url" => "https://conjur.fact.test/api",
+        "ssl_certificate" => "not really a cert"
+      }
+
+      allow(Conjur::Config).to receive(:from_registry)
+                           .and_return(registry_values)
+
+      wincred_value = ['myuser', 'myapikey']
+
+      allow(Conjur::Identity).to receive(:from_wincred)
+                           .and_return(wincred_value)
+    end
+
+    it 'uses config values from Registry' do
+      expect(fact.value).to eq(
+        "appliance_url" => "https://conjur.fact.test/api",
+        "ssl_certificate" => "not really a cert",
+        "authn_login" => "myuser"
+      )
+    end
   end
 end

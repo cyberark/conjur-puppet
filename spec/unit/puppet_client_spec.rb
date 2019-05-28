@@ -8,65 +8,69 @@ describe 'conjur::client' do
   let(:version) { 4 }
   subject(:client) { find_function.execute uri, version, pem }
 
-  context "with certificate for localhost" do
-    it "when the cert checks out it connects correctly" do
-      expect { client.get 'test' }.to_not raise_error
-    end
+  ['Windows', 'RedHat'].each do |os_family|
+    context "with #{os_family} platform" do
+      let(:facts) { { os: { family: os_family } } }
 
-    context "with a cert bundle" do
-      let(:pem) do
-        [
-          (make_cert 'unrelated.test').to_pem,
-          cert.to_pem,
-        ].join
-      end
-
-      it "trusts all certificates in the bundle" do
-        expect { client.get 'test' }.to_not raise_error
-      end
-    end
-
-    context "when the certificate doesn't verify" do
-      let(:cert_hostname) { 'not.localhost' }
-      it "it errors out" do
-        expect { client.get 'test' }.to raise_error /verify failed/
-      end
-    end
-
-    let(:cert_hostname) { 'localhost' }
-    let(:uri) { "https://localhost:#{port}/api/" }
-    let(:port) { 31390 }
-
-    let(:server) do
-      WEBrick::HTTPServer.new(
-        Port: port, SSLEnable: true, SSLCertificate: cert, SSLPrivateKey: rsa
-      ).tap do |server|
-        server.mount_proc '/api/test' do |req, res|
-          res.body = 'ok'
+      context "with certificate for localhost" do
+        it "when the cert checks out it connects correctly" do
+          expect { client.get 'test' }.to_not raise_error
         end
-      end
-    end
-    before { @server_thread = Thread.new { server.start }; sleep 0.1 }
-    after { server.shutdown; @server_thread.join }
 
-    def make_cert name
-      cert = OpenSSL::X509::Certificate.new
-      cert.version = 2
-      cert.serial = 1
-      name = OpenSSL::X509::Name.new([['CN', name]])
-      cert.subject = name
-      cert.issuer = name
-      cert.not_before = Time.now
-      cert.not_after = Time.now + (365*24*60*60)
-      cert.public_key = rsa.public_key
-      cert.sign(rsa, OpenSSL::Digest::SHA256.new)
-      cert
-    end
+        context "with a cert bundle" do
+          let(:pem) do
+            [
+              (make_cert 'unrelated.test').to_pem,
+              cert.to_pem,
+            ].join
+          end
 
-    let(:cert) { make_cert cert_hostname }
+          it "trusts all certificates in the bundle" do
+            expect { client.get 'test' }.to_not raise_error
+          end
+        end
 
-    let(:rsa) do
-      OpenSSL::PKey.read """
+        context "when the certificate doesn't verify" do
+          let(:cert_hostname) { 'not.localhost' }
+          it "it errors out" do
+            expect { client.get 'test' }.to raise_error /verify failed/
+          end
+        end
+
+        let(:cert_hostname) { 'localhost' }
+        let(:uri) { "https://localhost:#{port}/api/" }
+        let(:port) { 31390 }
+
+        let(:server) do
+          WEBrick::HTTPServer.new(
+            Port: port, SSLEnable: true, SSLCertificate: cert, SSLPrivateKey: rsa
+          ).tap do |server|
+            server.mount_proc '/api/test' do |req, res|
+              res.body = 'ok'
+            end
+          end
+        end
+        before { @server_thread = Thread.new { server.start }; sleep 0.1 }
+        after { server.shutdown; @server_thread.join }
+
+        def make_cert name
+          cert = OpenSSL::X509::Certificate.new
+          cert.version = 2
+          cert.serial = 1
+          name = OpenSSL::X509::Name.new([['CN', name]])
+          cert.subject = name
+          cert.issuer = name
+          cert.not_before = Time.now
+          cert.not_after = Time.now + (365*24*60*60)
+          cert.public_key = rsa.public_key
+          cert.sign(rsa, OpenSSL::Digest::SHA256.new)
+          cert
+        end
+
+        let(:cert) { make_cert cert_hostname }
+
+        let(:rsa) do
+          OpenSSL::PKey.read """
 -----BEGIN RSA PRIVATE KEY-----
 MIICXAIBAAKBgQCrg4s4NiHMC0PbVzyaGI0ZXBm8deNheOsLPdzpwX8U+MIyWE72
 +QZJ9lRT/T7eoa6wN+3ChaucjA5am6l32bnbUttMKFZY8wPg1VKB3DDtfeZI8AiI
@@ -83,75 +87,77 @@ O2CY9QpCt1Mgr4WjYfUCQHiUgB/9dsgiTaFiQjLe6Vr/YaGUuSG1ussqJpmYcoyM
 xLU2GspOjINCXuUBvSamEanZpWTYjHshPqVZKlsoV1A=
 -----END RSA PRIVATE KEY-----
       """
-    end
-  end
+        end
+      end
 
-  context "with mock conjur service", conjur: :mock do
-    let(:uri) { "https://conjur.test/api" }
-    let(:cert) { nil }
-    describe '#create_host' do
-      it "creates a host and returns the description hash" do
+      context "with mock conjur service", conjur: :mock do
+        let(:uri) { "https://conjur.test/api" }
+        let(:cert) { nil }
+        describe '#create_host' do
+          it "creates a host and returns the description hash" do
+            allow(conjur_connection).to receive(:post) \
+                .with(anything, nil,
+                      "Authorization" => "Token token=\"hostfactorytokenn\"") \
+            do |request_path|
+              uri = URI request_path
+              expect(uri.path).to eq '/api/host_factories/hosts'
+              expect(URI.decode_www_form uri.query).to include(
+                ['id', 'test+plus!'], ['annotations[puppet]', 'true'])
+              http_ok '{ "api_key": "theapikey" }'
+            end
+
+            expect(subject.create_host 'test+plus!', 'hostfactorytokenn',
+                  annotations: { puppet: true })\
+                .to eq "api_key" => 'theapikey'
+          end
+        end
+
+        describe '#authenticate' do
+          shared_examples "authentication" do
+            it "exchanges API key for token" do
+              expect(subject.authenticate 'alice', 'the api key', 'test')\
+                  .to eq 'the token'
+            end
+          end
+
+          context "with Conjur v4 API" do
+            before do
+              allow(conjur_connection).to receive(:post) \
+                  .with('/api/authn/users/alice/authenticate', 'the api key', nil) \
+                  .and_return http_ok 'the token'
+            end
+
+            include_examples "authentication"
+          end
+
+          context "with Conjur v5 API" do
+            before do
+              allow(conjur_connection).to receive(:post) \
+                  .with('/api/authn/test/alice/authenticate', 'the api key', nil) \
+                  .and_return http_ok 'the token'
+            end
+            let(:version) { 5 }
+            include_examples "authentication"
+          end
+
+      it "correctly encodes username" do
         allow(conjur_connection).to receive(:post) \
-            .with(anything, nil,
-                  "Authorization" => "Token token=\"hostfactorytokenn\"") \
-        do |request_path|
-          uri = URI request_path
-          expect(uri.path).to eq '/api/host_factories/hosts'
-          expect(URI.decode_www_form uri.query).to include(
-            ['id', 'test+plus!'], ['annotations[puppet]', 'true'])
-          http_ok '{ "api_key": "theapikey" }'
+            .with('/api/authn/users/host%2Fpuppettest/authenticate', 'the api key', nil) \
+            .and_return http_ok 'the host token'
+
+        expect(subject.authenticate 'host/puppettest', 'the api key') \
+            .to eq 'the host token'
         end
 
-        expect(subject.create_host 'test+plus!', 'hostfactorytokenn',
-               annotations: { puppet: true })\
-            .to eq "api_key" => 'theapikey'
-      end
-    end
-
-    describe '#authenticate' do
-      shared_examples "authentication" do
-        it "exchanges API key for token" do
-          expect(subject.authenticate 'alice', 'the api key', 'test')\
-              .to eq 'the token'
-        end
-      end
-
-      context "with Conjur v4 API" do
-        before do
+        it "raises error when server errors" do
           allow(conjur_connection).to receive(:post) \
               .with('/api/authn/users/alice/authenticate', 'the api key', nil) \
-              .and_return http_ok 'the token'
+              .and_return http_unauthorized
+
+          expect { subject.authenticate 'alice', 'the api key' } \
+              .to raise_error Net::HTTPError
+          end
         end
-
-        include_examples "authentication"
-      end
-
-      context "with Conjur v5 API" do
-        before do
-          allow(conjur_connection).to receive(:post) \
-              .with('/api/authn/test/alice/authenticate', 'the api key', nil) \
-              .and_return http_ok 'the token'
-        end
-        let(:version) { 5 }
-        include_examples "authentication"
-      end
-
-  it "correctly encodes username" do
-    allow(conjur_connection).to receive(:post) \
-        .with('/api/authn/users/host%2Fpuppettest/authenticate', 'the api key', nil) \
-        .and_return http_ok 'the host token'
-
-    expect(subject.authenticate 'host/puppettest', 'the api key') \
-        .to eq 'the host token'
-    end
-
-    it "raises error when server errors" do
-      allow(conjur_connection).to receive(:post) \
-          .with('/api/authn/users/alice/authenticate', 'the api key', nil) \
-          .and_return http_unauthorized
-
-      expect { subject.authenticate 'alice', 'the api key' } \
-          .to raise_error Net::HTTPError
       end
     end
   end
