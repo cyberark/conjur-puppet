@@ -26,6 +26,10 @@ describe 'conjur' do
           expect(lookupvar('conjur::token')).to eq 'the token'
         end
 
+        it "gets a default Conjur version" do
+          expect(lookupvar('conjur::version')).to eq 5
+        end
+
         it "stores the configuration and identity on the node" do
           if os_family == 'Windows'
             expect(subject).to contain_registry_value('HKLM\Software\CyberArk\Conjur\ApplianceUrl')
