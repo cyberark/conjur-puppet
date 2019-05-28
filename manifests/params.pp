@@ -12,5 +12,5 @@ class conjur::params {
     Sensitive($token.conjur::decrypt)
   }}
   $host_factory_token = undef
-  $version = $conjur_config['version'].lest || { 4 }
+  $version = $conjur_config['version'].lest || { 5 }
 }
