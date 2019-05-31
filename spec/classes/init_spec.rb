@@ -37,7 +37,7 @@ describe 'conjur' do
             expect(subject).to contain_registry_value('HKLM\Software\CyberArk\Conjur\Account')
             expect(subject).to contain_registry_value('HKLM\Software\CyberArk\Conjur\Version')
 
-            expect(subject).to contain_wincred_credential('https://conjur.test/api/authn')
+            expect(subject).to contain_credential('https://conjur.test/api/authn')
           else
             expect(subject).to contain_file('/etc/conjur.conf')
             expect(subject).to contain_file('/etc/conjur.identity')
@@ -82,7 +82,7 @@ describe 'conjur' do
             expect(subject).to contain_registry_value('HKLM\Software\CyberArk\Conjur\Account')
             expect(subject).to contain_registry_value('HKLM\Software\CyberArk\Conjur\Version')
 
-            expect(subject).to contain_wincred_credential('https://conjur.test/api/authn')
+            expect(subject).to contain_credential('https://conjur.test/api/authn')
           else
             expect(subject).to contain_file('/etc/conjur.conf')
             expect(subject).to contain_file('/etc/conjur.identity')

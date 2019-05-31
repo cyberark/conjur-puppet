@@ -5,7 +5,7 @@ class conjur::identity::wincred inherits conjur {
 
     $client_url = URI($conjur::client[uri]) + 'authn'
 
-    wincred_credential { "${client_url}":
+    credential { "${client_url}":
       ensure   => present,
       username => $conjur::authn_login,
       value    => $conjur::api_key

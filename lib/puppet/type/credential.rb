@@ -1,6 +1,6 @@
 require 'puppet/type'
 
-Puppet::Type.newtype(:wincred_credential) do
+Puppet::Type.newtype(:credential) do
   @doc = <<-EOT
     Manages Credential Manager credentials on Windows systems.
   EOT

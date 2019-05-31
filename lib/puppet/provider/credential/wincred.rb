@@ -1,7 +1,7 @@
 require 'puppet/type'
 require 'wincred/wincred' if Puppet.features.microsoft_windows?
 
-Puppet::Type.type(:wincred_credential).provide(:wincred) do
+Puppet::Type.type(:credential).provide(:wincred) do
   defaultfor :operatingsystem => :windows
   confine    :operatingsystem => :windows
 
