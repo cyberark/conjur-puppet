@@ -1,6 +1,8 @@
 require 'fiddle/import'
 require 'fiddle/types'
 
+require_relative './conversion'
+
 module WinCred
   class << self
     def exist?(target)
@@ -112,20 +114,10 @@ module WinCred
 
     def cred_to_hash(cred)
       {
-        target: read_wide_string(cred.TargetName),
-        username: read_wide_string(cred.UserName),
+        target: Conversion.pwchar_to_str(cred.TargetName).encode('utf-8'),
+        username: Conversion.pwchar_to_str(cred.UserName).encode('utf-8'),
         value: (cred.CredentialBlobSize > 0 ? cred.CredentialBlob.to_s : nil)
       }
-    end
-
-    def read_wide_string(ptr)
-      idx = 0
-      str = ''
-      while ptr[idx, 2] != "\0\0"
-        str += ptr[idx, 2].force_encoding('UTF-16LE').encode('UTF-8')
-        idx += 2
-      end
-      str
     end
   end
 
