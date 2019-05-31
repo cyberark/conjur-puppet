@@ -27,16 +27,11 @@ module Conjur
             unless Puppet.features.microsoft_windows?
 
           require 'win32/registry'
-          values = []
           Win32::Registry::HKEY_LOCAL_MACHINE.open(REG_KEY_NAME) do |reg|
-            reg.each_value do |name, _type, data|
-              # Convert registry value names from camel case to underscores
-              # e.g. ApplianceUrl => appliance_url
-              values << [name.gsub(/(.)([A-Z])/, '\1_\2').downcase, data]
-            end
+            # Convert registry value names from camel case to underscores
+            # e.g. ApplianceUrl => appliance_url
+            reg.map { |name, _type, data|  [name.gsub(/(.)([A-Z])/, '\1_\2').downcase, data] }.to_h
           end
-
-          values.to_h
         end
       end
     end
