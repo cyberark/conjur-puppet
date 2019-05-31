@@ -14,7 +14,7 @@ describe 'conjur fact' do
 
     file_identity = ['myuser', 'myapikey']
 
-    allow(Conjur::Identity).to receive(:from_file)
+    allow(Conjur::PuppetModule::Identity).to receive(:from_file)
                           .and_return(file_identity)
   end
 
@@ -36,12 +36,12 @@ describe 'conjur fact' do
         "ssl_certificate" => "not really a cert"
       }
 
-      allow(Conjur::Config).to receive(:from_registry)
+      allow(Conjur::PuppetModule::Config).to receive(:from_registry)
                            .and_return(registry_values)
 
       wincred_value = ['myuser', 'myapikey']
 
-      allow(Conjur::Identity).to receive(:from_wincred)
+      allow(Conjur::PuppetModule::Identity).to receive(:from_wincred)
                            .and_return(wincred_value)
     end
 

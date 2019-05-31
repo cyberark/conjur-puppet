@@ -1,10 +1,12 @@
-require 'conjur/config'
-require 'conjur/identity'
+# frozen_string_literal: true
+
+require 'conjur/puppet_module/config'
+require 'conjur/puppet_module/identity'
 
 Facter.add :conjur do
   setcode do
     def config
-      @config ||= Conjur::Config.load
+      @config ||= Conjur::PuppetModule::Config.load
     end
 
     def find_certs certs
@@ -88,7 +90,7 @@ Facter.add :conjur do
 
     begin
       if (url = config['appliance_url'])
-        creds = Conjur::Identity.load(config)
+        creds = Conjur::PuppetModule::Identity.load(config)
         raise 'Conjur identity not found on system' unless creds
 
         config['authn_login'] = creds.first
