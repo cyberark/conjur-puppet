@@ -95,7 +95,7 @@ The values available to set are:
 | Account | REG_SZ | Conjur account specified during Conjur setup. |
 | ApplianceUrl | REG_SZ | Conjur API endpoint. |
 | SslCertificate | REG_SZ | public Conjur SSL cert. |
-| Version | REG_DWORD | Conjure API version. Defaults to `5`. |
+| Version | REG_DWORD | Conjur API version. Defaults to `5`. |
 
 These may be set using Powershell:
 
