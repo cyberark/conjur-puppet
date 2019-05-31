@@ -213,9 +213,7 @@ Raw (unencoded) Conjur token. This is usually only useful for testing.
 Must be `Sensitive`.
 
 ##### `version`
-Conjur API version. Should be set to 5 unless you're using Conjur Enterprise 4.x.
-
-Defaults to 4 for backward compatibility reasons. (This will change in a future version.)
+Conjur API version. Defaults to 5. Set to 4 if you're using Conjur Enterprise 4.x.
 
 #### Examples
 
