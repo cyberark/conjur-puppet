@@ -24,8 +24,7 @@ module WinCred
       pp_credentials = Fiddle::Pointer.new 0
 
       # Create 4-byte integer pointer to hold the returned cred count
-      free = Fiddle::Function.new(Fiddle::RUBY_FREE, [Fiddle::TYPE_VOIDP], Fiddle::TYPE_VOID)
-      cred_count_ptr = Fiddle::Pointer.malloc(Fiddle::SIZEOF_LONG, free)
+      cred_count_ptr = Fiddle::Pointer.malloc(Fiddle::SIZEOF_LONG, Fiddle::RUBY_FREE)
 
       enum_result = Native.CredEnumerateW(
         nil,
@@ -77,8 +76,6 @@ module WinCred
       write_result = Native.CredWriteW(Fiddle::Pointer[cred], 0)
 
       raise "Write to WinCred failed. Error code: #{Native.GetLastError}" if write_result.zero?
-    ensure
-      Native.CredFree(cred) if cred
     end
 
     def read_credential(target)
