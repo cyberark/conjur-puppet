@@ -39,11 +39,11 @@ Puppet::Type.type(:credential).provide(:wincred) do
   end
 
   def value
-    current_value[:value] || :absent
+    current_value[:value].force_encoding('utf-8') || :absent
   end
 
   def value=(value)
-    current_value[:value] = value
+    current_value[:value] = value.force_encoding('ascii-8bit')
   end
 
   private
@@ -52,7 +52,7 @@ Puppet::Type.type(:credential).provide(:wincred) do
     WinCred.write_credential(
       target: resource.parameter(:target).value,
       username: resource[:username],
-      value: resource[:value]
+      value: resource[:value].force_encoding('ascii-8bit')
     )
   end
 

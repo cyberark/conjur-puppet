@@ -52,10 +52,12 @@ module WinCred
     def write_credential(
         target:,
         username:,
-        value:
+        value: # binary string
       )
-      # Convert the unicode string to a byte array
-      value_blob = value.encode('utf-8').unpack('c*')
+
+      if value.bytes.size != value.size
+        raise "Write to WinCred failed. Value is not a binary string. Encoding is (#{value.encoding})." 
+      end
 
       cred = Native::CREDENTIALW.malloc
 
@@ -63,8 +65,8 @@ module WinCred
       cred.Type = Native::CRED_TYPE_GENERIC
       cred.TargetName = target.encode('utf-16le')
       cred.Comment = ''
-      cred.CredentialBlobSize = value_blob.size
-      cred.CredentialBlob = Fiddle::Pointer[value_blob.pack('c*')]
+      cred.CredentialBlobSize = value.size
+      cred.CredentialBlob = Fiddle::Pointer[value]
       cred.Persist = Native::CRED_PERSIST_LOCAL_MACHINE
       cred.AttributeCount = 0
       cred.Attributes = nil
