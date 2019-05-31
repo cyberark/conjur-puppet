@@ -2,10 +2,7 @@
 # Windows Credential Manager.
 class conjur::identity::wincred inherits conjur {
   if $conjur::api_key {
-
-    $client_url = URI($conjur::client[uri]) + 'authn'
-
-    credential { "${client_url}":
+    credential { "${conjur::client[uri]}":
       ensure   => present,
       username => $conjur::authn_login,
       value    => $conjur::api_key
