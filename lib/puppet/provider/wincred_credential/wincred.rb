@@ -17,9 +17,12 @@ Puppet::Type.type(:wincred_credential).provide(:wincred) do
 
   def flush
     Puppet.debug("Flushing WinCred credential: #{self}")
-    return if resource[:ensure] == :absent
 
-    write_value
+    if resource[:ensure] == :absent
+      destroy
+    else
+      write_value
+    end
   end
 
   def destroy
