@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 module Conjur
   module PuppetModule
     module Identity
-      NETRC_FILE_PATH = '/etc/conjur.identity'.freeze
+      NETRC_FILE_PATH = '/etc/conjur.identity'
 
       class << self
         def load(config)

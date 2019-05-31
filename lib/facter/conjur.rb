@@ -10,9 +10,9 @@ Facter.add :conjur do
     end
 
     def find_certs certs
-      cert_header = '-----BEGIN CERTIFICATE-----'.freeze
-      cert_footer = '-----END CERTIFICATE-----'.freeze
-      cert_re = /#{cert_header}\r?\n.*?\r?\n#{cert_footer}/m.freeze
+      cert_header = '-----BEGIN CERTIFICATE-----'
+      cert_footer = '-----END CERTIFICATE-----'
+      cert_re = /#{cert_header}\r?\n.*?\r?\n#{cert_footer}/m
 
       certs.scan(cert_re).map(&OpenSSL::X509::Certificate.method(:new))
     end

@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module Conjur
   module PuppetModule
     module Config
-      CONFIG_FILE_PATH = '/etc/conjur.conf'.freeze
-      REG_KEY_NAME = 'Software\CyberArk\Conjur'.freeze
+      CONFIG_FILE_PATH = '/etc/conjur.conf'
+      REG_KEY_NAME = 'Software\CyberArk\Conjur'
 
       class << self
         def load
