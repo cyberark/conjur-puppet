@@ -13,32 +13,44 @@ pipeline {
 
   stages {
     stage('Lint and unit test module') {
-      steps {
-        sh './test.sh'
-        junit 'spec/output/rspec.xml'
-        archiveArtifacts artifacts: 'spec/output/rspec.xml', fingerprint: true
-      }
-    }
-
-    stage('Run smoke tests') {
       parallel {
-        stage('Test with Conjur v5') {
+        stage('Test on Linux') {
           steps {
-            dir('examples') {
-              sh './smoketest.sh'
-            }
+            sh './test.sh'
+            junit 'spec/output/rspec.xml'
+            archiveArtifacts artifacts: 'spec/output/rspec.xml', fingerprint: true
           }
         }
-
-        stage('Test with Conjur Enterprise v4') {
+        stage('Test on Windows') {
+          agent {
+            label "windows && 2016 && ephemeral"
+          }
           steps {
-            dir('examples/ee') {
-              sh './smoketest.sh'
-            }
+            powershell 'echo "test from Windows"'
           }
         }
       }
     }
+
+    // stage('Run smoke tests') {
+    //   parallel {
+    //     stage('Test with Conjur v5') {
+    //       steps {
+    //         dir('examples') {
+    //           sh './smoketest.sh'
+    //         }
+    //       }
+    //     }
+
+    //     stage('Test with Conjur Enterprise v4') {
+    //       steps {
+    //         dir('examples/ee') {
+    //           sh './smoketest.sh'
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   post {
