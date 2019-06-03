@@ -76,6 +76,8 @@ module WinCred
       write_result = Native.CredWriteW(Fiddle::Pointer[cred], 0)
 
       raise "Write to WinCred failed. Error code: #{Native.GetLastError}" if write_result.zero?
+    ensure
+      Fiddle.free(cred.to_i) if cred
     end
 
     def read_credential(target)
