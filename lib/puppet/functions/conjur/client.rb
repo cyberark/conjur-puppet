@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'net/http'
 
 # This function is really a Ruby class. Since we can't bind a class
@@ -36,9 +38,9 @@ Puppet::Functions.create_function :'conjur::client' do
       end
 
       def cert
-        cert_header = '-----BEGIN CERTIFICATE-----'.freeze
-        cert_footer = '-----END CERTIFICATE-----'.freeze
-        cert_re = /#{cert_header}\r?\n.*?\r?\n#{cert_footer}/m.freeze
+        cert_header = '-----BEGIN CERTIFICATE-----'
+        cert_footer = '-----END CERTIFICATE-----'
+        cert_re = /#{cert_header}\r?\n.*?\r?\n#{cert_footer}/m
 
         @cert ||= self['cert'] && \
             self['cert'].scan(cert_re).map(&OpenSSL::X509::Certificate.method(:new))
