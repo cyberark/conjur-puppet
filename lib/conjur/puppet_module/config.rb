@@ -8,7 +8,7 @@ module Conjur
 
       class << self
         def load
-          from_file
+          Puppet.features.microsoft_windows? ? from_registry : from_file
         end
 
         def from_file
@@ -19,6 +19,18 @@ module Conjur
             c
           else
             {}
+          end
+        end
+
+        def from_registry
+          raise 'Conjur::PuppetModule::Config#from_registry is only supported on Windows' \
+            unless Puppet.features.microsoft_windows?
+
+          require 'win32/registry'
+          Win32::Registry::HKEY_LOCAL_MACHINE.open(REG_KEY_NAME) do |reg|
+            # Convert registry value names from camel case to underscores
+            # e.g. ApplianceUrl => appliance_url
+            reg.map { |name, _type, data|  [name.gsub(/(.)([A-Z])/, '\1_\2').downcase, data] }.to_h
           end
         end
       end

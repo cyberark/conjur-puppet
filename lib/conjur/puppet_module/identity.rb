@@ -9,7 +9,7 @@ module Conjur
         def load(config)
           if (url = config['appliance_url'])
             uri = URI.parse(url)
-            from_file(uri, config)
+            Puppet.features.microsoft_windows? ? from_wincred(uri) : from_file(uri, config)
           end
         end
 
@@ -33,6 +33,18 @@ module Conjur
               return [login, password] if login && password
             end
           end
+        end
+
+        def from_wincred(uri)
+          raise 'Conjur::PuppetModule::Identity#from_wincred is only supported on Windows' \
+            unless Puppet.features.microsoft_windows?
+
+          require 'wincred/wincred'
+
+          WinCred.enumerate_credentials
+                  .select { |cred| cred[:target].start_with?(uri.to_s) || cred[:target] == uri.host }
+                  .map { |cred| [cred[:username], cred[:value].force_encoding('utf-8')] }
+                  .first
         end
       end
     end
