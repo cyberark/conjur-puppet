@@ -1,0 +1,24 @@
+- !variable secrets/a
+- !variable secrets/b
+
+- !host preconfigured_host
+
+- !permit
+  resource: !variable secrets/a
+  role: !layer puppet/agents
+  privileges: [ read, execute ]
+
+- !permit
+  resource: !variable secrets/b
+  role: !host preconfigured_host
+  privileges: [ read, execute ]
+
+- !policy
+  id: puppet
+  body:
+  - !layer agents
+
+  - !host-factory
+    layers: [ !layer agents ]
+    annotations:
+      puppet: true
