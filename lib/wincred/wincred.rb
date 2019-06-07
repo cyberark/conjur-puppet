@@ -115,7 +115,7 @@ module WinCred
       {
         target: Conversion.pwchar_to_str(cred.TargetName).encode('utf-8'),
         username: Conversion.pwchar_to_str(cred.UserName).encode('utf-8'),
-        value: (cred.CredentialBlobSize > 0 ? cred.CredentialBlob.to_s : nil)
+        value: (cred.CredentialBlobSize > 0 ? cred.CredentialBlob.to_str(cred.CredentialBlobSize) : nil)
       }
     end
   end

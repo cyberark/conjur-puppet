@@ -43,7 +43,7 @@ module Conjur
 
           WinCred.enumerate_credentials
                   .select { |cred| cred[:target].start_with?(uri.to_s) || cred[:target] == uri.host }
-                  .map { |cred| [cred[:username], cred[:value].force_encoding('utf-8')] }
+                  .map { |cred| [cred[:username], cred[:value].force_encoding('utf-16le').encode('utf-8')] }
                   .first
         end
       end
