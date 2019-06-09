@@ -43,7 +43,10 @@ describe 'conjur::client' do
 
         let(:server) do
           WEBrick::HTTPServer.new(
-            Port: port, SSLEnable: true, SSLCertificate: cert, SSLPrivateKey: rsa
+            Port: port, SSLEnable: true,
+            SSLCertificate: cert, SSLPrivateKey: rsa,
+            Logger: WEBrick::Log.new(STDERR, ($DEBUG ? 4 : 1)),
+            AccessLog: $DEBUG ? nil : []
           ).tap do |server|
             server.mount_proc '/api/test' do |req, res|
               res.body = 'ok'
