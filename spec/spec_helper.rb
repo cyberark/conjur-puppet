@@ -1,3 +1,13 @@
+# frozen_string_literal: true
+
+RSpec.configure do |config|
+  # note: this needs to come before requiring puppetlabs spec helper
+  # to avoid deprecation warning
+  config.mock_with :rspec do |mocks|
+    mocks.verify_doubled_constant_names = true
+  end
+end
+
 require 'puppetlabs_spec_helper/module_spec_helper'
 require 'puppet/network/http/connection'
 require 'puppet/network/http_pool'
@@ -5,9 +15,6 @@ require 'puppet/network/http_pool'
 require 'helpers/fs'
 
 RSpec.configure do |config|
-  config.mock_with :rspec do |mocks|
-    mocks.verify_doubled_constant_names = true
-  end
   config.default_facts = { conjur_version: 4 }
 end
 

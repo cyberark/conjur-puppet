@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'conjur fact' do
@@ -6,16 +8,16 @@ describe 'conjur fact' do
   before(:each) { Facter.clear }
 
   before do
-    mock_file '/etc/conjur.conf', """
+    mock_file '/etc/conjur.conf', "
       appliance_url: https://conjur.fact.test/api
       cert_file: /etc/conjur.pem
-    """
+    "
     mock_file '/etc/conjur.pem', "not really a cert"
 
-    file_identity = ['myuser', 'myapikey']
+    file_identity = %w(myuser myapikey)
 
     allow(Conjur::PuppetModule::Identity).to receive(:from_file)
-                          .and_return(file_identity)
+      .and_return(file_identity)
   end
 
   it "reads appliance url and cert" do
@@ -37,12 +39,12 @@ describe 'conjur fact' do
       }
 
       allow(Conjur::PuppetModule::Config).to receive(:from_registry)
-                           .and_return(registry_values)
+        .and_return(registry_values)
 
-      wincred_value = ['myuser', 'myapikey']
+      wincred_value = %w(myuser myapikey)
 
       allow(Conjur::PuppetModule::Identity).to receive(:from_wincred)
-                           .and_return(wincred_value)
+        .and_return(wincred_value)
     end
 
     it 'uses config values from Registry' do
