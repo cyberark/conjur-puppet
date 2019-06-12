@@ -43,4 +43,14 @@ describe WinCred, wincred: :mock do
         target: 'some.test', username: 'alice', value: 'secret'
     end
   end
+
+  context 'with UTF-16 encoded credentials' do
+    it 'round-trips them correctly' do
+      password = 'ancient'.encode('utf-16le').force_encoding('binary')
+      WinCred.write_credential \
+        target: 'utf16.test', username: 'ursula', value: password
+      expect(WinCred.read_credential('utf16.test')).to eq \
+        target: 'utf16.test', username: 'ursula', value: password
+    end
+  end
 end
