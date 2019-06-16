@@ -122,7 +122,7 @@ scenario2() {
   echo "Tag: $tag"
   echo "Manifest: $manifest"
   echo "-----"
-  local node_name='puppet-node02'
+  local node_name='puppet/node02'
 
   runInConjur bash -c "[ -f hftoken.json ] || conjur hostfactory tokens create inventory 1> hftoken.json"
 
