@@ -59,18 +59,9 @@ describe 'conjur' do
       context 'with host factory token' do
         let(:params) do {
           appliance_url: 'https://conjur.test/api',
-          authn_login: 'host/test',
+          authn_login: authn_login,
           host_factory_token: sensitive('the host factory token'),
         } end
-
-        before do
-          allow_calling_puppet_function(:'conjur::manufacture_host', :create) \
-              .with(include('uri' => 'https://conjur.test/api/'), 'test', sensitive('the host factory token'))\
-              .and_return 'api_key' => sensitive('the api key'), 'id' => 'testacct:host:test'
-          allow_calling_puppet_function(:'conjur::token', :from_key) \
-              .with(include('uri' => 'https://conjur.test/api/'), 'host/test', sensitive('the api key'), 'testacct')\
-              .and_return sensitive('the token')
-        end
 
         it "creates the host using the host factory" do
           expect(lookupvar('conjur::token')).to eq 'the token'
@@ -89,8 +80,38 @@ describe 'conjur' do
 
             # rspec-puppet parameter matchers don't work with some puppet versions
             expect(catalogue.resource('File[/etc/conjur.identity]').parameters).to include \
-            content: matching(%r(machine https://conjur.test/api/authn\s+login host/test\s+password the api key)),
-            mode: '0400'
+              content: matching(Regexp.new(
+                "machine https://conjur.test/api/authn" \
+                "\\s+login #{authn_login}" \
+                "\\s+password the api key"
+              )),
+              mode: '0400'
+          end
+        end
+
+        let(:hostname) { 'test' }
+        let(:authn_login) { ['host', hostname].join '/' }
+
+        before do
+          allow_calling_puppet_function(:'conjur::manufacture_host', :create)
+            .with(
+              include('uri' => 'https://conjur.test/api/'), hostname,
+              sensitive('the host factory token')
+            ).and_return(
+              'api_key' => sensitive('the api key'),
+              'id' => 'testacct:host:test'
+            )
+          allow_calling_puppet_function(:'conjur::token', :from_key)
+            .with(
+              include('uri' => 'https://conjur.test/api/'), authn_login,
+              sensitive('the api key'), 'testacct'
+            ).and_return sensitive('the token')
+        end
+
+        context "with host name containing a slash" do
+          let(:hostname) { 'staging/foo1' }
+          it "creates the host correctly" do
+            expect(lookupvar('conjur::token')).to eq 'the token'
           end
         end
       end
