@@ -39,7 +39,7 @@ Puppet::Type.type(:credential).provide(:wincred) do
   end
 
   def value
-    current_value[:value].force_encoding('utf-16le') || :absent
+    current_value[:value].force_encoding('utf-16le').encode('utf-8') || :absent
   end
 
   def value=(value)
