@@ -19,3 +19,5 @@ gem 'net-scp'
 gem 'winrm'
 
 gem 'rubocop'
+
+gem "public_suffix", "~> 3.1"

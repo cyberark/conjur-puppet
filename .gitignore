@@ -9,7 +9,6 @@
 /rspec.xml
 /.rvmrc*
 /.bundle
-/Gemfile.lock
 /pkg
 /conjur.conf
 /tmp/
