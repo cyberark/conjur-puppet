@@ -4,6 +4,30 @@ Internal development docs
 
 See [jenkins.sh](jenkins.sh).
 
+### Integration Tests
+
+Running the integration tests in AWS requires that these environment variables are set:
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_DEFAULT_REGION`
+
+These are used to create the AWS resources for the integration tests. These may be provided
+directly in the environment, for example:
+
+```sh-session
+$ export AWS_ACCESS_KEY_ID=...
+$ export AWS_SECRET_ACCESS_KEY=...
+$ export AWS_DEFAULT_REGION=...
+$ ./integration-test.sh
+```
+
+Or provided using [Summon](https://cyberark.github.io/summon/). e.g.:
+
+```sh-session
+$ summon -f secrets_integration.yml ./integration-test.sh
+```
+
 # Publishing the module to Puppet Forge
 
 To release a new version of the module to the Puppet Forge:
