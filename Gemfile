@@ -11,5 +11,11 @@ gem 'puppet-blacksmith', '~> 3.4.0'
 gem 'facter', '>= 1.7.0'
 gem 'rspec-puppet', git: 'https://github.com/conjur/rspec-puppet.git', tag: 'v2.7.2-support-sensitive'
 gem 'rspec_junit_formatter'
+gem 'cucumber'
+
+gem 'conjur-api'
+gem 'net-ssh'
+gem 'net-scp'
+gem 'winrm'
 
 gem 'rubocop'
