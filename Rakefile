@@ -31,11 +31,14 @@ PuppetLint::RakeTask.new :lint  # Not sure why I have to do this, but task gives
 
 task :test => [:syntax_validate, :lint, :spec]
 
-desc 'Release the module to Puppet Forge'
-task :release do
+task :package do
   Rake::Task['module:clean'].invoke
   sh 'puppet module build .'
   sh 'ls -lh pkg/*tar.gz'
   sh 'tar -tvf pkg/cyberark-conjur*.tar.gz'
+end
+
+desc 'Release the module to Puppet Forge'
+task :release => [:package] do
   Rake::Task['module:push'].invoke
 end

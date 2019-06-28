@@ -3,6 +3,10 @@
 pipeline {
   agent { label 'executor-v2' }
 
+  parameters { 
+    booleanParam(name: 'AWS_INTEGRATION_TESTS', defaultValue: false, description: '') 
+  }
+
   options {
     timestamps()
   }
@@ -42,7 +46,7 @@ pipeline {
       }
     }
 
-    stage('Run smoke tests') {
+    stage('Run integration tests') {
       parallel {
         stage('Local agent - Conjur v5') {
           steps {
@@ -65,6 +69,15 @@ pipeline {
             dir('examples/ee') {
               sh './smoketest.sh'
             }
+          }
+        }
+
+        stage('Integration test on AWS') {
+          when {
+                expression { params.AWS_INTEGRATION_TESTS == true }
+            }
+          steps {
+              sh 'summon -f secrets_integration.yml ./integration-test.sh'
           }
         }
       }
@@ -90,6 +103,7 @@ pipeline {
 
   post {
     always {
+      sh 'summon -f secrets_integration.yml ./cleanup-terraform.sh'
       cleanupAndNotify(currentBuild.currentResult)
     }
   }

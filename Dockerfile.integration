@@ -1,0 +1,19 @@
+FROM ruby:2.4
+MAINTAINER Conjur Inc
+
+# Install Terraform
+ARG terraform_version=0.11.14
+RUN apt-get update -y \
+    && apt-get install unzip wget \
+    && wget https://releases.hashicorp.com/terraform/${terraform_version}/terraform_${terraform_version}_linux_amd64.zip \
+    && unzip terraform_${terraform_version}_linux_amd64.zip \
+    && mv terraform /usr/local/bin/
+
+RUN mkdir /conjur
+WORKDIR /conjur
+
+COPY Gemfile /conjur/Gemfile
+ARG PUPPET_VERSION
+RUN env PUPPET_VERSION=$PUPPET_VERSION bundle
+
+COPY . /conjur

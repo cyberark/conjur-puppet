@@ -4,3 +4,24 @@ services:
     build: .
     volumes:
       - ./spec/output:/conjur/spec/output
+
+  package-builder:
+    build: .
+    volumes:
+      - ./:/conjur
+
+  integration-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.integration
+    environment:
+      AWS_ACCESS_KEY_ID:
+      AWS_SECRET_ACCESS_KEY:
+      AWS_DEFAULT_REGION:
+      AWS_SESSION_TOKEN:
+      TF_VAR_resource_prefix:
+      TF_VAR_vpc_id:
+      USE_EXISTING_PROJECT:
+      PRESERVE_PROJECT:
+    volumes:
+      - ./:/conjur

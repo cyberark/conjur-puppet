@@ -1,0 +1,49 @@
+class { 'conjur':
+        account            => 'puppet',
+        appliance_url      => '<%=appliance_url%>',
+        authn_login        => "host/$hostname",
+        host_factory_token => Sensitive('<%=host_factory_token%>'),
+        ssl_certificate    => '<%=conjur_ca_certificate%>'
+      }
+
+$secret_a = try() || {
+    conjur::secret('secrets/a')
+  }.catch |$exception| {
+    Sensitive('(n/a)')
+  }
+
+$secret_b = try() || {
+    conjur::secret('secrets/b')
+  }.catch |$exception| {
+    Sensitive('(n/a)')
+  }
+
+<% redhat_agents.each do |agent| %>
+node '<%=agent.name%>' {
+     package { 'httpd':
+       ensure  => "installed",
+     }
+     service { 'httpd':
+       ensure => running,
+       enable => true
+     }
+
+     file { '/var/www/html/index.html':
+       ensure => file,
+       content => "Hello from <%=agent.name%>! secrets/a = '${secret_a.unwrap}'. secrets/b = '${secret_b.unwrap}'"
+    }
+}
+<% end %>
+
+<% windows_agents.each do |agent| %>
+node '<%=agent.name%>' {
+     windowsfeature { ['Web-Server','Web-WebServer']:
+    ensure => present,
+  }
+
+  file { 'C:\inetpub\wwwroot\index.html':
+       ensure => file,
+       content => "Hello from <%=agent.name%>! secrets/a = '${secret_a.unwrap}'. secrets/b = '${secret_b.unwrap}'"
+    }
+}
+<% end %>

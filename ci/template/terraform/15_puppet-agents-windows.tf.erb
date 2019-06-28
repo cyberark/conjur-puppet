@@ -1,0 +1,29 @@
+variable "puppet_agent_win_nodes" {
+  default = <%= windows_agents.map(&:name).to_json %>
+}
+
+variable "puppet_agent_win_amis" {
+  default = <%= windows_agents.map(&:ami).to_json %>
+}
+
+module "puppet_agents_win" {
+  source = "github.com/conjurdemos/conjur-intro//terraform_modules/puppet/agent-windows?ref=puppet-windows"
+
+  ami_ids = ["${var.puppet_agent_win_amis}"]
+  node_names = ["${var.puppet_agent_win_nodes}"]
+  puppet_master_ip = "${module.puppet_master.private_ip}"
+  vpc_id = "${data.aws_vpc.selected.id}"
+  security_group_id = "${aws_security_group.puppet_agent_node.id}"
+  resource_prefix = "${var.resource_prefix}"
+  ssh_key_name = "${aws_key_pair.generated_key.key_name}"
+  ssh_key_pem = "${tls_private_key.ssh_access_key.private_key_pem}"
+}
+
+output "puppet_agent_windows_public_dns" {
+  value = "${module.puppet_agents_win.public_dns}"
+}
+
+output "puppet_agent_windows_password" {
+  sensitive = true
+  value = "${module.puppet_agents_win.password}"
+}
