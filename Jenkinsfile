@@ -12,6 +12,20 @@ pipeline {
   }
 
   stages {
+    // workaround for Jenkins not fetching tags
+    stage('Fetch tags') {
+      steps {
+        withCredentials(
+          [usernameColonPassword(credentialsId: 'conjur-jenkins-api', variable: 'GITCREDS')]
+        ) {
+          sh '''
+            git fetch --tags `git remote get-url origin | sed -e "s|https://|https://$GITCREDS@|"`
+            git tag # just print them out to make sure, can remove when this is robust
+          '''
+        }
+      }
+    }
+
     stage('Lint and unit test module') {
       steps {
         sh './test.sh'
@@ -39,6 +53,19 @@ pipeline {
         }
       }
     }
+
+    stage('Release Puppet module') {
+      when {
+        expression {
+          // only publish if we're on an annotated tag
+          sh(returnStatus: true, script: 'git describe --exact | grep -q \'^v[0-9.]\\+$\'') == 0
+        }
+      }
+      steps {
+        sh './release.sh'
+      }
+    }
+    
   }
 
   post {

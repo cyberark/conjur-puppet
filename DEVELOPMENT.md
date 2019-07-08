@@ -11,8 +11,8 @@ To release a new version of the module to the Puppet Forge:
 1. Update the `version` field in [metadata.json](metadata.json).
 2. Update [CHANGELOG.md](CHANGELOG.md).
 3. Commit and push these changes.
-4. Create a tag and push it (`git tag <VERSION> && git push --tags`)
-5. Run [release.sh](release.sh).
+4. Create an annotated tag and push it (`git tag <VERSION> -m <VERSION> && git push --tags`)
+5. Verify the Jenkins pipeline completes successfully.
 6. View the updated module: https://forge.puppet.com/cyberark/conjur
 
 You must be connected to conjurops v2 to fetch the secrets used to publish.
