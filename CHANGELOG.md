@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.0.0] - 2019-07-08
 - Remove support for Puppet older than 4.6.
 - Add support for Windows Puppet agents. See [README.md](README.md#windows) for details.
 - Change default Conjur version to 5. This a breaking change from 1.2.0.
