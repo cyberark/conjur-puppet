@@ -3,7 +3,7 @@
 
 docker build -t puppet-test .
 
-summon docker run --rm -it \
+summon docker run --rm \
   -v $PWD:/conjur -w /conjur \
   --env-file @SUMMONENVFILE \
   puppet-test \
