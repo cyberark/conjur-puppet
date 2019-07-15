@@ -56,9 +56,12 @@ pipeline {
 
     stage('Release Puppet module') {
       when {
-        expression {
-          // only publish if we're on an annotated tag
-          sh(returnStatus: true, script: 'git describe --exact | grep -q \'^v[0-9.]\\+$\'') == 0
+        allOf {
+          // Current git HEAD is an annotated tag
+          expression {
+            sh(returnStatus: true, script: 'git describe --exact | grep -q \'^v[0-9.]\\+$\'') == 0
+          }
+          not { triggeredBy  'TimerTrigger' }
         }
       }
       steps {
