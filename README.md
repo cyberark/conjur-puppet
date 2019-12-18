@@ -287,8 +287,4 @@ Open an issue or fork this project and open a Pull Request.
 Please note, that this is a "Partner Supported" module, which means that  technical customer support for this module
 is solely provided by Conjur.
 
-Puppet does not provide support for any Partner Supported modules. Technical support for the Conjur module can be reached via these channels:
-
-Formal requests: https://conjur.zendesk.com
-
-Informal requests: support@conjur.com
+Puppet does not provide support for any Partner Supported modules. For technical support please visit the Conjur channnel at https://discuss.cyberarkcommons.org/.
