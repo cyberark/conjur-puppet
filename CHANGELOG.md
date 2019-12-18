@@ -2,6 +2,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.2] - 2019-12-18
+- Update support contact info in README
+
 ## [2.0.1] - 2019-07-15
 - Update module manifest to include Puppet 5.x requirement
 

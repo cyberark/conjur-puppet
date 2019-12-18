@@ -1,6 +1,6 @@
 {
   "name": "cyberark-conjur",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "author": "CyberArk",
   "summary": "Register nodes as Conjur hosts and securely use secrets stored in Conjur",
   "license": "Apache-2.0",
