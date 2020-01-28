@@ -4,7 +4,7 @@ services:
     image: registry.tld/conjur-appliance-cuke-master:4.9-stable
     environment:
       CONJUR_AUTHN_LOGIN: admin
-      CONJUR_AUTHN_API_KEY: secret
+      CONJUR_AUTHN_API_KEY: ADmin123!!!!
       CONJUR_ACCOUNT: cucumber
     volumes:
       - .:/src
