@@ -50,7 +50,7 @@ services:
   conjur:
     image: cyberark/conjur
     environment:
-      CONJUR_ADMIN_PASSWORD: secret
+      CONJUR_ADMIN_PASSWORD: ADmin123!!!!
       DATABASE_URL: postgres://postgres@db
       CONJUR_DATA_KEY: testing//testing//testing//testing//testing=
     volumes:

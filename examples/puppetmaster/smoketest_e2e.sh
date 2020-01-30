@@ -36,7 +36,7 @@ setupConjur() {
   docker-compose exec -T conjur conjurctl account create cucumber || :
   docker-compose exec -T conjur conjurctl policy load cucumber /src/policy.yml
   docker-compose up -d cli
-  docker-compose exec -T cli conjur authn login -psecret admin
+  docker-compose exec -T cli conjur authn login -pADmin123!!!! admin
   runInConjur conjur variable values add inventory/db-password D7JGyGmCbDNCKYxgvpzz  # load the secret's value
 }
 

@@ -71,7 +71,7 @@ init_conjur() {
   docker-compose exec -T conjur conjurctl account create cucumber || :
   docker-compose exec -T conjur conjurctl policy load cucumber /src/policy.yml
   docker-compose up -d cli
-  docker-compose exec -T cli conjur authn login -psecret admin
+  docker-compose exec -T cli conjur authn login -pADmin123!!!! admin
 }
 
 setup_conjur() {
