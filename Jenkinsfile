@@ -12,6 +12,14 @@ pipeline {
   }
 
   stages {
+    stage('Validate') {
+      parallel {
+        stage('Changelog') {
+          steps { sh './parse-changelog.sh' }
+        }
+      }
+    }
+    
     // workaround for Jenkins not fetching tags
     stage('Fetch tags') {
       steps {
@@ -66,14 +74,6 @@ pipeline {
       }
       steps {
         sh './release.sh'
-      }
-    }
-
-    stage('Validate') {
-      parallel {
-        stage('Changelog') {
-          steps { sh './parse-changelog.sh' }
-        }
       }
     }
 
