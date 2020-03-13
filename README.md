@@ -11,7 +11,7 @@
 3. [Usage - Configuration options and additional functionality](#usage)
 4. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
 5. [Limitations - OS compatibility, etc.](#limitations)
-6. [Development - Guide for contributing to the module](#development)
+6. [Contributing - Guide for contributing to the module](#contributing)
 7. [Support - "Puppet Supported" details and contact info](#support)
 
 ## Description
@@ -278,9 +278,12 @@ Preestablishing configuration and identity is the recommended way of using this 
 
 See metadata.json for supported platforms
 
-## Development
+## Contributing
 
-Open an issue or fork this project and open a Pull Request.
+We welcome contributions of all kinds to this repository. For instructions on how to get started and descriptions of our development workflows, please see our [contributing
+guide][contrib].
+
+[contrib]: https://github.com/cyberark/conjur-puppet/blob/master/CONTRIBUTING.md
 
 ## Support
 
