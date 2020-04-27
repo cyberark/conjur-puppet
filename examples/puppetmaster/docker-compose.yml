@@ -69,3 +69,5 @@ services:
     image: conjurinc/cli5
     entrypoint: sleep
     command: infinity
+    volumes:
+      - .:/src:ro
