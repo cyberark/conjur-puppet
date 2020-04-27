@@ -19,6 +19,8 @@ services:
     environment:
       CONJUR_ACCOUNT: cucumber
       CONJUR_APPLIANCE_URL: http://conjur
-    image: conjurinc/cli5
+    image: cyberark/conjur-cli:5
     entrypoint: sleep
     command: infinity
+    volumes:
+      - .:/src:ro

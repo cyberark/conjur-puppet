@@ -34,9 +34,23 @@ wait_for_conjur() {
 setupConjur() {
   wait_for_conjur
   docker-compose exec -T conjur conjurctl account create cucumber || :
-  docker-compose exec -T conjur conjurctl policy load cucumber /src/policy.yml
+  api_key=$(docker-compose exec -T conjur conjurctl role retrieve-key cucumber:user:admin | tr -d '\r')
+
+  echo "-----"
+  echo "Starting CLI"
+  echo "-----"
+
   docker-compose up -d cli
-  docker-compose exec -T cli conjur authn login -pADmin123!!!! admin
+
+  echo "-----"
+  echo "Logging into the CLI"
+  echo "-----"
+  runInConjur conjur authn login -u admin -p "${api_key}"
+
+  echo "-----"
+  echo "Loading Conjur initial policy"
+  echo "-----"
+  runInConjur conjur policy load root /src/policy.yml
   runInConjur conjur variable values add inventory/db-password D7JGyGmCbDNCKYxgvpzz  # load the secret's value
 }
 
