@@ -88,8 +88,8 @@ Puppet::Functions.create_function :'conjur::client' do
             ['variables', URI.encode_www_form_component(id), 'value']
           when 5
             raise ArgumentError, "account is required for v5" unless account
-            ['secrets', account, 'variable', id]
-          end.join('/')
+            ['secrets', account, 'variable', ERB::Util.url_encode(id)]
+               end.join('/')
         get path, Base64.urlsafe_encode64(token)
       end
 

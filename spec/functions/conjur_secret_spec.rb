@@ -13,6 +13,10 @@ describe 'conjur::secret', conjur: :mock do
     it "raises an error if the server returns one" do
       expect{subject.execute 'bad/tls/key'}.to raise_error Net::HTTPError
     end
+
+    it "correctly encodes spaces" do
+      expect(subject.execute('var with spaces').unwrap).to eq 'var with spaces value'
+    end
   end
 
   ['Windows', 'RedHat'].each do |os_family|
@@ -25,6 +29,8 @@ describe 'conjur::secret', conjur: :mock do
               .and_return http_ok 'variable value'
           allow_authorized_conjur_get('/api/variables/tls%2Fkey/value') \
               .and_return http_ok 'tls key value'
+          allow_authorized_conjur_get('/api/variables/var+with+spaces/value') \
+              .and_return http_ok 'var with spaces value'
           allow_authorized_conjur_get('/api/variables/bad%2Ftls%2Fkey/value') \
               .and_return http_unauthorized
         end
@@ -36,9 +42,11 @@ describe 'conjur::secret', conjur: :mock do
         before do
           allow_authorized_conjur_get('/api/secrets/testacct/variable/key') \
               .and_return http_ok 'variable value'
-          allow_authorized_conjur_get('/api/secrets/testacct/variable/tls/key') \
+          allow_authorized_conjur_get('/api/secrets/testacct/variable/tls%2Fkey') \
               .and_return http_ok 'tls key value'
-          allow_authorized_conjur_get('/api/secrets/testacct/variable/bad/tls/key') \
+          allow_authorized_conjur_get('/api/secrets/testacct/variable/var%20with%20spaces') \
+              .and_return http_ok 'var with spaces value'
+          allow_authorized_conjur_get('/api/secrets/testacct/variable/bad%2Ftls%2Fkey') \
               .and_return http_unauthorized
         end
         include_examples "fetching secrets"
