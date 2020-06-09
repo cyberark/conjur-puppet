@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- We now encode the variable id before retrieving it from Conjur v5. 
+  Spaces are encoded into "%20" and slashes into "%2F"
+  ([cyberark/conjur-puppet#72](https://github.com/cyberark/conjur-puppet/issues/72))
 
 ## [2.0.2] - 2019-12-18
 ### Added
