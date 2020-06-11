@@ -1,6 +1,6 @@
 {
   "name": "cyberark-conjur",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "author": "CyberArk",
   "summary": "Register nodes as Conjur hosts and securely use secrets stored in Conjur",
   "license": "Apache-2.0",
@@ -13,7 +13,7 @@
   "operatingsystem_support": [
     {
       "operatingsystem": "ubuntu",
-      "operatingsystemrelease": ["14.04", "16.04"]
+      "operatingsystemrelease": ["14.04", "16.04", "18.04"]
     },
     {
       "operatingsystem": "centos",
@@ -21,7 +21,7 @@
     },
     {
       "operatingsystem": "debian",
-      "operatingsystemrelease": ["7", "8"]
+      "operatingsystemrelease": ["7", "8", "9"]
     },
     {
       "operatingsystem": "Windows",
