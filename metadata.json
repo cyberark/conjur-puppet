@@ -13,7 +13,7 @@
   "operatingsystem_support": [
     {
       "operatingsystem": "ubuntu",
-      "operatingsystemrelease": ["14.04", "16.04", "18.04"]
+      "operatingsystemrelease": ["14.04", "16.04"]
     },
     {
       "operatingsystem": "centos",
@@ -21,7 +21,7 @@
     },
     {
       "operatingsystem": "debian",
-      "operatingsystemrelease": ["7", "8", "9"]
+      "operatingsystemrelease": ["7", "8"]
     },
     {
       "operatingsystem": "Windows",

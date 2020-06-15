@@ -85,7 +85,7 @@ convergeNode() {
     -v $config_file:/etc/conjur.conf:ro \
     -v $identity_file:/etc/conjur.identity:ro \
     -v $PWD:/src:ro -w /src \
-    puppet/puppet-agent-ubuntu
+    puppet/puppet-agent-ubuntu:5.5.1
 
   rm -rf $TMPDIR
 
