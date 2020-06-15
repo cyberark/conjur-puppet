@@ -7,12 +7,18 @@ node default {
   }
 
   if ($facts['conjur_smoke_test']) {
+    notify { "Including conjur module...": }
     include conjur
+
+    notify { "Grabbing 'inventory/db-password' secret...": }
     $secret = conjur::secret('inventory/db-password')
-    notify {"Writing this secret to file: ${secret.unwrap}":}
+
+    notify { "Writing secret '${secret.unwrap}' to /tmp/test.pem...": }
     file { '/tmp/test.pem':
       ensure  => file,
       content => conjur::secret('inventory/db-password'),
     }
+
+    notify { "Done!": }
   }
 }

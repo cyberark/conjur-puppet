@@ -1,37 +1,57 @@
-#!/bin/bash -e
+#!/bin/bash
+
+set -euo pipefail
 
 # Launches a full Puppet stack and converges a node against it
 
-COMPOSE_PROJECT_NAME=puppet-smoketeste2e
+COMPOSE_PROJECT_NAME=puppetmaster
 
 # make sure on Jenkins if something goes wrong the
 # build doesn't fail because of leftovers from previous tries
-if [ -n "$BUILD_NUMBER" ]; then
+if [ -n "${BUILD_NUMBER:-}" ]; then
    COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME-$BUILD_NUMBER
 fi
 
 export COMPOSE_PROJECT_NAME
 NETNAME=${COMPOSE_PROJECT_NAME//-/}_default
 
-main() {
-  startServices
-  setupConjur
-  convergeNode
+cleanup() {
+  echo "Ensuring clean state..."
+  docker-compose down -v || true
 }
 
-runInConjur() {
+main() {
+  cleanup
+  trap cleanup  EXIT
+
+  start_services
+  setup_conjur
+  wait_for_puppetmaster
+  converge_node
+}
+
+run_in_conjur() {
   docker-compose exec -T cli "$@"
 }
 
-startServices() {
+start_services() {
   docker-compose up -d
 }
 
 wait_for_conjur() {
-  docker-compose exec -T conjur bash -c 'while ! curl -sI localhost > /dev/null; do sleep 1; done'
+  docker-compose exec -T conjur conjurctl wait
 }
 
-setupConjur() {
+wait_for_puppetmaster() {
+  echo -n "Waiting on puppetmaster to be ready..."
+  while ! docker-compose exec -T conjur curl -ks https://puppet:8140 >/dev/null; do
+    echo -n "."
+    sleep 2
+  done
+  echo "OK"
+}
+
+setup_conjur() {
   wait_for_conjur
   docker-compose exec -T conjur conjurctl account create cucumber || :
   api_key=$(docker-compose exec -T conjur conjurctl role retrieve-key cucumber:user:admin | tr -d '\r')
@@ -45,20 +65,20 @@ setupConjur() {
   echo "-----"
   echo "Logging into the CLI"
   echo "-----"
-  runInConjur conjur authn login -u admin -p "${api_key}"
+  run_in_conjur conjur authn login -u admin -p "${api_key}"
 
   echo "-----"
   echo "Loading Conjur initial policy"
   echo "-----"
-  runInConjur conjur policy load root /src/policy.yml
-  runInConjur conjur variable values add inventory/db-password D7JGyGmCbDNCKYxgvpzz  # load the secret's value
+  run_in_conjur conjur policy load root /src/policy.yml
+  run_in_conjur conjur variable values add inventory/db-password D7JGyGmCbDNCKYxgvpzz  # load the secret's value
 }
 
-convergeNode() {
+converge_node() {
   local node_name='node01'
 
   local login="host/$node_name"
-  local api_key=$(runInConjur conjur host rotate_api_key -h $node_name)
+  local api_key=$(run_in_conjur conjur host rotate_api_key -h $node_name)
 
   # write the conjurize files to a tempdir so they can be mounted
   TMPDIR="$PWD/tmp"
@@ -79,7 +99,7 @@ convergeNode() {
     password $api_key
   " > $identity_file
 
-  docker run --rm \
+  docker run --rm -t \
     --net $NETNAME \
     -e 'FACTER_CONJUR_SMOKE_TEST=true' \
     -v $config_file:/etc/conjur.conf:ro \
@@ -88,7 +108,6 @@ convergeNode() {
     puppet/puppet-agent-ubuntu:5.5.1
 
   rm -rf $TMPDIR
-
 }
 
 main "$@"

@@ -1,10 +1,10 @@
-version: "2"
+version: "3"
 
 services:
   puppet:
     container_name: puppet
     hostname: puppet
-    image: puppet/puppetserver
+    image: puppet/puppetserver:5.3.7
     ports:
       - 8140
     volumes:
@@ -16,6 +16,9 @@ services:
       - PUPPETDB_SERVER_URLS=https://puppetdb.local:8081,https://puppetdb:8081
     links:
       - puppetdb:puppetdb.local
+    depends_on:
+      - puppetdbpostgres
+      - puppetdb
 
   puppetdbpostgres:
     container_name: postgres
@@ -57,7 +60,8 @@ services:
       - .:/src:ro
     working_dir: /src
     command: server
-    depends_on: [db]
+    depends_on:
+      - db
 
   db:
     image: postgres:9.3
