@@ -19,7 +19,7 @@ pipeline {
         }
       }
     }
-    
+
     // workaround for Jenkins not fetching tags
     stage('Fetch tags') {
       steps {
@@ -44,7 +44,7 @@ pipeline {
 
     stage('Run smoke tests') {
       parallel {
-        stage('Test with Conjur v5') {
+        stage('Local agent - Conjur v5') {
           steps {
             dir('examples') {
               sh './smoketest.sh'
@@ -52,7 +52,15 @@ pipeline {
           }
         }
 
-        stage('Test with Conjur Enterprise v4') {
+        stage('E2E - Conjur 5') {
+          steps {
+            dir('examples/puppetmaster') {
+              sh './smoketest_e2e.sh'
+            }
+          }
+        }
+
+        stage('Local agent - Conjur v4 EE') {
           steps {
             dir('examples/ee') {
               sh './smoketest.sh'
