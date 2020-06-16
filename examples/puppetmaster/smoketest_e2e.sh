@@ -4,13 +4,7 @@ set -euo pipefail
 
 # Launches a full Puppet stack and converges a node against it
 
-COMPOSE_PROJECT_NAME=puppetmaster
-
-# make sure on Jenkins if something goes wrong the
-# build doesn't fail because of leftovers from previous tries
-if [ -n "${BUILD_NUMBER:-}" ]; then
-   COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME-$BUILD_NUMBER
-fi
+COMPOSE_PROJECT_NAME=puppetmaster_$(openssl rand -hex 3)
 
 export COMPOSE_PROJECT_NAME
 NETNAME=${COMPOSE_PROJECT_NAME//-/}_default

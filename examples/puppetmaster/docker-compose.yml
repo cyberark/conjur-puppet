@@ -2,7 +2,6 @@ version: "3"
 
 services:
   puppet:
-    container_name: puppet
     hostname: puppet
     image: puppet/puppetserver:5.3.7
     ports:
@@ -19,9 +18,11 @@ services:
     depends_on:
       - puppetdbpostgres
       - puppetdb
+    links:
+      - "puppetdbpostgres:postgres"
 
   puppetdbpostgres:
-    container_name: postgres
+    hostname: postgres
     image: puppet/puppetdb-postgres
     environment:
       - POSTGRES_PASSWORD=puppetdb
@@ -31,7 +32,6 @@ services:
       - 5432
 
   puppetdb:
-    container_name: puppetdb
     hostname: puppetdb
     image: puppet/puppetdb
     ports:
@@ -44,7 +44,6 @@ services:
       - 8081:8000
 
   puppetexplorer:
-    container_name: puppetexplorer
     image: puppet/puppetexplorer
     ports:
       - 8080:80
