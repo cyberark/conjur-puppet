@@ -1,0 +1,18 @@
+@startuml
+
+participant Conjur as conjur
+participant Agent as agent
+participant Master as master
+
+agent --> agent : Puppet Facts collected
+agent --> conjur : API key and Host\nprovided
+conjur --> agent : Authorization token\nreturned
+agent --> master : Facts (including Authentication\ntoken) sent to
+master --> master : Catalog compiled\nbased on Agent Facts
+master --> conjur : Using Authentication token\nrequest variables
+conjur --> conjur : Validate Host has permission
+conjur --> master : Variable values returned
+master --> agent : Catalog sent to
+agent --> agent : Configuration updates occur,\nbased on catalog
+
+@enduml
