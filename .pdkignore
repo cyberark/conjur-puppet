@@ -17,7 +17,6 @@
 /pkg/
 /spec/fixtures/manifests/
 /spec/fixtures/modules/
-/spec/output/
 /tmp/
 /vendor/
 /convert_report.txt
@@ -26,6 +25,21 @@
 .project
 .envrc
 /inventory.yaml
+/appveyor.yml
+/.fixtures.yml
+/Gemfile
+/.gitattributes
+/.gitignore
+/.gitlab-ci.yml
+/.pdkignore
+/Rakefile
+/rakelib/
+/.rspec
+/.rubocop.yml
+/.travis.yml
+/.yardopts
+/spec/
+/.vscode/
 
 # dev stuff
 /conjur.pem
