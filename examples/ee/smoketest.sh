@@ -3,9 +3,8 @@
 NOKILL=${NOKILL:-"0"}
 
 OSES=(
+  alpine
   ubuntu
-  centos
-  debian
 )
 
 COMPOSE_PROJECT_NAME=puppet_v4_smoketest
