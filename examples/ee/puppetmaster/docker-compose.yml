@@ -17,16 +17,6 @@ services:
     links:
       - puppetdb:puppetdb.local
 
-  puppetdbpostgres:
-    container_name: postgres
-    image: puppet/puppetdb-postgres
-    environment:
-      - POSTGRES_PASSWORD=puppetdb
-      - POSTGRES_USER=puppetdb
-      - POSTGRES_DB=puppetdb
-    expose:
-      - 5432
-
   puppetdb:
     container_name: puppetdb
     hostname: puppetdb

@@ -16,20 +16,7 @@ services:
     links:
       - puppetdb:puppetdb.local
     depends_on:
-      - puppetdbpostgres
       - puppetdb
-    links:
-      - "puppetdbpostgres:postgres"
-
-  puppetdbpostgres:
-    hostname: postgres
-    image: puppet/puppetdb-postgres
-    environment:
-      - POSTGRES_PASSWORD=puppetdb
-      - POSTGRES_USER=puppetdb
-      - POSTGRES_DB=puppetdb
-    expose:
-      - 5432
 
   puppetdb:
     hostname: puppetdb

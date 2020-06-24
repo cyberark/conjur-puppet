@@ -4,9 +4,8 @@ NOKILL=${NOKILL:-"0"}
 # FAIL_FAST=yes # to quit on first error
 
 OSES=(
+  alpine
   ubuntu
-  centos
-  debian
 )
 
 COMPOSE_PROJECT_NAME=puppet_smoketest
