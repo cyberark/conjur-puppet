@@ -46,7 +46,7 @@ run_in_conjur() {
 }
 
 start_services() {
-  docker-compose up -d
+  docker-compose up -d conjur puppet
 }
 
 wait_for_conjur() {

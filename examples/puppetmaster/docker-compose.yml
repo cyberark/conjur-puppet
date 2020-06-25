@@ -2,7 +2,6 @@ version: "3"
 
 services:
   puppet:
-    hostname: puppet
     image: puppet/puppetserver:${PUPPET_SERVER_TAG:-latest}
     ports:
       - 8140
@@ -28,7 +27,6 @@ services:
       - 5432
 
   puppetdb:
-    hostname: puppetdb
     image: puppet/puppetdb
     environment:
       - PUPPETSERVER_HOSTNAME=puppet
