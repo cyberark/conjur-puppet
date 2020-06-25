@@ -5,10 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Added support for v6 agents (v6 server is still not supported) by using v5- and
+  v6-compatible APIs for CA chain retrieval.
+  [cyberark/conjur-puppet#44](https://github.com/org/repo/issues/44)
 
 ## [2.0.3] - 2020-05-10
 ### Changed
-- We now encode the variable id before retrieving it from Conjur v5. 
+- We now encode the variable id before retrieving it from Conjur v5.
   Spaces are encoded into "%20" and slashes into "%2F"
   ([cyberark/conjur-puppet#72](https://github.com/cyberark/conjur-puppet/issues/72))
 

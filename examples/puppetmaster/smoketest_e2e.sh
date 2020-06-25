@@ -4,8 +4,17 @@ set -euo pipefail
 
 # Launches a full Puppet stack and converges a node against it
 
-COMPOSE_PROJECT_NAME=puppetmaster_$(openssl rand -hex 3)
+PUPPET_AGENT_TAGS=(
+  5.5.1
+  latest
+)
 
+OSES=(
+  alpine
+  ubuntu
+)
+
+COMPOSE_PROJECT_NAME=puppetmaster_$(openssl rand -hex 3)
 export COMPOSE_PROJECT_NAME
 NETNAME=${COMPOSE_PROJECT_NAME//-/}_default
 
@@ -93,13 +102,22 @@ converge_node() {
     password $api_key
   " > $identity_file
 
-  docker run --rm -t \
-    --net $NETNAME \
-    -e 'FACTER_CONJUR_SMOKE_TEST=true' \
-    -v $config_file:/etc/conjur.conf:ro \
-    -v $identity_file:/etc/conjur.identity:ro \
-    -v $PWD:/src:ro -w /src \
-    puppet/puppet-agent-ubuntu:5.5.1
+  for os_name in ${OSES[@]}; do
+    for agent_tag in ${PUPPET_AGENT_TAGS[@]}; do
+      echo "---"
+      echo "Running test for $os_name:$agent_tag..."
+      docker run --rm -t \
+        --net $NETNAME \
+        -e 'FACTER_CONJUR_SMOKE_TEST=true' \
+        -v $config_file:/etc/conjur.conf:ro \
+        -v $identity_file:/etc/conjur.identity:ro \
+        -v $PWD:/src:ro -w /src \
+        "puppet/puppet-agent-$os_name:$agent_tag"
+    done
+  done
+
+  echo "==="
+  echo "DONE"
 
   rm -rf $TMPDIR
 }
