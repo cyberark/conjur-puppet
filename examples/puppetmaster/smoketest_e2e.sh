@@ -4,10 +4,18 @@ set -euo pipefail
 
 # Launches a full Puppet stack and converges a node against it
 
-PUPPET_AGENT_TAGS=(
-  5.5.1
-  latest
-)
+PUPPET_SERVER_TAG=latest
+PUPPET_AGENT_TAGS=( latest )
+if [ "${1:-}" = "5" ]; then
+  PUPPET_SERVER_TAG="5.3.7"
+  PUPPET_AGENT_TAGS=(
+    5.5.1
+    latest
+  )
+fi
+export PUPPET_SERVER_TAG
+
+echo "Using Puppet server '$PUPPET_SERVER_TAG' with agents: '${PUPPET_AGENT_TAGS[@]}'"
 
 OSES=(
   alpine
@@ -25,7 +33,7 @@ cleanup() {
 
 main() {
   cleanup
-  trap cleanup  EXIT
+  trap cleanup EXIT
 
   start_services
   setup_conjur
