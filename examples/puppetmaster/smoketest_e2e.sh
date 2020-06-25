@@ -92,7 +92,7 @@ converge_node() {
   local api_key=$(run_in_conjur conjur host rotate_api_key -h $node_name)
 
   # write the conjurize files to a tempdir so they can be mounted
-  TMPDIR="$PWD/tmp"
+  TMPDIR="$PWD/tmp/$(openssl rand -hex 3)"
   mkdir -p $TMPDIR
 
   local config_file="$TMPDIR/conjur.conf"
