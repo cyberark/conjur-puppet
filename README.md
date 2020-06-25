@@ -24,7 +24,7 @@ This is the official Puppet module for [Conjur](https://www.conjur.org), a robus
 
 This module requires that you have:
 - Puppet v5 (or equivalent EE version) server
-- Puppet v5 or v6 agent on the nodes
+- Puppet v5 or v6 agent (v6 tested only on Linux) on the nodes
 - Conjur endpoint available to the Puppet nodes using this module.
 
 ### Beginning with conjur
