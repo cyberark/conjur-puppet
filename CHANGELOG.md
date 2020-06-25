@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
+- Added support for v6 servers by using v5- and v6-compatible APIs for token decryption
+  [cyberark/conjur-puppet#91](https://github.com/org/repo/issues/91)
 - Added support for v6 agents (v6 server is still not supported) by using v5- and
   v6-compatible APIs for CA chain retrieval.
   [cyberark/conjur-puppet#44](https://github.com/org/repo/issues/44)
