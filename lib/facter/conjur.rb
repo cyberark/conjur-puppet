@@ -71,8 +71,9 @@ Facter.add :conjur do
     def puppet_certificate
       @puppet_certificate ||= begin
         itc = Puppet::Resource::Catalog.indirection.terminus.class
-        get_ssl_cert itc.server, itc.port,
-            Puppet::SSL::Validator.default_validator.ssl_configuration.ca_chain_file
+        ca_chain_file = Puppet[:ssl_client_ca_auth] || Puppet[:localcacert]
+
+        get_ssl_cert itc.server, itc.port, ca_chain_file
       end
     end
 
