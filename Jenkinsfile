@@ -52,7 +52,15 @@ pipeline {
           }
         }
 
-        stage('E2E - Conjur 5') {
+        stage('E2E - Puppet 5 - Conjur 5') {
+          steps {
+            dir('examples/puppetmaster') {
+              sh './smoketest_e2e.sh 5'
+            }
+          }
+        }
+
+        stage('E2E - Puppet 6 - Conjur 5') {
           steps {
             dir('examples/puppetmaster') {
               sh './smoketest_e2e.sh'

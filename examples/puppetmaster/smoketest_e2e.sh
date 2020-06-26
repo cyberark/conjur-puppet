@@ -4,10 +4,18 @@ set -euo pipefail
 
 # Launches a full Puppet stack and converges a node against it
 
-PUPPET_AGENT_TAGS=(
-  5.5.1
-  latest
-)
+PUPPET_SERVER_TAG=latest
+PUPPET_AGENT_TAGS=( latest )
+if [ "${1:-}" = "5" ]; then
+  PUPPET_SERVER_TAG="5.3.7"
+  PUPPET_AGENT_TAGS=(
+    5.5.1
+    latest
+  )
+fi
+export PUPPET_SERVER_TAG
+
+echo "Using Puppet server '$PUPPET_SERVER_TAG' with agents: '${PUPPET_AGENT_TAGS[@]}'"
 
 OSES=(
   alpine
@@ -25,7 +33,7 @@ cleanup() {
 
 main() {
   cleanup
-  trap cleanup  EXIT
+  trap cleanup EXIT
 
   start_services
   setup_conjur
@@ -38,7 +46,7 @@ run_in_conjur() {
 }
 
 start_services() {
-  docker-compose up -d
+  docker-compose up -d conjur puppet
 }
 
 wait_for_conjur() {
@@ -84,7 +92,7 @@ converge_node() {
   local api_key=$(run_in_conjur conjur host rotate_api_key -h $node_name)
 
   # write the conjurize files to a tempdir so they can be mounted
-  TMPDIR="$PWD/tmp"
+  TMPDIR="$PWD/tmp/$(openssl rand -hex 3)"
   mkdir -p $TMPDIR
 
   local config_file="$TMPDIR/conjur.conf"
