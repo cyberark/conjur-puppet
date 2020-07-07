@@ -11,19 +11,23 @@
   * [Conjur module basics](#conjur-module-basics)
     + [Sensitive data type](#sensitive-data-type)
 - [Usage](#usage)
-  * [Conjur host identity with Host Factory](#conjur-host-identity-with-host-factory)
   * [Conjur host identity with API key](#conjur-host-identity-with-api-key)
-    + [Using Conjur host identity with API key on Windows hosts](#using-conjur-host-identity-with-api-key-on-windows-hosts)
+    + [Special instructions for Windows hosts](#special-instructions-for-windows-hosts)
+  * [Conjur host identity with Host Factory](#conjur-host-identity-with-host-factory)
 - [Reference](#reference)
 - [Limitations](#limitations)
 - [Contributing](#contributing)
 - [Support](#support)
 
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents
+generated with markdown-toc</a></i></small>
 
 ## Description
 
-This is the official Puppet module for [Conjur](https://www.conjur.org), a robust identity and access management platform. This module simplifies the operations of establishing Conjur host identity and allows authorized Puppet nodes to fetch secrets from Conjur.
+This is the official Puppet module for [Conjur](https://www.conjur.org), a robust
+identity and access management platform. This module simplifies the operations of
+establishing Conjur host identity and allows authorized Puppet nodes to fetch
+secrets from Conjur.
 
 ## Setup
 
@@ -47,13 +51,18 @@ questions, please contact us on [Discourse](https://discuss.cyberarkcommons.org/
 
 ### Conjur module basics
 
-This module provides a `conjur::secret` function that can be used to retrieve secrets from Conjur. Given a Conjur variable identifier, `conjur::secret` uses the node's Conjur identity to resolve and return the variable's value.
+This module provides a `conjur::secret` function that can be used to retrieve secrets
+from Conjur. Given a Conjur variable identifier, `conjur::secret` uses the node’s
+Conjur identity to resolve and return the variable’s value.
 
 ```puppet
 $dbpass = conjur::secret('production/postgres/password')
 ```
 
-Hiera attributes can also be used to inform which secret should be fetched, depending on the node running the Conjur module. For example, if `hiera('domain')` returns `app1.example.com` and a Conjur variable named `domains/app1.example.com/ssl-cert` exists, the SSL certificate can be retrieved and written to a file like so:
+Hiera attributes can also be used to inform which secret should be fetched,
+depending on the node running the Conjur module. For example, if `hiera('domain')`
+returns `app1.example.com` and a Conjur variable named `domains/app1.example.com/ssl-cert`
+exists, the SSL certificate can be retrieved and written to a file like so:
 
 ```puppet
 file { '/etc/ssl/cert.pem':
@@ -94,36 +103,14 @@ file { '/etc/someservice/db.yaml':
 
 ## Usage
 
-This module provides the `conjur::secret` function, described above, and the `conjur` class, which can be configured to establish Conjur host identity on the node running Puppet.
-
-### Conjur host identity with Host Factory
-
-If pre-establishing host identity is unfeasible, we instead recommend bootstrapping Conjur host identity using a [Host Factory](https://developer.conjur.net/reference/services/host_factory) token. Nodes inherit the permissions of the layer for which the Host Factory token was generated.
-
-Note when used in this manner, the host factory token will only be used on the initial Puppet run, to establish identity which is then stored on the host. Subsequent runs will use that for Conjur authentication on the node side (at the time of collecting facts) and only provide the Puppet master with a temporary token to fetch the secrets with.
-
-To use a Host Factory token with this module, set variables `authn_login` and `host_factory_token`. Do not set the variable `authn_api_key` when using `host_factory_token`; it is not required. `authn_login` should have a `host/` prefix; the part after the slash will be used as the node’s name in Conjur.
-
-```puppet
-class { 'conjur':
-  account            => 'mycompany',
-  appliance_url      => 'https://conjur.mycompany.com/',
-  authn_login        => 'host/redis001',
-  host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
-  ssl_certificate    => file('/etc/conjur.pem')
-}
-```
-
-By default, all nodes using this Puppet module to bootstrap identity with host_factory_token will have the following annotation set:
-
-```yaml
-puppet: true
-```
+This module provides the `conjur::secret` function, described above, and the `conjur`
+class, which can be configured to establish Conjur host identity on the node running
+Puppet.
 
 ### Conjur host identity with API key
 
-For one-off hosts or test environments it may be preferable to create a host in Conjur and then directly assign
-its Conjur identity in this module.
+For one-off hosts or test environments it may be preferable to create a host in
+Conjur and then directly assign its Conjur identity in this module.
 
 ```puppet
 class { 'conjur':
@@ -134,10 +121,10 @@ class { 'conjur':
 }
 ```
 
-#### <a name="windows"></a>Using Conjur host identity with API key on Windows hosts
+#### Special instructions for Windows hosts
 
-Connection settings for Conjur are stored in the Windows Registry under the key `HKLM\Software\CyberArk\Conjur`.
-The values available to set are:
+Connection settings for Conjur are stored in the Windows Registry under the key
+`HKLM\Software\CyberArk\Conjur`. The values available to set are:
 
 | Value Name | Value Type | Description |
 |-|-|-|
@@ -159,9 +146,10 @@ The operation completed successfully.
 The operation completed successfully.
 ```
 
-Credentials for Conjur are stored in the Windows Credential Manager. The credential `Target` is the Conjur
-authentication URL (e.g. `https://conjur.myorg.net/authn`). The username is the host ID, with a `host/` prefix
-(e.g. `host/my-host`). The credential password is the host's API key.
+Credentials for Conjur are stored in the Windows Credential Manager. The credential
+`Target` is the Conjur authentication URL (e.g. `https://conjur.myorg.net/authn`).
+The username is the host ID, with a `host/` prefix (e.g. `host/my-host`). The
+credential password is the host's API key.
 
 This may be set using Powershell:
  ```powershell
@@ -169,6 +157,41 @@ This may be set using Powershell:
 Enter the password for 'hosts/my-host' to connect to 'https://conjur.net/authn': # {Prompt for API Key}
 
 CMDKEY: Credential added successfully.
+```
+
+### Conjur host identity with Host Factory
+
+If pre-establishing host identity is unfeasible, we instead recommend bootstrapping
+Conjur host identity using a [Host Factory](https://developer.conjur.net/reference/services/host_factory)
+token. Nodes inherit the permissions of the layer for which the Host Factory token
+was generated.
+
+Note when used in this manner, the host factory token will only be used on the
+initial Puppet run, to establish identity which is then stored on the host.
+Subsequent runs will use that for Conjur authentication on the agent side (at the
+time of collecting facts) and only provide the Puppet master with a temporary
+token to fetch the secrets with.
+
+To use a Host Factory token with this module, set variables `authn_login` and
+`host_factory_token`. Do not set the variable `authn_api_key` when using
+`host_factory_token` as it is not required. `authn_login` should have a `host/`
+prefix and the part after the slash will be used as the node’s name in Conjur.
+
+```puppet
+class { 'conjur':
+  account            => 'mycompany',
+  appliance_url      => 'https://conjur.mycompany.com/',
+  authn_login        => 'host/redis001',
+  host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
+  ssl_certificate    => file('/etc/conjur.pem')
+}
+```
+
+By default, all nodes using this Puppet module to bootstrap identity with
+`host_factory_token` will have the following annotation set:
+
+```yaml
+puppet: true
 ```
 
 ## Reference
@@ -193,7 +216,11 @@ CMDKEY: Credential added successfully.
 
 ### `conjur` class
 
-This class establishes Conjur host identity on the node so that secrets can be fetched from Conjur. The identity and Conjur endpoint configuration can be pre-configured on a host using `/etc/conjur.conf` and `/etc/conjur.identity` (by the way of [`conjur` fact](#conjur-fact)) or provided as parameters. The identity can also be bootstrapped using a host factory token.
+This class establishes Conjur host identity on the node so that secrets can be
+fetched from Conjur. The identity and Conjur endpoint configuration can be
+pre-configured on a host using `/etc/conjur.conf` and `/etc/conjur.identity`
+(by the way of [`conjur` fact](#conjur-fact)) or provided as parameters. The
+identity can also be bootstrapped using a host factory token.
 
 #### Note
 
@@ -264,7 +291,10 @@ class { 'conjur':
 
 ### `conjur::secret`
 
-This function uses the node’s Conjur host identity to authenticate with Conjur and retrieve a secret that the node is authorized to fetch. The output of this function is a string that contains the value of the variable parameter. If the secret cannot be fetched an error is thrown.
+This function uses the node’s Conjur host identity to authenticate with Conjur
+and retrieve a secret that the node is authorized to fetch. The output of this
+function is a string that contains the value of the variable parameter. If the
+secret cannot be fetched an error is thrown.
 
 The returned value is `Sensitive` data type.
 
@@ -281,12 +311,22 @@ dbpass = conjur::secret('production/postgres/password')
 
 ### `conjur` fact
 
-This internal, structured fact is used to inform the master of the current node Conjur configuration and identity.
+This internal, structured fact is used to inform the master of the current node
+Conjur configuration and identity.
 
-Preestablishing configuration and identity is the recommended way of using this module, for example by pre-baking the configuration into a base image and bootstrapping the identity using an orchestration solution (see [Usage](#usage) section). If used this way, the Puppet master only has access to the 8-minute bearer token issued for the host and never handles long-term credentials.
+Pre-establishing configuration and identity is the recommended way of using this
+module, for example by pre-baking the configuration into a base image and bootstrapping
+the identity using an orchestration solution (see [Usage](#usage) section). If
+used this way, the Puppet master only has access to the 8-minute bearer token
+issued for the host and never handles long-term credentials.
 
-- If the node is preconfigured with Conjur settings, they're reported in this fact and they're used as defaults by the `::conjur` class.
-- If additionally the host has a Conjur identity pre-configured (eg. API key in `/etc/conjur.identity`), node uses that to authenticate to Conjur. It gets back the standard temporary Conjur token which is encrypted with the Puppet master public TLS key and reported in this fact. This ensures only the master (with the corresponding private key) can decrypt and use it.
+- If the node is preconfigured with Conjur settings, they're reported in this
+  fact and they're used as defaults by the `::conjur` class.
+- If additionally the host has a Conjur identity pre-configured (eg. API key in
+  `/etc/conjur.identity`), node uses that to authenticate to Conjur. It gets back
+  the standard temporary Conjur token which is encrypted with the Puppet master
+  public TLS key and reported in this fact. This ensures only the master (with
+  the corresponding private key) can decrypt and use it.
 
 ## Limitations
 
@@ -294,14 +334,16 @@ See [metadata.json](metadata.json) for supported platforms
 
 ## Contributing
 
-We welcome contributions of all kinds to this repository. For instructions on how to get started and descriptions of our development workflows, please see our [contributing
-guide][contrib].
+We welcome contributions of all kinds to this repository. For instructions on
+how to get started and descriptions of our development workflows, please see our
+[contributing guide][contrib].
 
 [contrib]: https://github.com/cyberark/conjur-puppet/blob/master/CONTRIBUTING.md
 
 ## Support
 
-Please note, that this is a "Partner Supported" module, which means that  technical customer support for this module
-is solely provided by CyberArk.
+Please note, that this is a "Partner Supported" module, which means that technical
+customer support for this module is solely provided by CyberArk.
 
-Puppet does not provide support for any Partner Supported modules. For technical support please visit the Conjur channnel at [CyberArk Commons](https://discuss.cyberarkcommons.org/).
+Puppet does not provide support for any Partner Supported modules. For technical
+support please visit the Conjur channnel at [CyberArk Commons](https://discuss.cyberarkcommons.org/).
