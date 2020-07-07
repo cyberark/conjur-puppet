@@ -7,6 +7,7 @@
 1. [Description](#description)
 2. [Setup - The basics of getting started with conjur](#setup)
     * [Setup requirements](#setup-requirements)
+    * [Using This Project With Conjur OSS](#using-conjur-puppet-with-conjur-oss)
     * [Beginning with conjur](#beginning-with-conjur)
 3. [Usage - Configuration options and additional functionality](#usage)
 4. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
@@ -27,9 +28,20 @@ This module requires that you have:
 - Puppet v5 or v6 agent (v6 tested only on Linux) on the nodes
 - Conjur endpoint available to the Puppet nodes using this module.
 
+### Using conjur-puppet with Conjur OSS 
+
+Are you using this project with [Conjur OSS](https://github.com/cyberark/conjur)? Then we 
+**strongly** recommend choosing the version of this project to use from the latest [Conjur OSS 
+suite release](https://docs.conjur.org/Latest/en/Content/Overview/Conjur-OSS-Suite-Overview.html). 
+Conjur maintainers perform additional testing on the suite release versions to ensure 
+compatibility. When possible, upgrade your Conjur version to match the 
+[latest suite release](https://docs.conjur.org/Latest/en/Content/ReleaseNotes/ConjurOSS-suite-RN.htm); 
+when using integrations, choose the latest suite release that matches your Conjur version. For any 
+questions, please contact us on [Discourse](https://discuss.cyberarkcommons.org/c/conjur/5).
+
 ### Beginning with conjur
 
-This module provides a `conjur::secret` function that can be used to retrieve secrets from Conjur. Given a Conjur variable identifier, `conjur::secret` uses the node’s Conjur identity to resolve and return the variable’s value.
+This module provides a `conjur::secret` function that can be used to retrieve secrets from Conjur. Given a Conjur variable identifier, `conjur::secret` uses the node's Conjur identity to resolve and return the variable's value.
 
 ```puppet
 $dbpass = conjur::secret('production/postgres/password')
