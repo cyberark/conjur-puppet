@@ -28,7 +28,7 @@ This module requires that you have:
 - Puppet v5 or v6 agent (v6 tested only on Linux) on the nodes
 - Conjur endpoint available to the Puppet nodes using this module.
 
-## Using conjur-puppet with Conjur OSS 
+### Using conjur-puppet with Conjur OSS 
 
 Are you using this project with [Conjur OSS](https://github.com/cyberark/conjur)? Then we 
 **strongly** recommend choosing the version of this project to use from the latest [Conjur OSS 
