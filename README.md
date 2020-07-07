@@ -4,16 +4,22 @@
 
 #### Table of Contents
 
-1. [Description](#description)
-2. [Setup - The basics of getting started with conjur](#setup)
-    * [Setup requirements](#setup-requirements)
-    * [Using This Project With Conjur OSS](#using-conjur-puppet-with-conjur-oss)
-    * [Beginning with conjur](#beginning-with-conjur)
-3. [Usage - Configuration options and additional functionality](#usage)
-4. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
-5. [Limitations - OS compatibility, etc.](#limitations)
-6. [Contributing - Guide for contributing to the module](#contributing)
-7. [Support - "Puppet Supported" details and contact info](#support)
+- [Description](#description)
+- [Setup](#setup)
+  * [Setup Requirements](#setup-requirements)
+  * [Using This Project With Conjur OSS](#using-conjur-puppet-with-conjur-oss)
+  * [Conjur module basics](#conjur-module-basics)
+    + [Sensitive data type](#sensitive-data-type)
+- [Usage](#usage)
+  * [Conjur host identity with Host Factory](#conjur-host-identity-with-host-factory)
+  * [Conjur host identity with API key](#conjur-host-identity-with-api-key)
+    + [Using Conjur host identity with API key on Windows hosts](#using-conjur-host-identity-with-api-key-on-windows-hosts)
+- [Reference](#reference)
+- [Limitations](#limitations)
+- [Contributing](#contributing)
+- [Support](#support)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
 ## Description
 
@@ -39,7 +45,7 @@ compatibility. When possible, upgrade your Conjur version to match the
 when using integrations, choose the latest suite release that matches your Conjur version. For any 
 questions, please contact us on [Discourse](https://discuss.cyberarkcommons.org/c/conjur/5).
 
-### Beginning with conjur
+### Conjur module basics
 
 This module provides a `conjur::secret` function that can be used to retrieve secrets from Conjur. Given a Conjur variable identifier, `conjur::secret` uses the node's Conjur identity to resolve and return the variable's value.
 
@@ -90,51 +96,6 @@ file { '/etc/someservice/db.yaml':
 
 This module provides the `conjur::secret` function, described above, and the `conjur` class, which can be configured to establish Conjur host identity on the node running Puppet.
 
-### Pre-established host identity
-
-For best security properties, use [conjurize](https://www.conjur.org/get-started/machine-identity.html) or a similar method to establish host identity before running Puppet to configure. This way Puppet master only ever handles a temporary access token instead of real, permanent Conjur credentials of the hosts it manages.
-
-If a host is so pre-configured, the settings and credentials are automatically obtained and used. In this case, all that is needed to use `conjur::secret` is a simple
-
-```puppet
-include conjur
-```
-
-#### <a name="windows"></a>Pre-establish Host Identity on Windows Hosts
-
-Connection settings for Conjur are stored in the Windows Registry under the key `HKLM\Software\CyberArk\Conjur`.
-The values available to set are:
-
-| Value Name | Value Type | Description |
-|-|-|-|
-| Account | REG_SZ | Conjur account specified during Conjur setup. |
-| ApplianceUrl | REG_SZ | Conjur API endpoint. |
-| SslCertificate | REG_SZ | public Conjur SSL cert. |
-| Version | REG_DWORD | Conjur API version. Defaults to `5`. |
-
-These may be set using Powershell:
-
-```powershell
-> reg ADD HKLM\Software\CyberArk\Conjur /v ApplianceUrl /t REG_SZ /d https://master.conjur.net
-The operation completed successfully.
-  > reg ADD HKLM\Software\CyberArk\Conjur /v Version /t REG_DWORD /d 5
-The operation completed successfully.
-  > reg ADD HKLM\Software\CyberArk\Conjur /v Account /t REG_SZ /d myorg
-The operation completed successfully.
-  > reg ADD HKLM\Software\CyberArk\Conjur /v SslCertificate /t REG_SZ /d "-----BEGIN CERTIFICATE-----..."
-The operation completed successfully.
-```
-
-Credentials for Conjur are stored in the Windows Credential Manager. The credential `Target` is the Conjur authentication URL (e.g. `https://conjur.myorg.net/authn`). The username is the host ID, with a `host/` prefix (e.g. `host/my-host`). The credential password is the host's API key.
-
-This may be set using Powershell:
- ```powershell
-> cmdkey /generic:https://conjur.net/authn /user:hosts/my-host /pass
-Enter the password for 'hosts/my-host' to connect to 'https://conjur.net/authn': # {Prompt for API Key}
-
-CMDKEY: Credential added successfully.
-```
-
 ### Conjur host identity with Host Factory
 
 If pre-establishing host identity is unfeasible, we instead recommend bootstrapping Conjur host identity using a [Host Factory](https://developer.conjur.net/reference/services/host_factory) token. Nodes inherit the permissions of the layer for which the Host Factory token was generated.
@@ -161,7 +122,8 @@ puppet: true
 
 ### Conjur host identity with API key
 
-For one-off hosts or test environments it may be preferable to create a host in Conjur and then directly assign its Conjur identity in this module.
+For one-off hosts or test environments it may be preferable to create a host in Conjur and then directly assign
+its Conjur identity in this module.
 
 ```puppet
 class { 'conjur':
@@ -170,6 +132,43 @@ class { 'conjur':
   authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
   ssl_certificate => file('/conjur-ca.pem')
 }
+```
+
+#### <a name="windows"></a>Using Conjur host identity with API key on Windows hosts
+
+Connection settings for Conjur are stored in the Windows Registry under the key `HKLM\Software\CyberArk\Conjur`.
+The values available to set are:
+
+| Value Name | Value Type | Description |
+|-|-|-|
+| Account | REG_SZ | Conjur account specified during Conjur setup. |
+| ApplianceUrl | REG_SZ | Conjur API endpoint. |
+| SslCertificate | REG_SZ | public Conjur SSL cert. |
+| Version | REG_DWORD | Conjur API version. Defaults to `5`. |
+
+These may be set using Powershell:
+
+```powershell
+> reg ADD HKLM\Software\CyberArk\Conjur /v ApplianceUrl /t REG_SZ /d https://master.conjur.net
+The operation completed successfully.
+  > reg ADD HKLM\Software\CyberArk\Conjur /v Version /t REG_DWORD /d 5
+The operation completed successfully.
+  > reg ADD HKLM\Software\CyberArk\Conjur /v Account /t REG_SZ /d myorg
+The operation completed successfully.
+  > reg ADD HKLM\Software\CyberArk\Conjur /v SslCertificate /t REG_SZ /d "-----BEGIN CERTIFICATE-----..."
+The operation completed successfully.
+```
+
+Credentials for Conjur are stored in the Windows Credential Manager. The credential `Target` is the Conjur
+authentication URL (e.g. `https://conjur.myorg.net/authn`). The username is the host ID, with a `host/` prefix
+(e.g. `host/my-host`). The credential password is the host's API key.
+
+This may be set using Powershell:
+ ```powershell
+> cmdkey /generic:https://conjur.net/authn /user:hosts/my-host /pass
+Enter the password for 'hosts/my-host' to connect to 'https://conjur.net/authn': # {Prompt for API Key}
+
+CMDKEY: Credential added successfully.
 ```
 
 ## Reference
@@ -291,7 +290,7 @@ Preestablishing configuration and identity is the recommended way of using this 
 
 ## Limitations
 
-See metadata.json for supported platforms
+See [metadata.json](metadata.json) for supported platforms
 
 ## Contributing
 
@@ -303,6 +302,6 @@ guide][contrib].
 ## Support
 
 Please note, that this is a "Partner Supported" module, which means that  technical customer support for this module
-is solely provided by Conjur.
+is solely provided by CyberArk.
 
-Puppet does not provide support for any Partner Supported modules. For technical support please visit the Conjur channnel at https://discuss.cyberarkcommons.org/.
+Puppet does not provide support for any Partner Supported modules. For technical support please visit the Conjur channnel at [CyberArk Commons](https://discuss.cyberarkcommons.org/).
