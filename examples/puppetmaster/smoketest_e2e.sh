@@ -43,6 +43,7 @@ main() {
   start_services
   setup_conjur
   wait_for_puppetmaster
+  install_required_module_dependency
   converge_node
 }
 
@@ -65,6 +66,11 @@ wait_for_puppetmaster() {
     sleep 2
   done
   echo "OK"
+}
+
+install_required_module_dependency() {
+  echo "Installing puppetlabs-registry module dep to server..."
+  docker-compose exec -T puppet puppet module install puppetlabs-registry
 }
 
 setup_conjur() {
