@@ -37,7 +37,8 @@ secrets from Conjur.
 This module requires that you have:
 - Puppet v5 _or equivalent EE version_
 - Puppet v5 agent on the nodes
-- Conjur endpoint available to the Puppet nodes using this module. Supported versions:
+- Conjur endpoint available to both the Puppet server and the Puppet nodes using this
+  module. Supported versions:
   - Conjur OSS v1+
   - DAP v10+
   - Conjur Enterprise v4.9+
@@ -128,7 +129,8 @@ class { 'conjur':
 #### Special instructions for Windows hosts
 
 Connection settings for Conjur are stored in the Windows Registry under the key
-`HKLM\Software\CyberArk\Conjur`. The values available to set are:
+`HKLM\Software\CyberArk\Conjur`. This is equivalent to `/etc/conjur.conf` on Linux. The
+values available to set are:
 
 | Value Name | Value Type | Description |
 |-|-|-|
@@ -142,11 +144,11 @@ These may be set using Powershell:
 ```powershell
 > reg ADD HKLM\Software\CyberArk\Conjur /v ApplianceUrl /t REG_SZ /d https://master.conjur.net
 The operation completed successfully.
-  > reg ADD HKLM\Software\CyberArk\Conjur /v Version /t REG_DWORD /d 5
+> reg ADD HKLM\Software\CyberArk\Conjur /v Version /t REG_DWORD /d 5
 The operation completed successfully.
-  > reg ADD HKLM\Software\CyberArk\Conjur /v Account /t REG_SZ /d myorg
+> reg ADD HKLM\Software\CyberArk\Conjur /v Account /t REG_SZ /d myorg
 The operation completed successfully.
-  > reg ADD HKLM\Software\CyberArk\Conjur /v SslCertificate /t REG_SZ /d "-----BEGIN CERTIFICATE-----..."
+> reg ADD HKLM\Software\CyberArk\Conjur /v SslCertificate /t REG_SZ /d "-----BEGIN CERTIFICATE-----..."
 The operation completed successfully.
 ```
 
