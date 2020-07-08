@@ -35,8 +35,8 @@ secrets from Conjur.
 ### Setup requirements
 
 This module requires that you have:
-- Puppet v5 or v6 server (v6 tested only on Linux) _or equivalent EE version_
-- Puppet v5 or v6 agent (v6 tested only on Linux) on the nodes
+- Puppet v5 _or equivalent EE version_
+- Puppet v5 agent on the nodes
 - Conjur endpoint available to the Puppet nodes using this module. Supported versions:
   - Conjur OSS v1+
   - DAP v10+
