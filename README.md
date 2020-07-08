@@ -6,21 +6,22 @@
 
 - [Description](#description)
 - [Setup](#setup)
-  * [Setup Requirements](#setup-requirements)
-  * [Using This Project With Conjur OSS](#using-conjur-puppet-with-conjur-oss)
+  * [Setup requirements](#setup-requirements)
+  * [Using `conjur-puppet` with Conjur OSS](#using-conjur-puppet-with-conjur-oss)
   * [Conjur module basics](#conjur-module-basics)
     + [Sensitive data type](#sensitive-data-type)
 - [Usage](#usage)
   * [Conjur host identity with API key](#conjur-host-identity-with-api-key)
     + [Special instructions for Windows hosts](#special-instructions-for-windows-hosts)
   * [Conjur host identity with Host Factory](#conjur-host-identity-with-host-factory)
+  * [Using `conjurize` to pre-establish host identity (Conjur Enterprise v4 only)](#using-pre-established-host-identity-conjur-enterprise-v4-only)
 - [Reference](#reference)
 - [Limitations](#limitations)
 - [Contributing](#contributing)
 - [Support](#support)
 
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents
-generated with markdown-toc</a></i></small>
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 
 ## Description
 
@@ -31,22 +32,25 @@ secrets from Conjur.
 
 ## Setup
 
-### Setup Requirements
+### Setup requirements
 
 This module requires that you have:
-- Puppet v5 or v6 server (v6 tested only on Linux) _or equivalent EE version_
-- Puppet v5 or v6 agent (v6 tested only on Linux) on the nodes
-- Conjur endpoint available to the Puppet nodes using this module.
+- Puppet v5 _or equivalent EE version_
+- Puppet v5 agent on the nodes
+- Conjur endpoint available to the Puppet nodes using this module. Supported versions:
+  - Conjur OSS v1+
+  - DAP v10+
+  - Conjur Enterprise v4.9+
 
-### Using conjur-puppet with Conjur OSS 
+### Using conjur-puppet with Conjur OSS
 
-Are you using this project with [Conjur OSS](https://github.com/cyberark/conjur)? Then we 
-**strongly** recommend choosing the version of this project to use from the latest [Conjur OSS 
-suite release](https://docs.conjur.org/Latest/en/Content/Overview/Conjur-OSS-Suite-Overview.html). 
-Conjur maintainers perform additional testing on the suite release versions to ensure 
-compatibility. When possible, upgrade your Conjur version to match the 
-[latest suite release](https://docs.conjur.org/Latest/en/Content/ReleaseNotes/ConjurOSS-suite-RN.htm); 
-when using integrations, choose the latest suite release that matches your Conjur version. For any 
+Are you using this project with [Conjur OSS](https://github.com/cyberark/conjur)? Then we
+**strongly** recommend choosing the version of this project to use from the latest [Conjur OSS
+suite release](https://docs.conjur.org/Latest/en/Content/Overview/Conjur-OSS-Suite-Overview.html).
+Conjur maintainers perform additional testing on the suite release versions to ensure
+compatibility. When possible, upgrade your Conjur version to match the
+[latest suite release](https://docs.conjur.org/Latest/en/Content/ReleaseNotes/ConjurOSS-suite-RN.htm);
+when using integrations, choose the latest suite release that matches your Conjur version. For any
 questions, please contact us on [Discourse](https://discuss.cyberarkcommons.org/c/conjur/5).
 
 ### Conjur module basics
@@ -192,6 +196,20 @@ By default, all nodes using this Puppet module to bootstrap identity with
 
 ```yaml
 puppet: true
+```
+
+### Using pre-established host identity (Conjur Enterprise v4 only)
+
+**When using Conjur Enterprise v4 only**, you can use [conjurize](https://developer.conjur.net/tutorials/authorization/hosts.html)
+or a similar method to establish host identity before running Puppet to configure.
+This way Puppet master only ever handles a temporary access token instead of real,
+permanent Conjur credentials of the hosts it manages.
+
+If a host is so pre-configured, the settings and credentials are automatically
+obtained and used. In this case, all that is needed to use `conjur::secret` is a simple
+
+```puppet
+include conjur
 ```
 
 ## Reference
