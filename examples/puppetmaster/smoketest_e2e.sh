@@ -4,6 +4,10 @@ set -euo pipefail
 
 # Launches a full Puppet stack and converges a node against it
 
+CLEAN_UP_ON_EXIT=${CLEAN_UP_ON_EXIT:-true}
+CONJUR_SERVER_PORT=${CONJUR_SERVER_PORT:-8443}
+COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-puppetmaster_$(openssl rand -hex 3)}
+
 PUPPET_SERVER_TAG=latest
 PUPPET_AGENT_TAGS=( latest )
 if [ "${1:-}" = "5" ]; then
@@ -22,7 +26,6 @@ OSES=(
   ubuntu
 )
 
-COMPOSE_PROJECT_NAME=puppetmaster_$(openssl rand -hex 3)
 export COMPOSE_PROJECT_NAME
 NETNAME=${COMPOSE_PROJECT_NAME//-/}_default
 
@@ -33,7 +36,9 @@ cleanup() {
 
 main() {
   cleanup
-  trap cleanup EXIT
+  if [ "$CLEAN_UP_ON_EXIT" = true ]; then
+    trap cleanup EXIT
+  fi
 
   start_services
   setup_conjur
@@ -46,7 +51,7 @@ run_in_conjur() {
 }
 
 start_services() {
-  docker-compose up -d conjur puppet
+  docker-compose up -d conjur-https puppet
 }
 
 wait_for_conjur() {
@@ -98,14 +103,18 @@ converge_node() {
   local config_file="$TMPDIR/conjur.conf"
   local identity_file="$TMPDIR/conjur.identity"
 
+  # We pre-indent it to fit with the YAML syntax
+  local ssh_certificate="$(cat https_config/ca.crt | sed 's/^/  /')"
+
   echo "
-    appliance_url: http://conjur/
+    appliance_url: https://conjur-https:$CONJUR_SERVER_PORT/
     version: 5
     account: cucumber
+    cert_file: /etc/ca.crt
   " > $config_file
 
   echo "
-    machine conjur
+    machine conjur-https
     login $login
     password $api_key
   " > $identity_file
@@ -114,13 +123,16 @@ converge_node() {
     for agent_tag in ${PUPPET_AGENT_TAGS[@]}; do
       echo "---"
       echo "Running test for $os_name:$agent_tag..."
+      set -x
       docker run --rm -t \
         --net $NETNAME \
-        -e 'FACTER_CONJUR_SMOKE_TEST=true' \
-        -v $config_file:/etc/conjur.conf:ro \
-        -v $identity_file:/etc/conjur.identity:ro \
-        -v $PWD:/src:ro -w /src \
+        -v "$config_file:/etc/conjur.conf:ro" \
+        -v "$identity_file:/etc/conjur.identity:ro" \
+        -v "$PWD/https_config/ca.crt:/etc/ca.crt:ro" \
+        -v "$PWD:/src:ro" \
+        -w /src \
         "puppet/puppet-agent-$os_name:$agent_tag"
+      set +x
     done
   done
 
