@@ -1,24 +1,25 @@
 File { backup => false }
 
 node default {
-  file { '/tmp/puppet-in-docker':
-    ensure  => present,
-    content => 'This file is for demonstration purposes only',
+  if ($facts['windows_puppet_agent']) {
+    $text_file = 'c:/tmp/puppet-in-docker'
+    $pem_file  = 'c:/tmp/test.pem'
+  } else {
+    $text_file = '/tmp/puppet-in-docker'
+    $pem_file  = '/tmp/test.pem'
   }
 
-  if ($facts['conjur_smoke_test']) {
-    notify { "Including conjur module...": }
-    include conjur
+  notify { "Including conjur module...": }
+  include conjur
 
-    notify { "Grabbing 'inventory/db-password' secret...": }
-    $secret = conjur::secret('inventory/db-password')
+  notify { "Grabbing 'inventory/db-password' secret...": }
+  $secret = conjur::secret('inventory/db-password')
 
-    notify { "Writing secret '${secret.unwrap}' to /tmp/test.pem...": }
-    file { '/tmp/test.pem':
-      ensure  => file,
-      content => conjur::secret('inventory/db-password'),
-    }
-
-    notify { "Done!": }
+  notify { "Writing secret '${secret.unwrap}' to $pem_file...": }
+  file { $pem_file:
+    ensure  => file,
+    content => conjur::secret('inventory/db-password'),
   }
+
+  notify { "Done!": }
 }
