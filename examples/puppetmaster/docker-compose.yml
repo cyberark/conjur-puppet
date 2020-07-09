@@ -52,6 +52,8 @@ services:
 
   conjur:
     image: cyberark/conjur
+    ports:
+      - 80
     environment:
       CONJUR_ADMIN_PASSWORD: ADmin123!!!!
       DATABASE_URL: postgres://postgres@db
@@ -62,6 +64,20 @@ services:
     command: server
     depends_on:
       - db
+
+  conjur-https:
+    image: nginx:alpine
+    ports:
+      - 8443
+    volumes:
+      - ./https_config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./https_config/conjur.conf:/etc/nginx/sites-enabled/conjur.conf:ro
+      - ./https_config/dhparams.pem:/etc/nginx/dhparams.pem:ro
+      - ./https_config/conjur.crt:/cert/tls.crt:ro
+      - ./https_config/conjur.key:/cert/tls.key:ro
+      - ./https_config/ca.crt:/ca/tls.crt:ro
+    depends_on:
+      - conjur
 
   db:
     image: postgres:9.3
