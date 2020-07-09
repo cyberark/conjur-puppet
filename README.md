@@ -168,7 +168,7 @@ CMDKEY: Credential added successfully.
 ### Conjur host identity with Host Factory
 
 If pre-establishing host identity is unfeasible, we instead recommend bootstrapping
-Conjur host identity using a [Host Factory](https://developer.conjur.net/reference/services/host_factory)
+Conjur host identity using a [Host Factory](https://docs.conjur.org/Latest/en/Content/Operations/Services/host_factory.html)
 token. Nodes inherit the permissions of the layer for which the Host Factory token
 was generated.
 
