@@ -1,0 +1,29 @@
+Vagrant.configure("2") do |config|
+    config.vm.box = "mwrock/Windows2016"
+    config.vm.hostname = ENV["VAGRANT_CWD"] || "windows2016"
+    config.vm.guest = :windows
+
+    # The parent directory contains PowerShell scripts that are shared between
+    # different versions of Windows VMs. So sync that directory instead of
+    # the current directory to '/vagrant' on the VM.
+    config.vm.synced_folder ".", "/vagrant", disabled: true
+    config.vm.synced_folder "..", "/vagrant"
+
+    # Enables Guest RDP
+    config.vm.communicator = "winrm"
+    config.vm.network "forwarded_port", guest: 3389, host:33390
+
+    # Update Windows evaluation license
+    config.vm.provision "shell", inline: <<-SHELL
+        slmgr.vbs -rearm
+    SHELL
+
+    # Set VirtualBox VM name and set shared clipboard mode to bidirectional
+    config.vm.provider :virtualbox do |vb|
+        vb.name = "Windows2016"
+        vb.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
+    end
+
+    # Reload the VM to ensure everything (including license) is updated
+    config.vm.provision :reload
+end

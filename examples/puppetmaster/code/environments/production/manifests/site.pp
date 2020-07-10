@@ -2,10 +2,8 @@ File { backup => false }
 
 node default {
   if ($facts['windows_puppet_agent']) {
-    $text_file = 'c:/tmp/puppet-in-docker'
     $pem_file  = 'c:/tmp/test.pem'
   } else {
-    $text_file = '/tmp/puppet-in-docker'
     $pem_file  = '/tmp/test.pem'
   }
 

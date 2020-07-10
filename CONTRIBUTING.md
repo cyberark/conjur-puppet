@@ -124,6 +124,26 @@ To release a new version of the module to the Puppet Forge:
 5. Verify the Jenkins pipeline completes successfully.
 6. Verify the updated module on [Puppet Forge](https://forge.puppet.com/cyberark/conjur).
 
+## Running a Puppet master and Windows-based Puppet node locally
+
+The [examples/puppetmaster/vagrant](examples/puppetmaster/vagrant) directory
+contains Vagrantfiles, Bash scripts, and PowerShell scripts that can be used
+to create a Vagrant/VirtualBox-based development and test environment for
+testing the Conjur Puppet module with Puppet Agents running on Windows2016
+or Windows2012.
+
+These Vagrantfiles and scripts can be used to:
+
+- Spin up a containerized Puppet Server and Conjur server via docker-compose.
+- Create a Windows2016 or Windows2012 VM.
+- Dynamically install the desired version of Puppet Agent on the VM.
+- Run Puppet Agent on the VM to install a Puppet catalog.
+- Confirm that Puppet has been provisioned according to the configured
+  Puppet manifest on the Puppet master.
+
+For details, refer to
+[examples/puppetmaster/vagrant/README.md](examples/puppetmaster/vagrant/README.md).
+
 ## Contributing
 
 1. [Fork the project](https://help.github.com/en/github/getting-started-with-github/fork-a-repo)

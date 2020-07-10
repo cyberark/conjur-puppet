@@ -93,7 +93,7 @@ setup_conjur() {
   echo "Loading Conjur initial policy"
   echo "-----"
   run_in_conjur conjur policy load root /src/policy.yml
-  run_in_conjur conjur variable values add inventory/db-password D7JGyGmCbDNCKYxgvpzz  # load the secret's value
+  run_in_conjur conjur variable values add inventory/db-password supersecretpassword  # load the secret's value
 }
 
 converge_node() {
