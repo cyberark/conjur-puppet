@@ -30,8 +30,11 @@ module Conjur
               when 'password'
                 password = value if found
               end
+
               return [login, password] if login && password
             end
+
+            warn "Could not find conjur authentication info for host '#{uri}'" if not found
           end
         end
 
