@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   v6-compatible APIs for CA chain retrieval.
   [cyberark/conjur-puppet#44](https://github.com/org/repo/issues/44)
 
+### Fixed
+- Fix windows credential search for HFT-created identities.
+  [cyberark/conjur-puppet#47](https://github.com/org/repo/issues/47)
+- Fix windows registry exceptions on new HFT-based hosts
+  [cyberark/conjur-puppet#112](https://github.com/org/repo/issues/112)
+
 ## [2.0.3] - 2020-05-10
 ### Changed
 - We now encode the variable id before retrieving it from Conjur v5.

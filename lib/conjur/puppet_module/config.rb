@@ -27,12 +27,21 @@ module Conjur
             unless Puppet.features.microsoft_windows?
 
           require 'win32/registry'
-          c = Win32::Registry::HKEY_LOCAL_MACHINE.open(REG_KEY_NAME) do |reg|
-            # Convert registry value names from camel case to underscores
-            # e.g. ApplianceUrl => appliance_url
-            reg.map { |name, _type, data|  [name.gsub(/(.)([A-Z])/, '\1_\2').downcase, data] }.to_h
+
+          c = {}
+          begin
+            Win32::Registry::HKEY_LOCAL_MACHINE.open(REG_KEY_NAME) do |reg|
+              # Convert registry value names from camel case to underscores
+              # e.g. ApplianceUrl => appliance_url
+              c = reg.map { |name, _type, data|  [name.gsub(/(.)([A-Z])/, '\1_\2').downcase, data] }.to_h
+            end
+          rescue
+            Puppet.warning "Agent’s registry did not contain path #{REG_KEY_NAME}. If this is the " +
+              "first time using HFTs on this node, this is expected behavior."
           end
+
           c['ssl_certificate'] ||= File.read c['cert_file'] if c['cert_file']
+
           c
         end
       end

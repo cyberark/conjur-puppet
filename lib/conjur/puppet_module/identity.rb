@@ -30,8 +30,11 @@ module Conjur
               when 'password'
                 password = value if found
               end
+
               return [login, password] if login && password
             end
+
+            warn "Could not find conjur authentication info for host '#{uri}'" if not found
           end
         end
 
@@ -41,10 +44,24 @@ module Conjur
 
           require 'wincred/wincred'
 
-          WinCred.enumerate_credentials
-                  .select { |cred| cred[:target].start_with?(uri.to_s) || cred[:target] == uri.host }
-                  .map { |cred| [cred[:username], cred[:value].force_encoding('utf-16le').encode('utf-8')] }
-                  .first
+          Puppet.debug "Finding Conjur credentials in WinCred storage for uri: #{uri}"
+          matching_creds = WinCred.enumerate_credentials.select do |cred|
+            cred[:target].start_with?(uri.to_s) || \
+              cred[:target] == "#{uri.host}:#{uri.port}" || \
+              cred[:target] == uri.host
+          end
+
+          if matching_creds.empty?
+            Puppet.warning "Couldn't find any pre-populated Conjur credentials in WinCred " +
+              "storage for #{uri}"
+            return []
+          end
+
+          # We select the first one if there's multiple matches
+          matching_cred = matching_creds.first
+
+          Puppet.debug "Using Conjur credential '#{matching_cred[:target]}' for identity"
+          [matching_cred[:username], matching_cred[:value].force_encoding('utf-16le').encode('utf-8')]
         end
       end
     end
