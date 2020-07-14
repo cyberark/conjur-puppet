@@ -70,7 +70,7 @@ returns `app1.example.com` and a Conjur variable named `domains/app1.example.com
 exists, the SSL certificate can be retrieved and written to a file like so:
 
 ```puppet
-file { '/etc/ssl/cert.pem':
+file { '/abslute/path/to/cert.pem':
   ensure    => file,
   content   => conjur::secret("domains/%{hiera('domain')}/ssl-cert"),
   show_diff => false # only required for Puppet < 4.6
@@ -122,7 +122,7 @@ class { 'conjur':
   appliance_url   => 'https://conjur.mycompany.com/',
   authn_login     => 'host/redis001',
   authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
-  ssl_certificate => file('/conjur-ca.pem')
+  ssl_certificate => file('/abslute/path/to/conjur-ca.pem')
 }
 ```
 
@@ -136,7 +136,8 @@ values available to set are:
 |-|-|-|
 | Account | REG_SZ | Conjur account specified during Conjur setup. |
 | ApplianceUrl | REG_SZ | Conjur API endpoint. |
-| SslCertificate | REG_SZ | public Conjur SSL cert. |
+| CertFile | REG_SZ | File path to public Conjur SSL cert. Takes precedence over `SslCertificate`. |
+| SslCertificate | REG_SZ | Public Conjur SSL cert. Overwritten by the contents read from `CertFile` when it is present. |
 | Version | REG_DWORD | Conjur API version. Defaults to `5`. |
 
 These may be set using Powershell:
@@ -149,6 +150,8 @@ The operation completed successfully.
 > reg ADD HKLM\Software\CyberArk\Conjur /v Account /t REG_SZ /d myorg
 The operation completed successfully.
 > reg ADD HKLM\Software\CyberArk\Conjur /v SslCertificate /t REG_SZ /d "-----BEGIN CERTIFICATE-----..."
+The operation completed successfully.
+> reg ADD HKLM\Software\CyberArk\Conjur /v CertFile /t REG_SZ /d "C:\Absolute\Path\To\SslCertificate"
 The operation completed successfully.
 ```
 
@@ -189,7 +192,7 @@ class { 'conjur':
   appliance_url      => 'https://conjur.mycompany.com/',
   authn_login        => 'host/redis001',
   host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
-  ssl_certificate    => file('/etc/conjur.pem')
+  cert_file          => file('/abslute/path/to/conjur.pem')
 }
 ```
 
@@ -261,9 +264,14 @@ User username or host name (prefixed with `host/`).
 ##### `authn_api_key`
 API key for a user or host. Must be `Sensitive` if supported.
 
+##### `cert_file`
+File path to X509 certificate of the root CA of Conjur, PEM formatted. Takes precedence
+over `ssl_certificte`.
+
 ##### `ssl_certificate`
 Content of the X509 certificate of the root CA of Conjur, PEM formatted.
 When using Puppet's `file` function, the path to the cert must be absolute.
+Overwritten by the contents read from `cert_file` when it is present.
 
 ##### `host_factory_token`
 You can use a host factory token to obtain a host identity. Must be `Sensitive`.
@@ -287,7 +295,7 @@ class { 'conjur':
   appliance_url      => 'https://conjur.mycompany.com/',
   authn_login        => 'host/redis001',
   host_factory_token => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
-  ssl_certificate    => file('conjur-ca.pem'),
+  ssl_certificate    => file('/absolute/path/to/conjur-ca.pem'),
   version            => 5
 }
 
@@ -304,7 +312,17 @@ class { 'conjur':
   appliance_url   => 'https://conjur.mycompany.com/',
   authn_login     => 'host/redis001',
   authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
-  ssl_certificate => file('conjur-ca.pem'),
+  ssl_certificate => file('/abslute/path/to/conjur-ca.pem'),
+  version         => 5
+}
+
+# same, but 'cert_file' is used instead of 'ssl_certificate'
+class { 'conjur':
+  account         => 'mycompany',
+  appliance_url   => 'https://conjur.mycompany.com/',
+  authn_login     => 'host/redis001',
+  authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
+  cert_file       => '/abslute/path/to/conjur-ca.pem',
   version         => 5
 }
 ```

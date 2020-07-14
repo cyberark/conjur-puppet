@@ -2,6 +2,7 @@ class conjur (
   String $appliance_url = $conjur::params::appliance_url,
   Optional[String] $authn_login = $conjur::params::authn_login,
   Optional[String] $ssl_certificate = $conjur::params::ssl_certificate,
+  Optional[String] $cert_file = undef,
 
   Optional[String] $account = $conjur::params::account,
   Integer $version = $conjur::params::version,
@@ -10,6 +11,9 @@ class conjur (
   Optional[Sensitive] $authn_token = $conjur::params::authn_token,
   Optional[Sensitive] $host_factory_token = $conjur::params::host_factory_token,
 ) inherits conjur::params {
+  if $cert_file {
+    $ssl_certificate = file($cert_file)
+  }
   $client = conjur::client($appliance_url, $version, $ssl_certificate)
 
   if $authn_token {
