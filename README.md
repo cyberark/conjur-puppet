@@ -233,6 +233,8 @@ machine conjur.mycompany.com
     password f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3
 ```
 
+The Conjur Puppet Module will automatically check for these files on your node and use them if they
+are available.
 ##### Using Windows Registry / Windows Credential Manager (Windows agents only)
 
 To configure **Windows agents** with a Conjur host identity, you set up the Conjur
@@ -303,9 +305,9 @@ token was generated.
 
 The Conjur Puppet module is provided with a host factory token which will only be used on
 the initial Puppet run to establish identity. In the initial Puppet run, the Conjur identity
-is created by the Puppet server and then stored on the agent's host and subsequent runs will
-use that for Conjur authentication on the agent side (at the time of collecting facts) and
-only provide the Puppet master with a temporary token to fetch secrets from Conjur.
+is created by the Puppet server and then stored on the agent's host. Subsequent runs will
+use the created identity for Conjur authentication on the agent side (at the time of collecting facts), and
+the agent will only provide the Puppet server with a temporary token to fetch secrets from Conjur.
 
 ##### Updating the Puppet manifest
 
