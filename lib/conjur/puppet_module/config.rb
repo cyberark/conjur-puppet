@@ -27,11 +27,13 @@ module Conjur
             unless Puppet.features.microsoft_windows?
 
           require 'win32/registry'
-          Win32::Registry::HKEY_LOCAL_MACHINE.open(REG_KEY_NAME) do |reg|
+          c = Win32::Registry::HKEY_LOCAL_MACHINE.open(REG_KEY_NAME) do |reg|
             # Convert registry value names from camel case to underscores
             # e.g. ApplianceUrl => appliance_url
             reg.map { |name, _type, data|  [name.gsub(/(.)([A-Z])/, '\1_\2').downcase, data] }.to_h
           end
+          c['ssl_certificate'] ||= File.read c['cert_file'] if c['cert_file']
+          c
         end
       end
     end
