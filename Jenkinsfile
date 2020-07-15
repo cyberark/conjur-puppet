@@ -34,11 +34,33 @@ pipeline {
       }
     }
 
-    stage('Lint and unit test module') {
-      steps {
-        sh './test.sh'
-        junit 'spec/output/rspec.xml'
-        archiveArtifacts artifacts: 'spec/output/rspec.xml', fingerprint: true
+    stage('Linting and unit tests') {
+      parallel {
+        stage('Unit tests - Puppet 6') {
+          steps {
+            sh './test.sh'
+          }
+
+          post {
+            always {
+              junit 'spec/output/rspec.xml'
+              archiveArtifacts artifacts: 'spec/output/rspec.xml', fingerprint: true
+            }
+          }
+        }
+
+        stage('Unit tests - Puppet 5') {
+          steps {
+            sh './test.sh 5'
+          }
+
+          post {
+            always {
+              junit 'spec/output/rspec_puppet5.xml'
+              archiveArtifacts artifacts: 'spec/output/rspec_puppet5.xml', fingerprint: true
+            }
+          }
+        }
       }
     }
 
@@ -92,8 +114,6 @@ pipeline {
         sh './release.sh'
       }
     }
-
-    
   }
 
   post {
