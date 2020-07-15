@@ -9,7 +9,7 @@ gem 'puppetlabs_spec_helper', '>= 1.0.0'
 gem 'puppet-lint', '~> 2.1.0'
 gem 'puppet-blacksmith', '~> 4.1.0'
 gem 'facter', '>= 1.7.0'
-gem 'rspec-puppet', git: 'https://github.com/conjur/rspec-puppet.git', tag: 'v2.7.2-support-sensitive'
+gem 'rspec-puppet', git: 'https://github.com/rodjek/rspec-puppet.git'
 gem 'rspec_junit_formatter'
 
 gem 'rubocop'
