@@ -1,6 +1,12 @@
 version: '2'
 services:
   test-runner:
-    build: .
+    build:
+      context: .
+      args:
+        - PUPPET_VERSION
+    environment:
+      - CI_SPEC_OPTIONS
+      - PUPPET_VERSION
     volumes:
       - ./spec/output:/conjur/spec/output
