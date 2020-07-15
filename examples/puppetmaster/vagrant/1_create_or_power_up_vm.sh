@@ -9,16 +9,16 @@
 
 set -eou pipefail
 
-base_snapshot_name="base-install"
+source utils.sh
 
 echo "Restoring base snapshot (if available)..."
-if ! vagrant snapshot restore "$base_snapshot_name"; then
+if ! vagrant snapshot restore "$BASE_SNAPSHOT_NAME"; then
   echo "Base snapshot not found - creating it..."
 
   echo "Starting up the Windows VM"
   vagrant up
 
-  vagrant snapshot save "$base_snapshot_name"
+  vagrant snapshot save "$BASE_SNAPSHOT_NAME"
 fi
 
 echo "VM base is ready"
