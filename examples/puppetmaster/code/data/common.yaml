@@ -1,3 +1,4 @@
+---
 puppet_enterprise::profile::puppetdb::listen_address: '0.0.0.0'
 puppet_enterprise::profile::amq::broker::heap_mb: '96'
 puppet_enterprise::profile::master::java_args:

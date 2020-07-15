@@ -1,0 +1,16 @@
+---
+lookup_options:
+  '^conjur::host_factory_token':
+    convert_to: 'Sensitive'
+  '^conjur::authn_api_key':
+    convert_to: 'Sensitive'
+
+# conjur::account: 'cucumber'
+# conjur::appliance_url: 'https://conjur-https:8443'
+# conjur::authn_login: 'host/node02'
+# conjur::authn_api_key: '<REPLACE_ME>'
+# conjur::host_factory_token: '<REPLACE_ME>'
+# conjur::cert_file: '/vagrant/.tmp/conjur_ca.pem'
+# conjur::ssl_certificate: |
+#   -----BEGIN CERTIFICATE-----
+#   -----END CERTIFICATE-----
