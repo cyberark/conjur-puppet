@@ -31,16 +31,24 @@ echo "Clearing any previous certs generated for \"$hostname\" from Puppet server
 puppet_master_container=$(docker ps | awk '/puppet\/puppetserver/{print $1}')
 # Ignore errors since there might not be any certificates to clear
 
-# We try first with Puppet v5 CLI (`puppet cert`)
-docker exec "$puppet_master_container" \
-  puppet cert clean "$hostname.cyber-ark.com" &>/dev/null || true
+signed_certs=$(docker exec "$puppet_master_container" ls -A1 /etc/puppetlabs/puppet/ssl/ca/signed/)
+signed_cert=$(echo "$signed_certs" | grep "^$hostname" || true)
 
-# Then we try the Puppet v6 CLI (`puppetserver ca`). Clean is not very predictable so
-# we also do a revoke before it.
-docker exec "$puppet_master_container" \
-  puppetserver ca revoke --certname "$hostname.cyber-ark.com" 2>/dev/null || true
-docker exec "$puppet_master_container" \
-  puppetserver ca clean --certname "$hostname.cyber-ark.com" 2>/dev/null || true
+cert_fqdn="${signed_cert%.pem}"
+if [ "$cert_fqdn" != "" ]; then
+  echo "Old cert found for '$cert_fqdn'. Trying to revoke/clean..."
+
+  # We try first with Puppet v5 CLI (`puppet cert`)
+  docker exec "$puppet_master_container" \
+    puppet cert clean "$cert_fqdn" &>/dev/null || true
+
+  # Then we try the Puppet v6 CLI (`puppetserver ca`). Clean is not very predictable so
+  # we also do a revoke before it.
+  docker exec "$puppet_master_container" \
+    puppetserver ca revoke --certname "$cert_fqdn" || true
+  docker exec "$puppet_master_container" \
+    puppetserver ca clean --certname "$cert_fqdn" || true
+fi
 
 # When the Puppet server tries to retrieve the API token for host 'node01'
 # from Conjur, it will use the Conjur URL provided by the Puppet agent,
