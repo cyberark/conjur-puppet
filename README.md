@@ -286,8 +286,8 @@ examples) and the credential password is the host's API key. This is equivalent 
 
 This may be set using Powershell:
 ```powershell
-> cmdkey /generic:https://conjur.mycompany.com /user:hosts/redis001 /pass
-Enter the password for 'hosts/my-host' to connect to 'https://conjur.net/authn': #
+> cmdkey /generic:https://conjur.mycompany.com /user:host/redis001 /pass
+Enter the password for 'host/my-host' to connect to 'https://conjur.net/authn': #
 {Prompt for API Key}
 
 CMDKEY: Credential added successfully.
