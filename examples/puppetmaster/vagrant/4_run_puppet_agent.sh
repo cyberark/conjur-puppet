@@ -9,6 +9,11 @@ source utils.sh
 # VAGRANT_CWD environment variable points.
 hostname="$VAGRANT_CWD"
 
+snapshot_name="$(agent_snapshot_name $PUPPET_AGENT_VERSION)"
+
+echo "Restoring snapshot to '$snapshot_name'..."
+vagrant snapshot restore "$snapshot_name"
+
 echo "Adding Conjur connection info to Windows registry"
 vagrant powershell -e -c "/vagrant/add_conjur_registry.ps1 $(conjur_host_port)"
 
