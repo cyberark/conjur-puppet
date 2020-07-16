@@ -24,6 +24,8 @@ node_api_key="$(docker exec $conjur_ctl_container conjur host rotate_api_key -h 
 echo "Adding rotated Conjur API key to Windows Credentials Manager"
 vagrant powershell -e -c "/vagrant/add_conjur_creds.ps1 $node_api_key $(conjur_host_port)"
 
+echo "Ensuring synced time..."
+vagrant powershell -e -c "W32tm /resync /force"
 
 echo "Clearing any previous certs generated for \"$hostname\" from Puppet server..."
 puppet_master_container=$(docker ps | awk '/puppet\/puppetserver/{print $1}')

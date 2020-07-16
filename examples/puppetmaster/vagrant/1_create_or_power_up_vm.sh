@@ -18,6 +18,10 @@ if ! vagrant snapshot restore "$BASE_SNAPSHOT_NAME"; then
   echo "Starting up the Windows VM"
   vagrant up
 
+  echo "Enabling time sync service..."
+  vagrant powershell -e -c "net start w32time"
+
+  echo "Creating snapshot '$BASE_SNAPSHOT_NAME'"
   vagrant snapshot save "$BASE_SNAPSHOT_NAME"
 fi
 
