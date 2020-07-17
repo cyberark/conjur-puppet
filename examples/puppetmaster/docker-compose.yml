@@ -11,9 +11,7 @@ services:
     # In some environments puppetdb host gets cert for puppetdb.local.
     # Make sure the connection works either way.
     environment:
-      - PUPPETDB_SERVER_URLS=https://puppetdb.local:8081,https://puppetdb:8081
-    links:
-      - puppetdb:puppetdb.local
+      - PUPPETDB_SERVER_URLS=https://puppetdb:8081
     depends_on:
       - puppetdb
 

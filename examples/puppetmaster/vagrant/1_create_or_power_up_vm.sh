@@ -9,5 +9,20 @@
 
 set -eou pipefail
 
-echo "Start up the Windows VM"
-vagrant up
+source utils.sh
+
+echo "Restoring base snapshot (if available)..."
+if ! vagrant snapshot restore "$BASE_SNAPSHOT_NAME"; then
+  echo "Base snapshot not found - creating it..."
+
+  echo "Starting up the Windows VM"
+  vagrant up
+
+  echo "Enabling time sync service..."
+  vagrant powershell -e -c "net start w32time"
+
+  echo "Creating snapshot '$BASE_SNAPSHOT_NAME'"
+  vagrant snapshot save "$BASE_SNAPSHOT_NAME"
+fi
+
+echo "VM base is ready"

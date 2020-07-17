@@ -7,6 +7,14 @@ set -eou pipefail
 
 source utils.sh
 
+snapshot_name="$(agent_snapshot_name $PUPPET_AGENT_VERSION)"
+
+echo "Restoring snapshot '$snapshot_name' with agent v$PUPPET_AGENT_VERSION (if available)..."
+if vagrant snapshot restore "$snapshot_name"; then
+  echo "Snapshot '$snapshot_name' restored"
+  exit 0
+fi
+
 # Download MSI file if it doesn't exist in the current directory.
 msi_file="puppet-agent-$PUPPET_AGENT_VERSION-x64.msi"
 
@@ -23,5 +31,11 @@ if [ ! -f $msi_file ]; then
     wget $msi_download
 fi
 
+echo "Restoring base-install snapshot..."
+vagrant snapshot restore "$BASE_SNAPSHOT_NAME"
+
 echo "Installing Puppet Agent version $PUPPET_AGENT_VERSION in Windows VM"
 vagrant powershell -e -c "/vagrant/install_puppet_agent.ps1 $msi_file"
+
+echo "Saving snapshot '$snapshot_name'..."
+vagrant snapshot save "$snapshot_name"
