@@ -3,7 +3,7 @@
 #### Table of Contents
 
 - [Overview](#overview)
-  * [Reusing "Long-Standing" VMs](#reusing--long-standing--vms)
+  * [Use of Snapshots](#use-of-snapshots)
   * [No Windows Desktop Interaction Required](#no-windows-desktop-interaction-required)
 - [Setting Up](#setting-up)
   * [Setup Requirements](#setup-requirements)
@@ -18,8 +18,8 @@
   * [Create Puppet and Conjur Server Containers](#create-puppet-and-conjur-server-containers)
   * [Create or Power Up Windows VM](#create-or-power-up-windows-vm)
   * [Install Puppet Agent on the Windows VM](#install-puppet-agent-on-the-windows-vm)
-  * [Clear Previous Provisioning Results (if Necessary)](#clear-previous-provisioning-results--if-necessary-)
   * [Run Puppet Agent and Confirm Provisioning Results](#run-puppet-agent-and-confirm-provisioning-results)
+  * [Re-Run Puppet Agent and Confirm Provisioning Results](#re--run-puppet-agent-and-confirm-provisioning-results)
   * [Power Down the VM](#power-down-the-vm)
   * [Delete the VM Instance](#delete-the-vm-instance)
   * [Delete the Vagrant Box Image](#delete-the-vagrant-box-image)
@@ -41,15 +41,13 @@ The Vagrantfiles and scripts can be used to:
 - Confirm that Puppet has been provisioned according to the configured
   Puppet manifest on the Puppet master.
 
-### Reusing "Long-Standing" VMs
+### Use of Snapshots
 
 The scripts in this directory can be used to dynamically install or re-install
-(overwrite) different versions of Puppet Agent on an existing Windows VM.
-Developers can therefore create a "long-standing" VM for each version of
-Windows being tested (kept in the powered-down state when not
-in use), and then power up and re-use the VMs as needed. This saves time
-in test iterations, since VM creation can take several minutes to create
-from scratch.
+(overwrite) different versions of Puppet Agent on an existing Windows VM and
+then preserve all artifacts in their own snapshots. By doing this, the
+developer can save time in test iterations, since VM creation can take
+several minutes to create from scratch.
 
 ### No Windows Desktop Interaction Required
 
@@ -66,8 +64,12 @@ this host-driven testing are as follows:
   powershell commands or scripts remotely on the VM guest. (The `vagrant
   powershell` command makes use of Windows Remote Management, or WinRM,
   running on the VM. SSH is not enabled on Windows VMs by default).
-- The services for the Puppet server and Conjur server are exposed 
-  to the Windows VM via random host ports.
+- The service for the Puppet server is exposed to the Windows VM via
+  random host ports.
+- The service for the Conjur server is exposed to the Windows VM via
+  a static host port (8443 at this time) due to the fact that internal
+  and external compose ports must match to be able to allow puppetserver
+  to correctly connect to Conjur.
 
 ## Setting Up
 
@@ -163,7 +165,8 @@ To create Puppet and Conjur server containers, run:
 
 ### Create or Power Up Windows VM
 
-To create a Windows VM or power up an existing Windows VM, run:
+To create a Windows VM or power up an existing Windows VM and take
+its snapshot, run:
 
 ```sh-session
     ./1_create_or_power_up_vm.sh
@@ -180,28 +183,23 @@ _**NOTE: The user/password for logging into the Windows VM is either
 
 ### Install Puppet Agent on the Windows VM
 
-To install Puppet Agent on the Windows VM, run:
+To restore the state to a clean base install and then install Puppet
+Agent on the Windows VM, run:
 
 ```sh-session
     ./2_install_puppet_agent.sh
 ```
 
-### Clear Previous Provisioning Results (if Necessary)
-
-If prior runs of Puppet Agent have been made on this VM instance,
-then clear the previous provisioning results:
-
-```sh-session
-    ./3_clear_puppet_artifacts.sh
-```
+This action will also create a snapshot with a unique name per agent
+version number.
 
 ### Run Puppet Agent and Confirm Provisioning Results
 
-To run Puppet Agent on the Windows VM and confirm that the VM has
-been properly provisioned, run:
+To restore the state of a newly-installed Puppet Agent, run it on
+the Windows VM,  and confirm that the VM has been properly provisioned, run:
 
 ```sh-session
-    ./4_run_puppet_agent.sh
+    ./3_run_puppet_agent.sh
     ./5_get_puppet_artifacts.sh
 ```
 
@@ -220,6 +218,20 @@ For example, the last command should result in the following output:
     $
 ```
 
+### Re-Run Puppet Agent and Confirm Provisioning Results
+
+Some test require ensuring that re-provisioning operations do not fail. Using the
+resulting state of running `./3_run_puppet_agent.sh ` script, re-run the agent to
+ensure that it can fetch secrets correctly again:
+
+```sh-session
+    ./4_run_puppet_agent_again.sh
+    ./5_get_puppet_artifacts.sh
+```
+
+If provisioning is successful, the last command should show that the file
+`C:\tmp\test.pem` on the VM contains the string `supersecretpassword`.
+
 ### Power Down the VM
 
 To halt (power down) the VM, run:
@@ -235,6 +247,10 @@ To delete the VM instance from your host, run:
 ```sh-session
     ./7_delete_vm_instance.sh
 ```
+
+_WARNING: This action will remove all snapshots and will thus cause a much
+longer startup time for your tests next time they run. In general this operation
+is rarely needed._
 
 _NOTE: `vagrant destroy` will delete the VM **instance**. However, this
  command will not delete the Vagrant "box" (i.e. base) image that was used to

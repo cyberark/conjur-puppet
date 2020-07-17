@@ -65,8 +65,11 @@ services:
 
   conjur-https:
     image: nginx:alpine
+    # We have to use the same port inside the network and outside otherwise
+    # interactions from puppetserver using connection info from puppet agent
+    # do not work.
     ports:
-      - 8443
+      - 8443:8443
     volumes:
       - ./https_config/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./https_config/conjur.conf:/etc/nginx/sites-enabled/conjur.conf:ro

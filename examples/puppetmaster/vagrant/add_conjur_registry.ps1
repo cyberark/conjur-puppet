@@ -20,6 +20,10 @@ if (-not($conjurHostPort)) {
     exit 1
 }
 
-reg ADD HKLM\Software\CyberArk\Conjur /f /v ApplianceUrl /t REG_SZ /d http://conjur:$conjurHostPort
+reg ADD HKLM\Software\CyberArk\Conjur /f /v ApplianceUrl /t REG_SZ /d https://conjur-https:$conjurHostPort
 reg ADD HKLM\Software\CyberArk\Conjur /f /v Version /t REG_DWORD /d 5
 reg ADD HKLM\Software\CyberArk\Conjur /f /v Account /t REG_SZ /d cucumber
+
+reg ADD HKLM\Software\CyberArk\Conjur /f /v CertFile /t REG_SZ /d "/vagrant/.tmp/conjur_ca.pem"
+# $ssh_certificate = Get-Content -Raw -Path /vagrant/.tmp/conjur_ca.pem
+# reg ADD HKLM\Software\CyberArk\Conjur /f /v SslCertificate /t REG_SZ /d "$ssh_certificate"
