@@ -7,9 +7,6 @@ param(
     [String]$msiFile
 )
 
-# Break on all errors
-$ErrorActionPreference = "Stop"
-
 $usage = @"
 Usage:
     install_puppet_agent.ps1 <MSI-download-file>

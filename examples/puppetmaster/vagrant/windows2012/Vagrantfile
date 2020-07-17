@@ -21,6 +21,8 @@ Vagrant.configure("2") do |config|
     # Set VirtualBox VM name and set shared clipboard mode to bidirectional
     config.vm.provider :virtualbox do |vb|
         vb.name = "Windows2012"
+        vb.cpus = 3
+        vb.memory = 2046
         vb.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
     end
 
