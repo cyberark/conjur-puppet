@@ -36,8 +36,8 @@ module Conjur
               c = reg.map { |name, _type, data|  [name.gsub(/(.)([A-Z])/, '\1_\2').downcase, data] }.to_h
             end
           rescue
-            Puppet.warning "Agent’s registry did not contain path #{REG_KEY_NAME}. If this is the " +
-              "first time using HFTs on this node, this is expected behavior."
+            Puppet.notice "Windows Registry on the agent did not contain path '#{REG_KEY_NAME}'. If " +
+              "this is the first time using server-provided credentials, this is expected behavior."
           end
 
           c['ssl_certificate'] ||= File.read c['cert_file'] if c['cert_file']
