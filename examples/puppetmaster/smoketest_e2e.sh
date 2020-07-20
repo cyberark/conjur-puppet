@@ -118,12 +118,14 @@ converge_node() {
     account: cucumber
     cert_file: /etc/ca.crt
   " > $config_file
+  chmod 600 $config_file
 
   echo "
     machine conjur-https
     login $login
     password $api_key
   " > $identity_file
+  chmod 600 $identity_file
 
   for os_name in ${OSES[@]}; do
     for agent_tag in ${PUPPET_AGENT_TAGS[@]}; do

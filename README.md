@@ -233,6 +233,12 @@ machine conjur.mycompany.com
     password f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3
 ```
 
+_**NOTE: The `conjur.conf` and `conjur.identity` files contain sensitive
+         Conjur connection information. Care must be taken to ensure that
+         the file permissions for these files is set to `600` so as to
+         disallow any access to these files by unauthorized (non-root) users
+         on a Linux Puppet agent node.**_
+
 The Conjur Puppet Module will automatically check for these files on your node and use them if they
 are available.
 ##### Using Windows Registry / Windows Credential Manager (Windows agents only)
