@@ -5,27 +5,46 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [2.0.4] - 2020-07-20
+
 ### Added
-- Added support for `cert_file` to the `conjur` class, and on Windows via Windows Registry
-  value named `CertFile`.
+- Preliminary support for Puppet 6 with Windows agents (Server 2012 R2,
+  Server 2016, Server 2019).
+  [Epic cyberark/conjur-puppet#20](https://github.com/cyberark/conjur-puppet/issues/20)
+- Support for using `cert_file` in the `conjur` class or `CertFile` in Windows
+  Registry on Windows as an alternative to using the existing `ssl_certificate`
+  parameter.
   [cyberark/conjur-puppet#113](https://github.com/cyberark/conjur-puppet/issues/113)
-- Added support for v6 servers by using v5- and v6-compatible APIs for token decryption
-  [cyberark/conjur-puppet#91](https://github.com/org/repo/issues/91)
-- Added support for v6 agents (v6 server is still not supported) by using v5- and
-  v6-compatible APIs for CA chain retrieval.
-  [cyberark/conjur-puppet#44](https://github.com/org/repo/issues/44)
+
+### Changed
+- Updated README to clarify configuration instructions.
+  [cyberark/conjur-puppet#128](https://github.com/cyberark/conjur-puppet/issues/128),
+  [PR cyberark/conjur-puppet#111](https://github.com/cyberark/conjur-puppet/pull/111),
+  [cyberark/conjur-puppet#98](https://github.com/cyberark/conjur-puppet/issues/98),
+  [cyberark/conjur-puppet#97](https://github.com/cyberark/conjur-puppet/issues/97),
+  [PR cyberark/conjur-puppet#108](https://github.com/cyberark/conjur-puppet/pull/108)
 
 ### Fixed
-- Fix windows credential search for HFT-created identities.
-  [cyberark/conjur-puppet#47](https://github.com/org/repo/issues/47)
-- Fix windows registry exceptions on new HFT-based hosts
-  [cyberark/conjur-puppet#112](https://github.com/org/repo/issues/112)
+- Module no longer returns internal server errors when decrypting tokens
+  when used with Puppet 6.
+  [cyberark/conjur-puppet#91](https://github.com/cyberark/conjur-puppet/issues/91)
+- Module no longer relies on Puppet 6-incompatible methods for retrieving
+  Puppet CA chains.
+  [cyberark/conjur-puppet#44](https://github.com/cyberark/conjur-puppet/issues/44)
+- Module no longer reports "identity not found" on subsequent runs for nodes
+  running with HFT-created identities, and is updated with improved logging
+  for Windows-based configuration and credential fetching.
+  [cyberark/conjur-puppet#47](https://github.com/cyberark/conjur-puppet/issues/47)
+- Module no longer fails on the first run when using Conjur Host Factory tokens
+  with Hiera.
+  [cyberark/conjur-puppet#112](https://github.com/cyberark/conjur-puppet/issues/112)
 
 ## [2.0.3] - 2020-05-10
 ### Changed
 - We now encode the variable id before retrieving it from Conjur v5.
-  Spaces are encoded into "%20" and slashes into "%2F"
-  ([cyberark/conjur-puppet#72](https://github.com/cyberark/conjur-puppet/issues/72))
+  Spaces are encoded into "%20" and slashes into "%2F".
+  [cyberark/conjur-puppet#72](https://github.com/cyberark/conjur-puppet/issues/72)
 
 ## [2.0.2] - 2019-12-18
 ### Added
@@ -71,7 +90,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - fixed a bug in host identity manifest preventing usage of host factory
 
-[Unreleased]: https://github.com/cyberark/conjur-puppet/compare/v2.0.3...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-puppet/compare/v2.0.4...HEAD
+[2.0.4]: https://github.com/cyberark/conjur-puppet/compare/v2.0.3...v2.0.4
 [2.0.3]: https://github.com/cyberark/conjur-puppet/compare/v2.0.2...v2.0.3
 [2.0.2]: https://github.com/cyberark/conjur-puppet/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/cyberark/conjur-puppet/compare/v2.0.0...v2.0.1
