@@ -77,6 +77,12 @@ file { '/abslute/path/to/cert.pem':
 }
 ```
 
+To install a specific version of this module (e.g. `v1.2.3`), run the following
+command on the Puppet server:
+```
+puppet module install cyberark-conjur --version 1.2.3
+```
+
 #### Sensitive data type
 
 Note `conjur::secret` returns values wrapped in a `Sensitive` data type. In
