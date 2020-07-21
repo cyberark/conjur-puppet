@@ -34,6 +34,13 @@ pipeline {
       }
     }
 
+    stage('Build') {
+      steps {
+        sh './build.sh'
+        archiveArtifacts 'pkg/'
+      }
+    }
+
     stage('Linting and unit tests') {
       parallel {
         stage('Unit tests - Puppet 6') {
