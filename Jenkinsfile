@@ -45,7 +45,7 @@ pipeline {
       parallel {
         stage('Unit tests - Puppet 6') {
           steps {
-            sh './test.sh'
+            sh './test.sh 6'
           }
 
           post {
@@ -58,7 +58,7 @@ pipeline {
 
         stage('Unit tests - Puppet 5') {
           steps {
-            sh './test.sh 5'
+            sh './test.sh'
           }
 
           post {
