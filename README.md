@@ -145,7 +145,8 @@ refer often to the following Conjur configuration variables:
 - `host_factory_token`: The Conjur host factory token, provided as a string or using the
   [Puppet file resource type](https://puppet.com/docs/puppet/latest/types/file.html).
 - `cert_file`: The file path for the PEM-encoded x509 CA certificate chain for the DAP
-  instance you are connecting to. This file is read from the Puppet server. This configuration parameter overrides `ssl_certificate`.
+  instance you are connecting to. This file is read from the **Puppet server**. This
+  configuration parameter overrides `ssl_certificate`.
 - `ssl_certificate`: The PEM-encoded x509 CA certificate chain for the DAP instance you
   are connecting to, provided as a string or using the
   [Puppet file resource type](https://puppet.com/docs/puppet/latest/types/file.html).
@@ -202,7 +203,7 @@ conjur::appliance_url: 'https://conjur.mycompany.com/'
 conjur::account: 'myorg'
 conjur::authn_login: 'host/redis001'
 conjur::authn_api_key: 'f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'
-# conjur::cert_file: '/absolute/path/to/conjur-ca.pem'
+# conjur::cert_file: '/absolute/path/to/conjur-ca.pem' # Read from the Puppet server
 conjur::ssl_certificate: |
   -----BEGIN CERTIFICATE-----
   ...
@@ -223,7 +224,7 @@ contains:
 account: myorg
 plugins: []
 appliance_url: https://conjur.mycompany.com
-cert_file: "/absolute/path/to/conjur-ca.pem" # Read from the agent
+cert_file: "/absolute/path/to/conjur-ca.pem" # Read from the Puppet agent
 ```
 
 and a `conjur.identity` file that contains:
@@ -250,7 +251,7 @@ values available to set are:
 |-|-|-|
 | Account | REG_SZ | Conjur account specified during Conjur setup. |
 | ApplianceUrl | REG_SZ | Conjur API endpoint. |
-| CertFile | REG_SZ | File path to public Conjur SSL cert. This file is read from the Puppet agent. Takes precedence over `SslCertificate`. |
+| CertFile | REG_SZ | File path to public Conjur SSL cert. This file is read from the **Puppet agent**. Takes precedence over `SslCertificate`. |
 | SslCertificate | REG_SZ | Public Conjur SSL cert. Overwritten by the contents read from `CertFile` when it is present. |
 | Version | REG_DWORD | Conjur API version. Defaults to `5`. |
 
@@ -322,7 +323,7 @@ class { 'conjur':
   account            => 'myorg',
   authn_login        => 'host/redis001',
   host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
-  cert_file          => '/absolute/path/to/conjur.pem'
+  cert_file          => '/absolute/path/to/conjur.pem' # Read from the Puppet server
 }
 ```
 
@@ -345,7 +346,7 @@ conjur::appliance_url: 'https://conjur.mycompany.com/'
 conjur::account: 'myorg'
 conjur::authn_login: 'host/redis001'
 conjur::host_factory_token: '3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'
-# conjur::cert_file: '/absolute/path/to/conjur-ca.pem'
+# conjur::cert_file: '/absolute/path/to/conjur-ca.pem' # Read from the Puppet Server
 conjur::ssl_certificate: |
   -----BEGIN CERTIFICATE-----
   ...
@@ -424,7 +425,7 @@ API key for a user or host. Must be `Sensitive` if supported.
 
 ##### `cert_file`
 File path to X509 certificate of the root CA of Conjur, PEM formatted. This file is read
-from the Puppet server. Takes precedence over `ssl_certificate`.  
+from the **Puppet server**. Takes precedence over `ssl_certificate`.
 
 ##### `ssl_certificate`
 Content of the X509 certificate of the root CA of Conjur, PEM formatted.
@@ -480,7 +481,7 @@ class { 'conjur':
   appliance_url   => 'https://conjur.mycompany.com/',
   authn_login     => 'host/redis001',
   authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
-  cert_file       => '/abslute/path/to/conjur-ca.pem',
+  cert_file       => '/absolute/path/to/conjur-ca.pem', # Read from the Puppet server
   version         => 5
 }
 ```
@@ -521,7 +522,7 @@ issued for the host and never handles long-term credentials.
 - If additionally the host has a Conjur identity pre-configured (ie. API key in
   `/etc/conjur.identity` on Linux or Windows Credentials Manager on Windows), the node
   uses that to authenticate to Conjur. It gets back the standard temporary Conjur token
-  which is encrypted with the Puppet master public TLS key and reported in this fact. This
+  which is encrypted with the Puppet master's public TLS key and reported in this fact. This
   ensures only the master (with the corresponding private key) can decrypt and use it.
 
 ## Limitations
