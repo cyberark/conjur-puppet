@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
-- Added support for `cert_file` on Windows and to the `conjur` class.
+- Added support for `cert_file` to the `conjur` class, and on Windows via Windows Registry
+  value named `CertFile`.
   [cyberark/conjur-puppet#113](https://github.com/cyberark/conjur-puppet/issues/113)
 - Added support for v6 servers by using v5- and v6-compatible APIs for token decryption
   [cyberark/conjur-puppet#91](https://github.com/org/repo/issues/91)
