@@ -285,6 +285,22 @@ Windows Registry Editor Version 5.00
 "CertFile"="C:\Absolute\Path\To\SslCertificate"
 ```
 
+_**NOTE: It is important from a security perspective to ensure that
+unauthorized, non-administrator users do not have write access to Conjur
+connection settings in the Windows Registry. Disabling write access for
+unauthorized users to these settings will help to prevent potential malicious
+redirection of sensitive Puppet agent messages. Read-only access for
+non-administrator users to Conjur connection information can be confirmed via
+`regedit` on the Windows Desktop, or by running the following command from a
+PowerShell to confirm that only the `ReadKey` flag is set:**_
+
+```powershell
+PS C:\> Get-Acl -Path HKLM:SOFTWARE\CyberArk\Conjur | fl * | Out-String -stream | Select-String "BUIL
+TIN\\Users"
+
+AccessToString          : BUILTIN\Users Allow  ReadKey
+```
+
 Credentials for Conjur are stored in the Windows Credential Manager. The credential
 `Target` is the Conjur appliance URL (e.g. `https://conjur.mycompany.com`).
 The username is the host ID, with a `host/` prefix (e.g. `host/redis001`, as in previous
