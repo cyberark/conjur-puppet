@@ -391,9 +391,17 @@ include conjur
 
 This class establishes Conjur host identity on the node so that secrets can be
 fetched from Conjur. The identity and Conjur endpoint configuration can be
-pre-configured on a host using `/etc/conjur.conf` and `/etc/conjur.identity`
-(by the way of [`conjur` fact](#conjur-fact)) or provided as parameters. The
-identity can also be bootstrapped using a host factory token.
+pre-configured on a host using `/etc/conjur.conf` and `/etc/conjur.identity` on Linux, or
+Windows Registry and Window Credentials Manager on Windows, (by way of
+[`conjur` fact](#conjur-fact)) or provided as parameters. The identity can also be
+bootstrapped using the host factory token parameter.
+
+When this class is instantiated in such a way that it has access to an API key (`authn_api_key`),
+the identity is persisted on the agent using the same OS specific machine identity
+artifacts as mentioned in the pre-configured case above. This happens when the host
+factory parameter is used since a host's API key is retrieved as part of that flow. _Note
+that when this persistence occurs the `cert_file` parameter is always converted to the
+`ssl_certificate` equivalent for the artifact._
 
 #### Note
 
@@ -510,11 +518,11 @@ issued for the host and never handles long-term credentials.
 
 - If the node is preconfigured with Conjur settings, they're reported in this
   fact and they're used as defaults by the `::conjur` class.
-- If additionally the host has a Conjur identity pre-configured (eg. API key in
-  `/etc/conjur.identity`), node uses that to authenticate to Conjur. It gets back
-  the standard temporary Conjur token which is encrypted with the Puppet master
-  public TLS key and reported in this fact. This ensures only the master (with
-  the corresponding private key) can decrypt and use it.
+- If additionally the host has a Conjur identity pre-configured (ie. API key in
+  `/etc/conjur.identity` on Linux or Windows Credentials Manager on Windows), the node
+  uses that to authenticate to Conjur. It gets back the standard temporary Conjur token
+  which is encrypted with the Puppet master public TLS key and reported in this fact. This
+  ensures only the master (with the corresponding private key) can decrypt and use it.
 
 ## Limitations
 
