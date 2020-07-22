@@ -6,6 +6,7 @@ WORKDIR /conjur
 
 COPY Gemfile /conjur/Gemfile
 ARG PUPPET_VERSION
-RUN env PUPPET_VERSION="$PUPPET_VERSION" bundle
+RUN env PUPPET_VERSION="$PUPPET_VERSION" bundle && cp Gemfile.lock /tmp
 
-COPY . /conjur
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+ENTRYPOINT ["/docker-entrypoint.sh"]
