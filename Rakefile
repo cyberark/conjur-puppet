@@ -33,9 +33,14 @@ task :test => [:syntax_validate, :lint, :spec]
 
 desc 'Release the module to Puppet Forge'
 task :release do
+  Rake::Task['build'].invoke
+  Rake::Task['module:push'].invoke
+end
+
+desc 'Build the module'
+task :build do
   Rake::Task['module:clean'].invoke
   sh 'puppet module build .'
   sh 'ls -lh pkg/*tar.gz'
   sh 'tar -tvf pkg/cyberark-conjur*.tar.gz'
-  Rake::Task['module:push'].invoke
 end

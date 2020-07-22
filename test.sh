@@ -1,12 +1,15 @@
 #!/bin/bash -e
 
 readonly compose_file='docker-compose.test.yml'
-readonly v5_puppet_gem="~> 5.5.21"
 readonly v5_output_xml="spec/output/rspec_puppet5.xml"
 
-if [ "$#" -gt 0 ] && [ "$1" =  "5" ]; then
-  echo "Using Puppet v5 ('$v5_puppet_gem') gem for testing"
-  export PUPPET_VERSION=$v5_puppet_gem
+readonly v6_puppet_gem="~>6.17.0"
+
+if [ "$#" -gt 0 ] && [ "$1" =  "6" ]; then
+  echo "Using Puppet v6 ('$v6_puppet_gem') gem for testing"
+  export PUPPET_VERSION=$v6_puppet_gem
+else
+  echo "Using default Puppet v5 gem for testing"
   export CI_SPEC_OPTIONS="-f RspecJunitFormatter -o '$v5_output_xml' -f progress"
 fi
 
