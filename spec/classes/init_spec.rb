@@ -144,7 +144,7 @@ describe 'conjur' do
     # `init.pp` is somehow being interpreted as being run on a Windows machine and so the
     # unix path provided below fails absolute path validation. This seems to be an issue
     # with the rspec utilities that simulate the generation of the catalog, as opposed to
-    # the any logic in `init.pp`. Under production circumstances the call to `file()` will
+    # any logic in `init.pp`. Under production circumstances the call to `file()` will
     # always be run on a unix machine (the Puppet server) and so would never fail the
     # absolute path validation.
     #
