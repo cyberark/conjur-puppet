@@ -13,7 +13,6 @@ describe 'conjur' do
           authn_login: 'host/test',
           authn_api_key: sensitive('the api key'),
           account: 'testacct',
-          # cert_file: '/conjur/spec/fixtures/conjur-ca.pem',
           ssl_certificate: 'the cert goes here'
         } end
 
