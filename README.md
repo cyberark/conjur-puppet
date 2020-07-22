@@ -25,8 +25,8 @@
 ## Description
 
 This is the official Puppet module for [Conjur](https://www.conjur.org), a robust
-identity and access management platform. This module simplifies the operations of
-establishing Conjur host identity and allows authorized Puppet nodes to fetch
+identity and access management platform. This module simplifies the operations involved in 
+establishing a Conjur host identity and allows authorized Puppet nodes to fetch
 secrets from Conjur.
 
 ## Setup
@@ -66,7 +66,7 @@ $dbpass = conjur::secret('production/postgres/password')
 Hiera attributes can also be used to inform which secret should be fetched,
 depending on the node running the Conjur module. For example, if `hiera('domain')`
 returns `app1.example.com` and a Conjur variable named `domains/app1.example.com/ssl-cert`
-exists, the SSL certificate can be retrieved and written to a file like so:
+exists, the SSL certificate can be retrieved and written to a file as shown below:
 
 ```puppet
 file { '/abslute/path/to/cert.pem':
@@ -121,7 +121,7 @@ Puppet.
 
 Conjur requires an
 [application identity](https://docs.conjur.org/Latest/en/Content/Get%20Started/key_concepts/machine_identity.html)
-for any applications, machines, or processes that will need to interact with Conjur.
+for any applications, machines, or processes that need to interact with Conjur.
 
 In this module, we provide multiple ways to establish Conjur application identity for
 Puppet nodes, including:
@@ -130,7 +130,7 @@ Puppet nodes, including:
 - [Using pre-established host identities (**Conjur Enterprise v4 only**)](#pre-established-host-identity-conjur-enterprise-v4-only)
 
 Please note that before getting started configuring your Puppet environment, you'll need
-to load policy in Conjur to define the application identities that you will be using to
+to load a policy in Conjur to define the application identities that you will be using to
 authenticate to Conjur. To learn more about
 [creating hosts](https://docs.conjur.org/Latest/en/Content/Operations/Policy/statement-ref-host.htm)
 or [using host factories](https://docs.conjur.org/Latest/en/Content/Operations/Services/host_factory.html),
@@ -242,11 +242,11 @@ machine conjur.mycompany.com
 
 _**NOTE: The `conjur.conf` and `conjur.identity` files contain sensitive
          Conjur connection information. Care must be taken to ensure that
-         the file permissions for these files is set to `600` so as to
+         the permissions for these files are set to `600` to
          disallow any access to these files by unauthorized (non-root) users
          on a Linux Puppet agent node.**_
 
-The Conjur Puppet Module will automatically check for these files on your node and use them if they
+The Conjur Puppet Module automatically checks for these files on your node and uses them if they
 are available.
 ##### Using Windows Registry / Windows Credential Manager (Windows agents only)
 
@@ -332,18 +332,18 @@ that is already entitled to access some secret values in Conjur. That is, when
 using host factory, nodes inherit the permissions of the layer for which the Host Factory
 token was generated.
 
-The Conjur Puppet module is provided with a host factory token which will only be used on
+The Conjur Puppet module is provided with a host factory token which is only used on
 the initial Puppet run to establish identity. In the initial Puppet run, the Conjur identity
-is created by the Puppet server and then stored on the agent's host. Subsequent runs will
+is created by the Puppet server and then stored on the agent's host. Subsequent runs
 use the created identity for Conjur authentication on the agent side (at the time of collecting facts), and
-the agent will only provide the Puppet server with a temporary token to fetch secrets from Conjur.
+the agent only provides the Puppet server with a temporary token to fetch secrets from Conjur.
 
 ##### Updating the Puppet manifest
 
 To use a Host Factory token with this module, set variables `authn_login` and
 `host_factory_token` in the Puppet manifest. Do not set the variable `authn_api_key`
 when using `host_factory_token` as it is not required. `authn_login` should have a
-`host/` prefix and the part after the slash will be used as the node’s name in Conjur.
+`host/` prefix. The part after the slash is used as the node’s name in Conjur.
 
 ```puppet
 class { 'conjur':
@@ -355,7 +355,7 @@ class { 'conjur':
 }
 ```
 
-Conjur will automatically add the annotation `puppet: true` to the Conjur host
+Conjur automatically adds the annotation `puppet: true` to the Conjur host
 identities of all nodes using this Puppet module to bootstrap identity with
 `host_factory_token`.
 
@@ -386,7 +386,7 @@ conjur::ssl_certificate: |
 **When using Conjur Enterprise v4 only**, you can use
 [conjurize](https://developer.conjur.net/tutorials/authorization/hosts.html)
 or a similar method to establish host identity before running Puppet to configure.
-This way Puppet master only ever handles a temporary access token instead of real,
+This way the Puppet master only ever handles a temporary access token instead of real,
 permanent Conjur credentials of the hosts it manages.
 
 If a host is so pre-configured, the settings and credentials are automatically
@@ -462,7 +462,7 @@ Overwritten by the contents read from `cert_file` when it is present.
 
 ##### `host_factory_token`
 You can use a host factory token to obtain a host identity. Must be `Sensitive`.
-Simply use this parameter to set it. The host record will be created in Conjur.
+Simply use this parameter to set it. The host record is created in Conjur.
 
 ##### `authn_token`
 Raw (unencoded) Conjur token. This is usually only useful for testing.
@@ -555,7 +555,7 @@ issued for the host and never handles long-term credentials.
 
 ## Limitations
 
-See [metadata.json](metadata.json) for supported platforms
+See [metadata.json](metadata.json) for supported platforms.
 
 ## Contributing
 
