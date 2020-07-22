@@ -13,6 +13,7 @@ describe 'conjur' do
           authn_login: 'host/test',
           authn_api_key: sensitive('the api key'),
           account: 'testacct',
+          # cert_file: '/conjur/spec/fixtures/conjur-ca.pem',
           ssl_certificate: 'the cert goes here'
         } end
 
@@ -33,6 +34,7 @@ describe 'conjur' do
         it "stores the configuration and identity on the node" do
           if os_family == 'Windows'
             expect(subject).to contain_registry_value('HKLM\Software\CyberArk\Conjur\ApplianceUrl')
+                                   .with("data" => 'https://conjur.test/api')
             expect(subject).to contain_registry_value('HKLM\Software\CyberArk\Conjur\SslCertificate')
             expect(subject).to contain_registry_value('HKLM\Software\CyberArk\Conjur\Account')
             expect(subject).to contain_registry_value('HKLM\Software\CyberArk\Conjur\Version')
@@ -131,8 +133,62 @@ describe 'conjur' do
 
         it "uses settings from facts" do
           expect(lookupvar('conjur::appliance_url')).to eq 'https://conjur.fact.test/api'
-          expect(lookupvar('conjur::ssl_certificate')).to eq 'not really a cert'
+          expect(lookupvar('conjur::raw_ssl_certificate')).to eq 'not really a cert'
         end
+      end
+    end
+  end
+
+  context 'ssl certificate params' do
+    # Setting the os family fact to 'Windows' below results in the cert_file not being
+    # found. This seems to be because the call to `file()` in the conjur module's
+    # `init.pp` is somehow being interpreted as being run on a Windows machine and so the
+    # unix path provided below fails absolute path validation. This seems to be an issue
+    # with the rspec utilities that simulate the generation of the catalog, as opposed to
+    # the any logic in `init.pp`. Under production circumstances the call to `file()` will
+    # always be run on a unix machine (the Puppet server) and so would never fail the
+    # absolute path validation.
+    #
+    # This issue is unfortunate because it prevents us from having the useful
+    # platform-specific test assertion to ensure that the contents of
+    # `conjur::raw_ssl_certificate` are stored on the node alongside other machine
+    # identity values.
+    let(:facts) { { os: { family: 'AnythingButWindows' } } }
+
+    context 'with cert_file param' do
+      let(:params) do {
+          appliance_url: 'https://conjur.test/api',
+          authn_token: sensitive('so that it does not error on token'),
+          cert_file: '/conjur/spec/fixtures/conjur-ca.pem'
+      } end
+
+      it "uses the provided ssl certificate" do
+        expect(lookupvar('conjur::raw_ssl_certificate')).to eq 'definitely a ca'
+      end
+    end
+
+    context 'with ssl_certificate param' do
+      let(:params) do {
+          appliance_url: 'https://conjur.test/api',
+          authn_token: sensitive('so that it does not error on token'),
+          ssl_certificate: 'raw contents of the cert',
+      } end
+
+      it "uses the provided ssl certificate" do
+        expect(lookupvar('conjur::raw_ssl_certificate')).to eq 'raw contents of the cert'
+      end
+    end
+
+    context 'with cert_file and ssl_certificate params' do
+      let(:params) do {
+          appliance_url: 'https://conjur.test/api',
+          authn_token: sensitive('so that it does not error on token'),
+          ssl_certificate: 'will be overridden',
+          cert_file: '/conjur/spec/fixtures/conjur-ca.pem'
+      } end
+
+      it "uses ssl certificate from cert_file" do
+        expect(lookupvar('conjur::raw_ssl_certificate')).to eq 'definitely a ca'
       end
     end
   end
