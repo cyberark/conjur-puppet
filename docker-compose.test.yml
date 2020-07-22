@@ -10,4 +10,6 @@ services:
       - PUPPET_VERSION
     volumes:
       - ./spec/output:/conjur/spec/output
-      - ./:/conjur
+# Uncomment below to volume mount source to test-runner. This is particularly convenient
+# during development.
+#      - ./:/conjur
