@@ -6,11 +6,11 @@ class conjur::config::registry inherits conjur {
     ensure => present,
   }
 
-  if $conjur::ssl_certificate {
+  if $conjur::raw_ssl_certificate {
     registry_value { 'HKLM\Software\CyberArk\Conjur\SslCertificate':
       ensure => present,
       type   => string,
-      data   => $conjur::ssl_certificate,
+      data   => $conjur::raw_ssl_certificate,
     }
   }
 

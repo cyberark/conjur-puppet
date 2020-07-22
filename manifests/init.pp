@@ -12,9 +12,12 @@ class conjur (
   Optional[Sensitive] $host_factory_token = $conjur::params::host_factory_token,
 ) inherits conjur::params {
   if $cert_file {
-    $ssl_certificate = file($cert_file)
+    $raw_ssl_certificate = file($cert_file)
+  } else {
+    $raw_ssl_certificate = $ssl_certificate
   }
-  $client = conjur::client($appliance_url, $version, $ssl_certificate)
+
+  $client = conjur::client($appliance_url, $version, $raw_ssl_certificate)
 
   if $authn_token {
     $token = $authn_token

@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+- Resolve bug in `cert_file` parameter logic, in the `conjur` class, that attempts to
+  reassign immutable `$ssl_certificate` Puppet variable.
+  [cyberark/conjur-puppet#156](https://github.com/cyberark/conjur-puppet/issues/156)
+
 ## [2.0.4] - 2020-07-20
 
 ### Added
