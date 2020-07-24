@@ -26,14 +26,14 @@ if (-not($puppetSvrHostPort)) {
 }
 
 $vagrant_cert_dir = "/vagrant/.tmp"
-$puppet_cert_dir = "/ProgramData/PuppetLabs/puppet/etc/ssl/certs"
+$puppet_ssl_dir = "/ProgramData/PuppetLabs/puppet/etc/ssl"
+$puppet_cert_dir = "$puppet_ssl_dir/certs"
 
-"Recreating Puppet SSL directory..."
-rm -r /ProgramData/PuppetLabs/puppet/etc/ssl
-New-Item "$puppet_cert_dir" `
-  -ItemType Directory -ErrorAction SilentlyContinue
+"Recreating Puppet SSL directory ($puppet_cert_dir)..."
+Remove-Item "$puppet_ssl_dir" -Recurse -ErrorAction Ignore
+New-Item "$puppet_cert_dir" -ItemType Directory -ErrorAction Ignore
 
-"Copying Puppet CA cert files from $vagrant_cert_dir to Puppet certs dir..."
+"Copying Puppet CA cert files from $vagrant_cert_dir to Puppet SSL certs dir..."
 Copy-Item "$vagrant_cert_dir/puppet_ca_crt.pem" -Destination "$puppet_cert_dir/ca.pem"
 Copy-Item "$vagrant_cert_dir/puppet_ca_crl.pem"  -Destination "$puppet_cert_dir/crl.pem"
 
