@@ -2,3 +2,6 @@ conjur.pem
 node*.json
 hftoken.json
 tmp/
+
+# This folder gets populated within the puppetserver and should not be checked in
+**/production/modules/
