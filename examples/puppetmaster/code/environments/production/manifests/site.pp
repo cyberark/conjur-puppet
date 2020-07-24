@@ -1,6 +1,22 @@
 File { backup => false }
 
 node default {
+#  $sslcert = @("EOT")
+#-----BEGIN CERTIFICATE-----
+#-----END CERTIFICATE-----
+#  |-EOT
+
+#  class { 'conjur':
+#    appliance_url      => 'https://conjur-https:8443',
+#    account            => 'cucumber',
+#    authn_login        => 'host/whatthat',
+#    authn_login        => 'host/node01',
+#    authn_api_key => Sensitive('qbxb7q7v48jc1mf06rm31vkk7ghacz5y3wk9pk2dfnfjm2ejm5xp'),
+#    host_factory_token => Sensitive('1ymypez3qtzdz527rqgw52p435ae20zk96n20pfspd1jsmyct27fj1wz'),
+#    # ssl_certificate    => $sslcert
+#    ssl_certificate => file('/foo.pem')
+#  }
+
   if ($facts['windows_puppet_agent']) {
     $pem_file  = 'c:/tmp/test.pem'
   } else {
