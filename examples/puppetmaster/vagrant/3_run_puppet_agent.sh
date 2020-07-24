@@ -84,8 +84,8 @@ echo "Adding/modifying /etc/hosts entry in puppet server: \"$gateway_ip conjur\"
 # is not able to directly modify /etc/hosts when it is run via 'docker exec'.
 docker exec $puppet_master_container bash -c \
     "cp /etc/hosts /tmp/hosts; \
-     sed -i $'/\tconjur$/d' /tmp/hosts; \
-     echo $'$gateway_ip\tconjur' >> /tmp/hosts; \
+     sed -i $'/\tconjur-https$/d' /tmp/hosts; \
+     echo $'$gateway_ip\tconjur-https' >> /tmp/hosts; \
      cp /tmp/hosts /etc/hosts"
 
 # Create a long-lived HFT that we can copy/paste into hiera config if we're testing
