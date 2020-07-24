@@ -23,22 +23,28 @@ echo "Using Conjur CLI container ID: $conjur_cli_container"
 echo "Restoring snapshot to '$snapshot_name'..."
 vagrant snapshot restore "$snapshot_name"
 
-echo "Copying Conjur CA cert from master to host..."
 mkdir -p .tmp/
-docker cp "$conjur_nginx_container:/ca/tls.crt" ".tmp/conjur_ca.pem"
-
-echo "Adding Conjur connection info to Windows registry"
-vagrant powershell -e -c "/vagrant/add_conjur_registry.ps1 $(conjur_host_port)"
-
-echo "Rotating Conjur API key for host 'node01'"
-node_api_key="$(docker exec $conjur_cli_container conjur host rotate_api_key -h node01)"
-
 echo "Copying Puppet CA certs from master to host..."
 docker cp "$puppet_master_container:/etc/puppetlabs/puppet/ssl/ca/ca_crt.pem" ".tmp/puppet_ca_crt.pem"
 docker cp "$puppet_master_container:/etc/puppetlabs/puppet/ssl/ca/ca_crl.pem" ".tmp/puppet_ca_crl.pem"
 
-echo "Adding rotated Conjur API key to Windows Credentials Manager"
-vagrant powershell -e -c "/vagrant/add_conjur_creds.ps1 $node_api_key $(conjur_host_port)"
+if [ ! "${SERVER_SIDE_CONFIG:-false}" != "false" ]; then
+  echo "*** USING AGENT-SIDE CONFIG ***"
+
+  echo "Copying Conjur CA cert from master to host..."
+  docker cp "$conjur_nginx_container:/ca/tls.crt" ".tmp/conjur_ca.pem"
+
+  echo "Adding Conjur connection info to Windows registry"
+  vagrant powershell -e -c "/vagrant/add_conjur_registry.ps1 $(conjur_host_port)"
+
+  echo "Rotating Conjur API key for host 'node01'"
+  node_api_key="$(docker exec $conjur_cli_container conjur host rotate_api_key -h node01)"
+
+  echo "Adding rotated Conjur API key to Windows Credentials Manager"
+  vagrant powershell -e -c "/vagrant/add_conjur_creds.ps1 $node_api_key $(conjur_host_port)"
+else
+  echo "*** USING SERVER-SIDE CONFIG ***"
+fi
 
 echo "Ensuring synced time..."
 vagrant powershell -e -c "net start w32time" || true
