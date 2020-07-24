@@ -38,4 +38,9 @@ Copy-Item "$vagrant_cert_dir/puppet_ca_crt.pem" -Destination "$puppet_cert_dir/c
 Copy-Item "$vagrant_cert_dir/puppet_ca_crl.pem"  -Destination "$puppet_cert_dir/crl.pem"
 
 "Running Puppet Agent..."
-puppet agent -t --verbose --debug --masterport $puppetSvrHostPort
+puppet agent --onetime `
+             --no-daemonize `
+             --no-usecacheonfailure `
+             --no-splay `
+             --debug `
+             --masterport "$puppetSvrHostPort"

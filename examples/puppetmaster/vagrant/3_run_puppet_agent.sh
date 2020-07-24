@@ -47,7 +47,7 @@ else
 fi
 
 echo "Ensuring synced time..."
-vagrant powershell -e -c "net start w32time" || true
+vagrant powershell -e -c "net start w32time" &>/dev/null || true
 vagrant powershell -e -c "W32tm /resync /force"
 
 echo "Clearing any previous certs generated for \"$hostname\" from Puppet server..."
