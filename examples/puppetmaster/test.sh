@@ -51,12 +51,27 @@ main() {
       local agent_image="puppet/puppet-agent-$os_name:$agent_tag"
 
       echo "---"
-      echo "Running test for '$agent_image'..."
+      echo "Running tests for '$agent_image'..."
 
+      echo
+      echo "=> Agent config, API Key <="
       converge_node_agent_apikey "$agent_image"
+
+      echo
+      echo "=> Hiera config, API Key <="
       converge_node_hiera_apikey "$agent_image"
+
+      echo
+      echo "=> Hiera config, HF Token <="
       converge_node_hiera_hft "$agent_image"
+
+      echo
+      echo "=> Manifest config, API Key <="
       converge_node_manifest_apikey "$agent_image"
+
+      echo
+      echo "=> Manifest config, HF Token <="
+      converge_node_manifest_hft "$agent_image"
 
       echo "Tests for '$agent_image': OK"
     done
@@ -285,7 +300,56 @@ $ssl_certificate
         appliance_url      => 'https://conjur-https:$CONJUR_SERVER_PORT',
         account            => 'cucumber',
         authn_login        => 'host/$node_name',
-        authn_api_key => Sensitive('$api_key'),
+        authn_api_key      => Sensitive('$api_key'),
+        ssl_certificate    => \$sslcert
+      }
+
+      include conjur
+      \$pem_file  = '/tmp/test.pem'
+      \$secret = conjur::secret('inventory/db-password')
+      notify { \"Writing secret '\${secret.unwrap}' to \$pem_file...\": }
+      file { \$pem_file:
+        ensure  => file,
+        content => conjur::secret('inventory/db-password'),
+      }
+    }
+  " > $manifest_config_file
+
+  revoke_cert_for "$hostname"
+
+  set -x
+  docker run --rm -t \
+    --net $NETNAME \
+    --hostname "$hostname" \
+    "$agent_image"
+  set +x
+
+  rm -rf "$manifest_config_file"
+}
+
+converge_node_manifest_hft() {
+  local agent_image="$1"
+  local node_name="manifest-hft-node"
+  local hostname="${node_name}_$(openssl rand -hex 3)"
+
+  local login="host/$node_name"
+  local hf_token=$(get_hf_token)
+  echo "HF token for $node_name: $hf_token"
+
+  local manifest_config_file="./code/environments/production/manifests/00_$hostname.pp"
+
+  local ssl_certificate="$(cat https_config/ca.crt)"
+  echo "
+    node '$hostname' {
+      \$sslcert = @("EOT")
+$ssl_certificate
+      |-EOT
+
+      class { 'conjur':
+        appliance_url      => 'https://conjur-https:$CONJUR_SERVER_PORT',
+        account            => 'cucumber',
+        authn_login        => 'host/$node_name',
+        host_factory_token => Sensitive('$hf_token'),
         ssl_certificate => \$sslcert
       }
 
