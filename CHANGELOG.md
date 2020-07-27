@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.0.5] - 2020-07-28
+
+### Added
+- Preliminary support for Puppet 6 with Linux agents, now including Ubuntu 18.04
+  and 20.04, Debian 9 and 10, and Alpine 3.9.
+  [Epic cyberark/conjur-puppet#20](https://github.com/cyberark/conjur-puppet/issues/20)
+
+### Deprecated
+- Support for using the Conjur Puppet module with Conjur Enterprise v4 is now
+  deprecated. Support will be removed in the next major release. The `conjurize`
+  method of providing the Conjur Puppet module with its Conjur identity will
+  also no longer be supported as of the next version.
+- Support for using the Conjur Puppet module with [Windows Server 2008](https://support.microsoft.com/en-us/lifecycle/search?alpha=Windows%20Server%202008)
+  or [Debian 7](https://wiki.debian.org/DebianWheezy) agents, since both
+  operating systems have now reached end of life.
+
 ## [2.0.4] - 2020-07-20
 
 ### Added
