@@ -54,6 +54,7 @@ main() {
       echo "Running test for '$agent_image'..."
 
       converge_node_agent_apikey "$agent_image"
+      converge_node_hiera_apikey "$agent_image"
 
       echo "Tests for '$agent_image': OK"
     done
@@ -136,9 +137,47 @@ revoke_cert_for() {
   run_in_puppet puppetserver ca clean --certname "$cert_fqdn" &>/dev/null || true
 }
 
+converge_node_hiera_apikey() {
+  local agent_image="$1"
+  local node_name="hiera-apikey-node"
+  local hostname="${node_name}_$(openssl rand -hex 3)"
+
+  local login="host/$node_name"
+  local api_key=$(get_host_key $node_name)
+  echo "API key for $node_name: $api_key"
+
+  local hiera_config_file="./code/data/nodes/$hostname.yaml"
+
+  local ssl_certificate="$(cat https_config/ca.crt | sed 's/^/  /')"
+  echo "---
+lookup_options:
+  '^conjur::authn_api_key':
+    convert_to: 'Sensitive'
+
+conjur::account: 'cucumber'
+conjur::appliance_url: 'https://conjur-https:$CONJUR_SERVER_PORT'
+conjur::authn_login: 'host/$node_name'
+conjur::authn_api_key: '$api_key'
+conjur::ssl_certificate: |
+$ssl_certificate
+  " > $hiera_config_file
+
+  revoke_cert_for "$hostname"
+
+  set -x
+  docker run --rm -t \
+    --net $NETNAME \
+    --hostname "$hostname" \
+    "$agent_image"
+  set +x
+
+  rm -rf "$hiera_config_file"
+}
+
 converge_node_agent_apikey() {
   local agent_image="$1"
   local node_name="agent-apikey-node"
+  local hostname="${node_name}_$(openssl rand -hex 3)"
 
   local login="host/$node_name"
   local api_key=$(get_host_key $node_name)
@@ -150,9 +189,6 @@ converge_node_agent_apikey() {
 
   local config_file="$TMPDIR/conjur.conf"
   local identity_file="$TMPDIR/conjur.identity"
-
-  # We pre-indent it to fit with the YAML syntax
-  local ssh_certificate="$(cat https_config/ca.crt | sed 's/^/  /')"
 
   echo "
     appliance_url: https://conjur-https:$CONJUR_SERVER_PORT/
@@ -169,7 +205,7 @@ converge_node_agent_apikey() {
   " > $identity_file
   chmod 600 $identity_file
 
-  revoke_cert_for "$node_name"
+  revoke_cert_for "$hostname"
 
   set -x
   docker run --rm -t \
@@ -177,9 +213,7 @@ converge_node_agent_apikey() {
     -v "$config_file:/etc/conjur.conf:ro" \
     -v "$identity_file:/etc/conjur.identity:ro" \
     -v "$PWD/https_config/ca.crt:/etc/ca.crt:ro" \
-    -v "$PWD:/src:ro" \
-    --hostname "${node_name}_$(openssl rand -hex 3)" \
-    -w /src \
+    --hostname "$hostname" \
     "$agent_image"
   set +x
 

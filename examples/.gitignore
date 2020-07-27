@@ -5,3 +5,6 @@ tmp/
 
 # This folder gets populated within the puppetserver and should not be checked in
 **/production/modules/
+
+# Automatically generated files are ignored
+code/data/nodes/hiera-apikey-node_*.yaml
