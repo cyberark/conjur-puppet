@@ -13,8 +13,8 @@ PUPPET_AGENT_TAGS=( latest )
 if [ "${1:-}" = "5" ]; then
   PUPPET_SERVER_TAG="5.3.7"
   PUPPET_AGENT_TAGS=(
-    5.5.1
-    latest
+    "5.5.1"
+    "latest"
   )
 fi
 export PUPPET_SERVER_TAG
@@ -22,12 +22,13 @@ export PUPPET_SERVER_TAG
 echo "Using Puppet server '$PUPPET_SERVER_TAG' with agents: '${PUPPET_AGENT_TAGS[@]}'"
 
 OSES=(
-  alpine
-  ubuntu
+  "alpine"
+  "ubuntu"
 )
 
 export COMPOSE_PROJECT_NAME
 NETNAME=${COMPOSE_PROJECT_NAME//-/}_default
+EXPECTED_PASSWORD="supersecretpassword"
 
 cleanup() {
   echo "Ensuring clean state..."
@@ -44,11 +45,30 @@ main() {
   setup_conjur
   wait_for_puppetmaster
   install_required_module_dependency
-  converge_node
+
+  for os_name in ${OSES[@]}; do
+    for agent_tag in ${PUPPET_AGENT_TAGS[@]}; do
+      local agent_image="puppet/puppet-agent-$os_name:$agent_tag"
+
+      echo "---"
+      echo "Running test for '$agent_image'..."
+
+      converge_node_agent_apikey "$agent_image"
+
+      echo "Tests for '$agent_image': OK"
+    done
+  done
+
+  echo "==="
+  echo "ALL TESTS COMPLETED"
 }
 
 run_in_conjur() {
   docker-compose exec -T cli "$@"
+}
+
+run_in_puppet() {
+  docker-compose exec -T puppet "$@"
 }
 
 start_services() {
@@ -68,6 +88,11 @@ wait_for_puppetmaster() {
   echo "OK"
 }
 
+get_host_key() {
+  local hostname="$1"
+  run_in_conjur conjur host rotate_api_key -h "$hostname"
+}
+
 install_required_module_dependency() {
   echo "Installing puppetlabs-registry module dep to server..."
   docker-compose exec -T puppet puppet module install puppetlabs-registry
@@ -76,7 +101,7 @@ install_required_module_dependency() {
 setup_conjur() {
   wait_for_conjur
   docker-compose exec -T conjur conjurctl account create cucumber || :
-  api_key=$(docker-compose exec -T conjur conjurctl role retrieve-key cucumber:user:admin | tr -d '\r')
+  local api_key=$(docker-compose exec -T conjur conjurctl role retrieve-key cucumber:user:admin | tr -d '\r')
 
   echo "-----"
   echo "Starting CLI"
@@ -93,14 +118,31 @@ setup_conjur() {
   echo "Loading Conjur initial policy"
   echo "-----"
   run_in_conjur conjur policy load root /src/policy.yml
-  run_in_conjur conjur variable values add inventory/db-password supersecretpassword  # load the secret's value
+  run_in_conjur conjur variable values add inventory/db-password $EXPECTED_PASSWORD  # load the secret's value
 }
 
-converge_node() {
-  local node_name='node01'
+revoke_cert_for() {
+  local cert_fqdn="$1"
+  echo "Ensuring clean cert state for $cert_fqdn..."
+
+  # Puppet v5 and v6 CLIs aren't 1:1 compatible so we have to chose the format based
+  # on the server version
+  if [ "${PUPPET_SERVER_TAG:0:1}" == 5 ]; then
+    run_in_puppet puppet cert clean "$cert_fqdn" &>/dev/null || true
+    return
+  fi
+
+  run_in_puppet puppetserver ca revoke --certname "$cert_fqdn" &>/dev/null || true
+  run_in_puppet puppetserver ca clean --certname "$cert_fqdn" &>/dev/null || true
+}
+
+converge_node_agent_apikey() {
+  local agent_image="$1"
+  local node_name="agent-apikey-node"
 
   local login="host/$node_name"
-  local api_key=$(run_in_conjur conjur host rotate_api_key -h $node_name)
+  local api_key=$(get_host_key $node_name)
+  echo "API key for $node_name: $api_key"
 
   # write the conjurize files to a tempdir so they can be mounted
   TMPDIR="$PWD/tmp/$(openssl rand -hex 3)"
@@ -127,25 +169,19 @@ converge_node() {
   " > $identity_file
   chmod 600 $identity_file
 
-  for os_name in ${OSES[@]}; do
-    for agent_tag in ${PUPPET_AGENT_TAGS[@]}; do
-      echo "---"
-      echo "Running test for $os_name:$agent_tag..."
-      set -x
-      docker run --rm -t \
-        --net $NETNAME \
-        -v "$config_file:/etc/conjur.conf:ro" \
-        -v "$identity_file:/etc/conjur.identity:ro" \
-        -v "$PWD/https_config/ca.crt:/etc/ca.crt:ro" \
-        -v "$PWD:/src:ro" \
-        -w /src \
-        "puppet/puppet-agent-$os_name:$agent_tag"
-      set +x
-    done
-  done
+  revoke_cert_for "$node_name"
 
-  echo "==="
-  echo "DONE"
+  set -x
+  docker run --rm -t \
+    --net $NETNAME \
+    -v "$config_file:/etc/conjur.conf:ro" \
+    -v "$identity_file:/etc/conjur.identity:ro" \
+    -v "$PWD/https_config/ca.crt:/etc/ca.crt:ro" \
+    -v "$PWD:/src:ro" \
+    --hostname "${node_name}_$(openssl rand -hex 3)" \
+    -w /src \
+    "$agent_image"
+  set +x
 
   rm -rf $TMPDIR
 }
