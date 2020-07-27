@@ -398,6 +398,10 @@ For a complete reference, please see [REFERENCE.md](REFERENCE.md).
 
 See [metadata.json](metadata.json) for supported platforms.
 
+At current, the Conjur Puppet module encrypts and decrypts the Conjur access
+token using the Puppet server’s private/public key pair. This is known to be
+incompatible with using multiple [compile masters](https://puppet.com/docs/puppetserver/5.3/scaling_puppet_server.html).
+
 ## Contributing
 
 We welcome contributions of all kinds to this repository. For instructions on
