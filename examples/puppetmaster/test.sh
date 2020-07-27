@@ -23,7 +23,7 @@ echo "Using Puppet server '$PUPPET_SERVER_TAG' with agents: '${PUPPET_AGENT_TAGS
 
 OSES=(
   "alpine"
-  "ubuntu"
+#   "ubuntu"
 )
 
 export COMPOSE_PROJECT_NAME
@@ -198,6 +198,7 @@ converge_node_agent_apikey() {
     -v "$identity_file:/etc/conjur.identity:ro" \
     -v "$PWD/https_config/ca.crt:/etc/ca.crt:ro" \
     --hostname "$hostname" \
+    --dns-opt "ndots:0" \
     "$agent_image"
   set +x
 
@@ -235,6 +236,7 @@ $ssl_certificate
   docker run --rm -t \
     --net $NETNAME \
     --hostname "$hostname" \
+    --dns-opt "ndots:0" \
     "$agent_image"
   set +x
 
@@ -272,6 +274,7 @@ $ssl_certificate
   docker run --rm -t \
     --net $NETNAME \
     --hostname "$hostname" \
+    --dns-opt "ndots:0" \
     "$agent_image"
   set +x
 
@@ -321,6 +324,7 @@ $ssl_certificate
   docker run --rm -t \
     --net $NETNAME \
     --hostname "$hostname" \
+    --dns-opt "ndots:0" \
     "$agent_image"
   set +x
 
@@ -370,6 +374,7 @@ $ssl_certificate
   docker run --rm -t \
     --net $NETNAME \
     --hostname "$hostname" \
+    --dns-opt "ndots:0" \
     "$agent_image"
   set +x
 
