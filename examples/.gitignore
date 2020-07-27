@@ -8,3 +8,4 @@ tmp/
 
 # Automatically generated files are ignored
 code/data/nodes/hiera-apikey-node_*.yaml
+code/environments/production/manifests/00_*.pp
