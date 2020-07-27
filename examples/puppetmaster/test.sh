@@ -198,7 +198,12 @@ converge_node_agent_apikey() {
     -v "$identity_file:/etc/conjur.identity:ro" \
     -v "$PWD/https_config/ca.crt:/etc/ca.crt:ro" \
     --hostname "$hostname" \
-    "$agent_image"
+    "$agent_image" \
+      agent --verbose \
+            --onetime \
+            --no-daemonize \
+            --summarize \
+            --certname "$hostname"
   set +x
 
   rm -rf $TMPDIR
@@ -235,7 +240,12 @@ $ssl_certificate
   docker run --rm -t \
     --net $NETNAME \
     --hostname "$hostname" \
-    "$agent_image"
+    "$agent_image" \
+      agent --verbose \
+            --onetime \
+            --no-daemonize \
+            --summarize \
+            --certname "$hostname"
   set +x
 
   rm -rf "$hiera_config_file"
@@ -272,7 +282,12 @@ $ssl_certificate
   docker run --rm -t \
     --net $NETNAME \
     --hostname "$hostname" \
-    "$agent_image"
+    "$agent_image" \
+      agent --verbose \
+            --onetime \
+            --no-daemonize \
+            --summarize \
+            --certname "$hostname"
   set +x
 
   rm -rf "$hiera_config_file"
@@ -321,7 +336,12 @@ $ssl_certificate
   docker run --rm -t \
     --net $NETNAME \
     --hostname "$hostname" \
-    "$agent_image"
+    "$agent_image" \
+      agent --verbose \
+            --onetime \
+            --no-daemonize \
+            --summarize \
+            --certname "$hostname"
   set +x
 
   rm -rf "$manifest_config_file"
@@ -370,7 +390,12 @@ $ssl_certificate
   docker run --rm -t \
     --net $NETNAME \
     --hostname "$hostname" \
-    "$agent_image"
+    "$agent_image" \
+      agent --verbose \
+            --onetime \
+            --no-daemonize \
+            --summarize \
+            --certname "$hostname"
   set +x
 
   rm -rf "$manifest_config_file"
