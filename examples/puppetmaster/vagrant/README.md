@@ -64,12 +64,8 @@ this host-driven testing are as follows:
   powershell commands or scripts remotely on the VM guest. (The `vagrant
   powershell` command makes use of Windows Remote Management, or WinRM,
   running on the VM. SSH is not enabled on Windows VMs by default).
-- The service for the Puppet server is exposed to the Windows VM via
-  random host ports.
-- The service for the Conjur server is exposed to the Windows VM via
-  a static host port (8443 at this time) due to the fact that internal
-  and external compose ports must match to be able to allow puppetserver
-  to correctly connect to Conjur.
+- The services for the Puppet server and the Conjur server are exposed to
+  the Windows VM via random host ports.
 
 ## Setting Up
 

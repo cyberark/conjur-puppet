@@ -4,8 +4,9 @@ set -euo pipefail
 
 # Launches a full Puppet stack and converges nodes against it
 
+source vagrant/utils.sh
+
 CLEAN_UP_ON_EXIT=${CLEAN_UP_ON_EXIT:-true}
-CONJUR_SERVER_PORT=${CONJUR_SERVER_PORT:-8443}
 COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-puppetmaster_$(openssl rand -hex 3)}
 
 PUPPET_SERVER_TAG=latest
@@ -45,6 +46,8 @@ main() {
   setup_conjur
   wait_for_puppetmaster
   install_required_module_dependency
+  get_docker_gateway_ip
+  add_puppetmaster_etc_hosts
 
   for os_name in ${OSES[@]}; do
     for agent_tag in ${PUPPET_AGENT_TAGS[@]}; do
@@ -124,6 +127,25 @@ install_required_module_dependency() {
   run_in_puppet puppet module install puppetlabs-registry
 }
 
+get_docker_gateway_ip() {
+  # Get the IP address of the Docker compose network's gateway.
+  DOCKER_GATEWAY_IP="$(docker inspect $(docker-compose ps -q puppet)| \
+    jq .[0].NetworkSettings.Networks[].Gateway | tr -d '"')"
+}
+
+add_puppetmaster_etc_hosts() {
+  # Make an /etc/hosts entry in the Puppet server container for the DNS name
+  # 'conjur.cyberark.com'. This is used by the Puppet server to access the
+  echo "Adding /etc/hosts entry in puppet server: \"$DOCKER_GATEWAY_IP conjur.cyberark.com\""
+  # Make a temporary copy of /etc/hosts to modify since `sed` is not able to
+  # directly modify /etc/hosts when it is run via 'docker exec'.
+  run_in_puppet bash -c \
+    "cp /etc/hosts /tmp/hosts; \
+    /bin/sed -i $'/\tconjur.cyberark.com$/d' /tmp/hosts; \
+    echo $'$DOCKER_GATEWAY_IP\tconjur.cyberark.com' >> /tmp/hosts; \
+    cp /tmp/hosts /etc/hosts"
+}
+
 setup_conjur() {
   wait_for_conjur
   run_in_conjur conjurctl account create cucumber || :
@@ -179,7 +201,7 @@ converge_node_agent_apikey() {
   local identity_file="$TMPDIR/conjur.identity"
 
   echo "
-    appliance_url: https://conjur-https:$CONJUR_SERVER_PORT/
+    appliance_url: https://conjur.cyberark.com:$(conjur_host_port)/
     version: 5
     account: cucumber
     cert_file: /etc/ca.crt
@@ -187,7 +209,7 @@ converge_node_agent_apikey() {
   chmod 600 $config_file
 
   echo "
-    machine conjur-https
+    machine conjur.cyberark.com
     login $login
     password $api_key
   " > $identity_file
@@ -198,6 +220,7 @@ converge_node_agent_apikey() {
   set -x
   docker run --rm -t \
     --net $NETNAME \
+    --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
     -v "$config_file:/etc/conjur.conf:ro" \
     -v "$identity_file:/etc/conjur.identity:ro" \
     -v "$PWD/https_config/ca.crt:/etc/ca.crt:ro" \
@@ -231,7 +254,7 @@ lookup_options:
     convert_to: 'Sensitive'
 
 conjur::account: 'cucumber'
-conjur::appliance_url: 'https://conjur-https:$CONJUR_SERVER_PORT'
+conjur::appliance_url: 'https://conjur.cyberark.com:$(conjur_host_port)'
 conjur::authn_login: 'host/$node_name'
 conjur::authn_api_key: '$api_key'
 conjur::ssl_certificate: |
@@ -243,6 +266,7 @@ $ssl_certificate
   set -x
   docker run --rm -t \
     --net $NETNAME \
+    --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
     --hostname "$hostname" \
     "$agent_image" \
       agent --verbose \
@@ -273,7 +297,7 @@ lookup_options:
     convert_to: 'Sensitive'
 
 conjur::account: 'cucumber'
-conjur::appliance_url: 'https://conjur-https:$CONJUR_SERVER_PORT'
+conjur::appliance_url: 'https://conjur.cyberark.com:$(conjur_host_port)'
 conjur::authn_login: 'host/$node_name'
 conjur::host_factory_token: '$hf_token'
 conjur::ssl_certificate: |
@@ -285,6 +309,7 @@ $ssl_certificate
   set -x
   docker run --rm -t \
     --net $NETNAME \
+    --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
     --hostname "$hostname" \
     "$agent_image" \
       agent --verbose \
@@ -316,7 +341,7 @@ $ssl_certificate
       |-EOT
 
       class { 'conjur':
-        appliance_url      => 'https://conjur-https:$CONJUR_SERVER_PORT',
+        appliance_url      => 'https://conjur.cyberark.com:$(conjur_host_port)',
         account            => 'cucumber',
         authn_login        => 'host/$node_name',
         authn_api_key      => Sensitive('$api_key'),
@@ -339,6 +364,7 @@ $ssl_certificate
   set -x
   docker run --rm -t \
     --net $NETNAME \
+    --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
     --hostname "$hostname" \
     "$agent_image" \
       agent --verbose \
@@ -370,7 +396,7 @@ $ssl_certificate
       |-EOT
 
       class { 'conjur':
-        appliance_url      => 'https://conjur-https:$CONJUR_SERVER_PORT',
+        appliance_url      => 'https://conjur.cyberark.com:$(conjur_host_port)',
         account            => 'cucumber',
         authn_login        => 'host/$node_name',
         host_factory_token => Sensitive('$hf_token'),
@@ -393,6 +419,7 @@ $ssl_certificate
   set -x
   docker run --rm -t \
     --net $NETNAME \
+    --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
     --hostname "$hostname" \
     "$agent_image" \
       agent --verbose \

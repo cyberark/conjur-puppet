@@ -37,9 +37,10 @@ if (! ([System.IO.File]::Exists($msiPath))) {
 echo "Installing Puppet MSI file $msiFile"
 Start-Process msiexec.exe -Wait -ArgumentList "/qn /quiet /norestart /L*v C:\vagrant\puppet_install_log.txt /i $msiPath PUPPET_MASTER_SERVER=puppet"
 
-# Delete any existing entries for 'conjur' or 'puppet' in etc/hosts file
+# Delete any existing entries for 'conjur.cyberark.com' or 'puppet'
+# in etc/hosts file
 $etcHosts = "C:\Windows\System32\drivers\etc\hosts"
-$names = @("conjur-https", "puppet")
+$names = @("conjur.cyberark.com", "puppet")
 foreach( $name in $names) {
     $entries = Get-Content $etcHosts | Select-String $name
     foreach( $entry in $entries) {
@@ -48,12 +49,13 @@ foreach( $name in $names) {
     }
 }
 
-# Add entries to .../etc/hosts file for 'conjur-https' and 'puppet' that point these
-# domain names to `10.0.2.2`. This is a well-known, fixed IP address that is
-# used by VirtualBox as a host IP address. (These 'conjur-https' and 'puppet'
-# services are exposed on possibly random host ports for any host IP address).
+# Add entries to .../etc/hosts file for 'conjur.cyberark.com' and 'puppet'
+# that point these domain names to `10.0.2.2`. This is a well-known, fixed
+# IP address that is used by VirtualBox as a host IP address. (These
+# 'conjur.cyberark.com' and 'puppet' services are exposed on possibly
+# random host ports for any host IP address).
 vboxHostIP = "10.0.2.2"
-echo "Adding $etcHosts entry `"$vboxHostIP conjur-https`""
-Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "10.0.2.2 conjur-https"
+echo "Adding $etcHosts entry `"$vboxHostIP conjur.cyberark.com`""
+Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "10.0.2.2 conjur.cyberark.com"
 echo "Adding $etcHosts entry `"$vboxHostIP puppet`""
 Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "10.0.2.2 puppet"
