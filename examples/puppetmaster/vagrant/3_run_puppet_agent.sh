@@ -11,24 +11,46 @@ hostname="$VAGRANT_CWD"
 
 snapshot_name="$(agent_snapshot_name $PUPPET_AGENT_VERSION)"
 
+echo "Locating relevant running containers..."
+conjur_cli_container=$(docker ps | awk '/.cyberark\/conjur-cli/{print $1}')
+puppet_master_container=$(docker ps | awk '/ puppet\/puppetserver/{print $1}')
+conjur_nginx_container=$(docker ps | awk '/ nginx:/{print $1}')
+
+echo "Using Puppet master container ID: $puppet_master_container"
+echo "Using Conjur NGINX container ID: $conjur_nginx_container"
+echo "Using Conjur CLI container ID: $conjur_cli_container"
+
 echo "Restoring snapshot to '$snapshot_name'..."
 vagrant snapshot restore "$snapshot_name"
 
-echo "Adding Conjur connection info to Windows registry"
-vagrant powershell -e -c "/vagrant/add_conjur_registry.ps1 $(conjur_host_port)"
+mkdir -p .tmp/
+echo "Copying Puppet CA certs from master to host..."
+docker cp "$puppet_master_container:/etc/puppetlabs/puppet/ssl/ca/ca_crt.pem" ".tmp/puppet_ca_crt.pem"
+docker cp "$puppet_master_container:/etc/puppetlabs/puppet/ssl/ca/ca_crl.pem" ".tmp/puppet_ca_crl.pem"
 
-echo "Rotating Conjur API key for host 'node01'"
-conjur_ctl_container=$(docker ps | awk '/cyberark\/conjur-cli/{print $1}')
-node_api_key="$(docker exec $conjur_ctl_container conjur host rotate_api_key -h node01)"
+if [ ! "${SERVER_SIDE_CONFIG:-false}" != "false" ]; then
+  echo "*** USING AGENT-SIDE CONFIG ***"
 
-echo "Adding rotated Conjur API key to Windows Credentials Manager"
-vagrant powershell -e -c "/vagrant/add_conjur_creds.ps1 $node_api_key $(conjur_host_port)"
+  echo "Copying Conjur CA cert from master to host..."
+  docker cp "$conjur_nginx_container:/ca/tls.crt" ".tmp/conjur_ca.pem"
+
+  echo "Adding Conjur connection info to Windows registry"
+  vagrant powershell -e -c "/vagrant/add_conjur_registry.ps1 $(conjur_host_port)"
+
+  echo "Rotating Conjur API key for host 'node01'"
+  node_api_key="$(docker exec $conjur_cli_container conjur host rotate_api_key -h node01)"
+
+  echo "Adding rotated Conjur API key to Windows Credentials Manager"
+  vagrant powershell -e -c "/vagrant/add_conjur_creds.ps1 $node_api_key $(conjur_host_port)"
+else
+  echo "*** USING SERVER-SIDE CONFIG ***"
+fi
 
 echo "Ensuring synced time..."
+vagrant powershell -e -c "net start w32time" &>/dev/null || true
 vagrant powershell -e -c "W32tm /resync /force"
 
 echo "Clearing any previous certs generated for \"$hostname\" from Puppet server..."
-puppet_master_container=$(docker ps | awk '/puppet\/puppetserver/{print $1}')
 # Ignore errors since there might not be any certificates to clear
 
 signed_certs=$(docker exec "$puppet_master_container" ls -A1 /etc/puppetlabs/puppet/ssl/ca/signed/)
@@ -62,12 +84,18 @@ echo "Adding/modifying /etc/hosts entry in puppet server: \"$gateway_ip conjur\"
 # is not able to directly modify /etc/hosts when it is run via 'docker exec'.
 docker exec $puppet_master_container bash -c \
     "cp /etc/hosts /tmp/hosts; \
-     sed -i $'/\tconjur$/d' /tmp/hosts; \
-     echo $'$gateway_ip\tconjur' >> /tmp/hosts; \
+     sed -i $'/\tconjur-https$/d' /tmp/hosts; \
+     echo $'$gateway_ip\tconjur-https' >> /tmp/hosts; \
      cp /tmp/hosts /etc/hosts"
+
+# Create a long-lived HFT that we can copy/paste into hiera config if we're testing
+# HFT-based flows
+echo "Creating a long-lived HFT token..."
+hft_token=$(docker exec $conjur_cli_container conjur hostfactory tokens create --duration-hours 999 inventory | jq -r ".[].token")
+echo "Long-lived HFT token: $hft_token"
 
 echo "Setting env variables to customize the Puppet manifest for this node"
 vagrant powershell -e -c /vagrant/set_facter_env.ps1
 
-echo "Clearing previous Puppet certificates from VM and running Puppet Agent"
+echo "Running Puppet Agent..."
 vagrant powershell -e -c "/vagrant/run_puppet_agent.ps1 $(puppet_host_port)"

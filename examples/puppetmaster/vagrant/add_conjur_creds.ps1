@@ -33,5 +33,5 @@ if (-not($conjurHostPort)) {
     exit 1
 }
 
-# Add Conjur credentials to the Windows Credential Manager
-Invoke-Expression -Command "cmdkey /generic:http://conjur:$conjurHostPort/auth /user:host/node01 /pass:$apiKey"
+"Add Conjur credentials to the Windows Credential Manager..."
+Invoke-Expression -Command "cmdkey /generic:https://conjur-https:$conjurHostPort /user:host/node01 /pass:$apiKey"
