@@ -12,6 +12,6 @@ echo "Starting up Puppet v$major_version and Conjur servers"
 export CLEAN_UP_ON_EXIT=false
 
 cd ..
-./smoketest_e2e.sh $major_version
+./test.sh $major_version
 
 echo "Puppet v$major_version started!"
