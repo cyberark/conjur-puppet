@@ -13,7 +13,6 @@
 - [Usage](#usage)
   - [Creating a Conjur host and providing its identity and API key](#conjur-host-identity-with-api-key)
   - [Using Conjur host factory](#conjur-host-factory)
-  - [Using pre-established host identities (**Conjur Enterprise v4 only**)](#pre-established-host-identity-conjur-enterprise-v4-only)
 - [Reference](#reference)
 - [Limitations](#limitations)
 - [Contributing](#contributing)
@@ -25,9 +24,11 @@
 ## Description
 
 This is the official Puppet module for [Conjur](https://www.conjur.org), a robust
-identity and access management platform. This module simplifies the operations involved in 
+identity and access management platform. This module simplifies the operations involved in
 establishing a Conjur host identity and allows authorized Puppet nodes to fetch
 secrets from Conjur.
+
+You can find our official distributable releases on Puppet Forge under [`cyberark/conjur`](https://forge.puppet.com/cyberark/conjur).
 
 ## Setup
 
@@ -41,7 +42,10 @@ This module requires that you have:
   module. Supported versions:
   - Conjur OSS v1+
   - DAP v10+
-  - Conjur Enterprise v4.9+
+
+**Note that Conjur Enterprise v4 support is deprecated. If you are still using this version,
+please use the [v2](https://github.com/cyberark/conjur-puppet/tree/v2) branch of this
+project or a release version `<=2.0.5`**
 
 ### Using conjur-puppet with Conjur OSS
 
@@ -128,7 +132,6 @@ In this module, we provide multiple ways to establish Conjur application identit
 Puppet nodes, including:
 - [Creating a Conjur host and providing its identity and API key](#conjur-host-identity-with-api-key)
 - [Using Conjur host factory](#conjur-host-factory)
-- [Using pre-established host identities (**Conjur Enterprise v4 only**)](#pre-established-host-identity-conjur-enterprise-v4-only)
 
 Please note that before getting started configuring your Puppet environment, you'll need
 to load a policy in Conjur to define the application identities that you will be using to
@@ -374,21 +377,6 @@ conjur::ssl_certificate: |
   -----BEGIN CERTIFICATE-----
   ...
   -----END CERTIFICATE-----
-```
-
-##### Pre-established host identity (Conjur Enterprise v4 only)
-
-**When using Conjur Enterprise v4 only**, you can use
-[conjurize](https://developer.conjur.net/tutorials/authorization/hosts.html)
-or a similar method to establish host identity before running Puppet to configure.
-This way the Puppet master only ever handles a temporary access token instead of real,
-permanent Conjur credentials of the hosts it manages.
-
-If a host is so pre-configured, the settings and credentials are automatically
-obtained and used. In this case, all that is needed to use `conjur::secret` is a simple
-
-```puppet
-include conjur
 ```
 
 ## Reference
