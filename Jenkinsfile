@@ -73,14 +73,6 @@ pipeline {
 
     stage('Run smoke tests') {
       parallel {
-        stage('Local agent - Conjur v5') {
-          steps {
-            dir('examples') {
-              sh './smoketest.sh'
-            }
-          }
-        }
-
         stage('E2E - Puppet 5 - Conjur 5') {
           steps {
             dir('examples/puppetmaster') {
