@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-# Launches a full Puppet stack and converges a node against it
+# Launches a full Puppet stack and converges nodes against it
 
 CLEAN_UP_ON_EXIT=${CLEAN_UP_ON_EXIT:-true}
 CONJUR_SERVER_PORT=${CONJUR_SERVER_PORT:-8443}
@@ -82,6 +82,10 @@ main() {
 }
 
 run_in_conjur() {
+  docker-compose exec -T conjur "$@"
+}
+
+run_in_conjur_cli() {
   docker-compose exec -T cli "$@"
 }
 
@@ -99,7 +103,7 @@ wait_for_conjur() {
 
 wait_for_puppetmaster() {
   echo -n "Waiting on puppetmaster to be ready..."
-  while ! docker-compose exec -T conjur curl -ks https://puppet:8140 >/dev/null; do
+  while ! run_in_conjur curl -ks https://puppet:8140 >/dev/null; do
     echo -n "."
     sleep 2
   done
@@ -108,22 +112,22 @@ wait_for_puppetmaster() {
 
 get_host_key() {
   local hostname="$1"
-  run_in_conjur conjur host rotate_api_key -h "$hostname"
+  run_in_conjur_cli conjur host rotate_api_key -h "$hostname"
 }
 
 get_hf_token() {
-  run_in_conjur conjur hostfactory tokens create --duration-hours 1 inventory | jq -r ".[].token"
+  run_in_conjur_cli conjur hostfactory tokens create --duration-hours 1 inventory | jq -r ".[].token"
 }
 
 install_required_module_dependency() {
   echo "Installing puppetlabs-registry module dep to server..."
-  docker-compose exec -T puppet puppet module install puppetlabs-registry
+  run_in_puppet puppet module install puppetlabs-registry
 }
 
 setup_conjur() {
   wait_for_conjur
-  docker-compose exec -T conjur conjurctl account create cucumber || :
-  local api_key=$(docker-compose exec -T conjur conjurctl role retrieve-key cucumber:user:admin | tr -d '\r')
+  run_in_conjur conjurctl account create cucumber || :
+  local api_key=$(run_in_conjur conjurctl role retrieve-key cucumber:user:admin | tr -d '\r')
 
   echo "-----"
   echo "Starting CLI"
@@ -134,20 +138,20 @@ setup_conjur() {
   echo "-----"
   echo "Logging into the CLI"
   echo "-----"
-  run_in_conjur conjur authn login -u admin -p "${api_key}"
+  run_in_conjur_cli conjur authn login -u admin -p "${api_key}"
 
   echo "-----"
   echo "Loading Conjur initial policy"
   echo "-----"
-  run_in_conjur conjur policy load root /src/policy.yml
-  run_in_conjur conjur variable values add inventory/db-password $EXPECTED_PASSWORD  # load the secret's value
+  run_in_conjur_cli conjur policy load root /src/policy.yml
+  run_in_conjur_cli conjur variable values add inventory/db-password $EXPECTED_PASSWORD  # load the secret's value
 }
 
 revoke_cert_for() {
   local cert_fqdn="$1"
   echo "Ensuring clean cert state for $cert_fqdn..."
 
-  # Puppet v5 and v6 CLIs aren't 1:1 compatible so we have to chose the format based
+  # Puppet v5 and v6 CLIs aren't 1:1 compatible so we have to choose the format based
   # on the server version
   if [ "${PUPPET_SERVER_TAG:0:1}" == 5 ]; then
     run_in_puppet puppet cert clean "$cert_fqdn" &>/dev/null || true
