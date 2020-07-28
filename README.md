@@ -28,6 +28,8 @@ identity and access management platform. This module simplifies the operations i
 establishing a Conjur host identity and allows authorized Puppet nodes to fetch
 secrets from Conjur.
 
+You can find our official distributable releases on Puppet Forge under [`cyberark/conjur`](https://forge.puppet.com/cyberark/conjur).
+
 ## Setup
 
 ### Setup requirements
