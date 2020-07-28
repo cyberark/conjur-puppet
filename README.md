@@ -35,7 +35,8 @@ secrets from Conjur.
 
 This module requires that you have:
 - Puppet v5 _or equivalent EE version_
-- Puppet v5 agent on the nodes
+- Puppet v6 _or equivalent EE version_ (**Preliminary [Community level](https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md#community)
+  support only**)
 - Conjur endpoint available to both the Puppet server and the Puppet nodes using this
   module. Supported versions:
   - Conjur OSS v1+
