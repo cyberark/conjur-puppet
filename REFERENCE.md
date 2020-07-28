@@ -30,9 +30,7 @@ bootstrapped using the host factory token parameter.
 When this class is instantiated in such a way that it has access to an API key (`authn_api_key`),
 the identity is persisted on the agent using the same OS specific machine identity
 artifacts as mentioned in the pre-configured case above. This happens when the host
-factory parameter is used since a host's API key is retrieved as part of that flow. _Note
-that when this persistence occurs the `cert_file` parameter is always converted to the
-`ssl_certificate` equivalent for the artifact._
+factory parameter is used since a host's API key is retrieved as part of that flow.
 
 #### Note
 
@@ -53,14 +51,9 @@ User's username or host name (prefixed with `host/`).
 ##### `authn_api_key`
 API key for a user or host. Must be `Sensitive` if supported.
 
-##### `cert_file`
-File path to X509 certificate of the root CA of Conjur, PEM formatted. This file is read
-from the **Puppet server**. Takes precedence over `ssl_certificate`.
-
 ##### `ssl_certificate`
 Content of the X509 certificate of the root CA of Conjur, PEM formatted.
 When using Puppet's `file` function, the path to the cert must be absolute.
-Overwritten by the contents read from `cert_file` when it is present.
 
 ##### `host_factory_token`
 You can use a host factory token to obtain a host identity. Must be `Sensitive`.
@@ -102,16 +95,6 @@ class { 'conjur':
   authn_login     => 'host/redis001',
   authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
   ssl_certificate => file('/absolute/path/to/conjur-ca.pem'),
-  version         => 5
-}
-
-# same, but 'cert_file' is used instead of 'ssl_certificate'
-class { 'conjur':
-  account         => 'mycompany',
-  appliance_url   => 'https://conjur.mycompany.com/',
-  authn_login     => 'host/redis001',
-  authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
-  cert_file       => '/absolute/path/to/conjur-ca.pem', # Read from the Puppet server
   version         => 5
 }
 ```
