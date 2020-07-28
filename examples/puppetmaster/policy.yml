@@ -4,6 +4,7 @@
     description: Policy that governs access to the inventory database
   body:
     - !variable &db-password db-password
+
     - !layer
     - !host-factory
       layers: [ !layer ]
@@ -13,11 +14,31 @@
       resource: *db-password
       privilege: [ read, execute ]
 
-    - !host &h
+    - !host &h_agent_apikey
+      id: /agent-apikey-node
+      annotations:
+        puppet: true
+
+    - !host &h_hiera_apikey
+      id: /hiera-apikey-node
+      annotations:
+        puppet: true
+
+    - !host &h_manifest_apikey
+      id: /manifest-apikey-node
+      annotations:
+        puppet: true
+
+    # Vagrant test node
+    - !host &h_node01
       id: /node01
       annotations:
         puppet: true
 
     - !grant
       role: !layer
-      member: [ *h ]
+      members:
+        - *h_agent_apikey
+        - *h_hiera_apikey
+        - *h_manifest_apikey
+        - *h_node01
