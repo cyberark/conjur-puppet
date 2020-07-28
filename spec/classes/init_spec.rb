@@ -33,7 +33,6 @@ describe 'conjur' do
         it "stores the configuration and identity on the node" do
           if os_family == 'Windows'
             expect(subject).to contain_registry_value('HKLM\Software\CyberArk\Conjur\ApplianceUrl')
-                                   .with("data" => 'https://conjur.test/api')
             expect(subject).to contain_registry_value('HKLM\Software\CyberArk\Conjur\SslCertificate')
             expect(subject).to contain_registry_value('HKLM\Software\CyberArk\Conjur\Account')
             expect(subject).to contain_registry_value('HKLM\Software\CyberArk\Conjur\Version')

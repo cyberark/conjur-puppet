@@ -6,7 +6,14 @@ WORKDIR /conjur
 
 COPY Gemfile /conjur/Gemfile
 ARG PUPPET_VERSION
-RUN env PUPPET_VERSION="$PUPPET_VERSION" bundle && cp Gemfile.lock /tmp
+
+ENV PUPPET_VERSION="$PUPPET_VERSION"
+
+# The `Gemfile.lock` created here at build time is stored as `/build-Gemfile.lock` for
+# safe-keeping. `/docker-entrypoint.sh` will copy this file into the working directory,
+# `/conjur/Gemfile.lock`, at runtime to prevent any issues associated with it being
+# overwritten by a volume mount of the `/conjur` working directory.
+RUN bundle && cp Gemfile.lock /build-Gemfile.lock
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
