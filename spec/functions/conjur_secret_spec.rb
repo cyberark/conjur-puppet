@@ -23,20 +23,6 @@ describe 'conjur::secret', conjur: :mock do
     context "with #{os_family} platform" do
       let(:facts) { { os: { family: os_family } } }
 
-      context "with Conjur v4 API" do
-        before do
-          allow_authorized_conjur_get('/api/variables/key/value') \
-              .and_return http_ok 'variable value'
-          allow_authorized_conjur_get('/api/variables/tls%2Fkey/value') \
-              .and_return http_ok 'tls key value'
-          allow_authorized_conjur_get('/api/variables/var+with+spaces/value') \
-              .and_return http_ok 'var with spaces value'
-          allow_authorized_conjur_get('/api/variables/bad%2Ftls%2Fkey/value') \
-              .and_return http_unauthorized
-        end
-        include_examples "fetching secrets"
-      end
-
       context "with Conjur v5 API" do
         let(:facts) {{ conjur_version: 5, os: { family: os_family } }}
         before do

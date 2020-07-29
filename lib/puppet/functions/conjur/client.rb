@@ -57,12 +57,8 @@ Puppet::Functions.create_function :'conjur::client' do
       end
 
       def authenticate login, key, account = nil
-        case version
-        when 4
-          account = 'users'
-        when 5
-          raise ArgumentError, "account is required for v5" unless account
-        end
+        raise ArgumentError, "account is required for v5" unless account
+
         post ['authn', account, login, 'authenticate'].
             map(&URI.method(:encode_www_form_component)).join('/'), key
       end
@@ -83,13 +79,10 @@ Puppet::Functions.create_function :'conjur::client' do
       end
 
       def variable_value account, id, token = nil
-        path = case version
-          when 4
-            ['variables', URI.encode_www_form_component(id), 'value']
-          when 5
-            raise ArgumentError, "account is required for v5" unless account
-            ['secrets', account, 'variable', ERB::Util.url_encode(id)]
-               end.join('/')
+        raise ArgumentError, "account is required for v5" unless account
+
+        path = ['secrets', account, 'variable', ERB::Util.url_encode(id)].join('/')
+
         get path, Base64.urlsafe_encode64(token)
       end
 

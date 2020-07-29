@@ -5,7 +5,7 @@ require 'webrick/https'
 describe 'conjur::client' do
   include RSpec::Puppet::FunctionExampleGroup
   let(:pem) { cert && cert.to_pem }
-  let(:version) { 4 }
+  let(:version) { 5 }
   subject(:client) { find_function.execute uri, version, pem }
 
   ['Windows', 'RedHat'].each do |os_family|
@@ -135,16 +135,6 @@ xCbuhI/IUunMm+F/8gOcAGd9L3j0g5ZOsGSF34NXi21BrlFGQdWFzg==
             end
           end
 
-          context "with Conjur v4 API" do
-            before do
-              allow(conjur_connection).to receive(:post) \
-                  .with('/api/authn/users/alice/authenticate', 'the api key', nil) \
-                  .and_return http_ok 'the token'
-            end
-
-            include_examples "authentication"
-          end
-
           context "with Conjur v5 API" do
             before do
               allow(conjur_connection).to receive(:post) \
@@ -157,19 +147,19 @@ xCbuhI/IUunMm+F/8gOcAGd9L3j0g5ZOsGSF34NXi21BrlFGQdWFzg==
 
       it "correctly encodes username" do
         allow(conjur_connection).to receive(:post) \
-            .with('/api/authn/users/host%2Fpuppettest/authenticate', 'the api key', nil) \
+            .with('/api/authn/test/host%2Fpuppettest/authenticate', 'the api key', nil) \
             .and_return http_ok 'the host token'
 
-        expect(subject.authenticate 'host/puppettest', 'the api key') \
+        expect(subject.authenticate 'host/puppettest', 'the api key', 'test') \
             .to eq 'the host token'
         end
 
         it "raises error when server errors" do
           allow(conjur_connection).to receive(:post) \
-              .with('/api/authn/users/alice/authenticate', 'the api key', nil) \
+              .with('/api/authn/test/alice/authenticate', 'the api key', nil) \
               .and_return http_unauthorized
 
-          expect { subject.authenticate 'alice', 'the api key' } \
+          expect { subject.authenticate 'alice', 'the api key', 'test' } \
               .to raise_error Net::HTTPError
           end
         end

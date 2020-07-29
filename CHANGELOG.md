@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Removed
+- Support for using the Conjur Puppet module with Conjur Enterprise v4 is removed
+  [cyberark/conjur-puppet#66](https://github.com/cyberark/conjur-puppet/issues/20).
+
 ## [2.0.5] - 2020-07-28
 
 ### Added
