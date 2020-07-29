@@ -88,14 +88,6 @@ pipeline {
             }
           }
         }
-
-        stage('Local agent - Conjur v4 EE') {
-          steps {
-            dir('examples/ee') {
-              sh './smoketest.sh'
-            }
-          }
-        }
       }
     }
 
