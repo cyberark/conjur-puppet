@@ -72,22 +72,6 @@ if [ "$cert_fqdn" != "" ]; then
     puppetserver ca clean --certname "$cert_fqdn" || true
 fi
 
-# When the Puppet server tries to retrieve the API token for host 'node01'
-# from Conjur, it will use the Conjur URL provided by the Puppet agent,
-# which will be of the form 'https://conjur:<random-host-port>'. This random
-# host port is bound to host IPs only, so create an /etc/hosts entry for
-# 'conjur' to point to the Docker Compose gateway on the host.
-gateway_ip="$(docker exec $puppet_master_container netstat -rn | grep "0.0.0.0.*UG" | awk '{print $2}')"
-
-echo "Adding/modifying /etc/hosts entry in puppet server: \"$gateway_ip conjur\""
-# Make a temporary copy of /etc/hosts to make modifications since `sed` is
-# is not able to directly modify /etc/hosts when it is run via 'docker exec'.
-docker exec $puppet_master_container bash -c \
-    "cp /etc/hosts /tmp/hosts; \
-     sed -i $'/\tconjur-https$/d' /tmp/hosts; \
-     echo $'$gateway_ip\tconjur-https' >> /tmp/hosts; \
-     cp /tmp/hosts /etc/hosts"
-
 # Create a long-lived HFT that we can copy/paste into hiera config if we're testing
 # HFT-based flows
 echo "Creating a long-lived HFT token..."
