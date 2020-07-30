@@ -35,7 +35,7 @@ Facter.add :conjur do
     end
 
     def version
-      @version ||= config['version'] || 4
+      @version ||= config['version'] || 5
     end
 
     # A common mistake is to omit the trailing slash in an uri.
