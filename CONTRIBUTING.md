@@ -3,6 +3,7 @@
 For general contribution and community guidelines, please see the [community repo](https://github.com/cyberark/community).
 
 - [Development](#development)
+  * [Sequence diagrams](#sequence-diagrams)
   * [Running a Conjur server locally](#running-a-conjur-server-locally)
   * [Running a Puppet master locally](#running-a-puppet-master-locally)
   * [Running a Puppet node locally](#running-a-puppet-node-locally)
@@ -15,56 +16,104 @@ generated with markdown-toc</a></i></small>
 
 ## Development
 
-### Sequence diagram
+### Sequence diagrams
 
-It may help to understand the typical flow when this Puppet module is included in
-your Puppet workflows.
+It may help to understand some typical flows when this Puppet module is
+included in your Puppet workflows. The following Conjur Puppet module
+workflows are portrayed below:
 
-```sequence
-+---------+                                           +-------+                                                                         +---------+
-| server  |                                           | agent |                                                                         | conjur  |
-+---------+                                           +-------+                                                                         +---------+
-     |                                                    |                                                                                  |
-     | Configured with Conjur connection information      |                                                                                  |
-     |----------------------------------------------      |                                                                                  |
-     |                                             |      |                                                                                  |
-     |<---------------------------------------------      |                                                                                  |
-     |                                                    |                                                                                  |
-     | Send Conjur login info to agent                    |                                                                                  |
-     |--------------------------------------------------->|                                                                                  |
-     |                                                    |                                                                                  |
-     |                                                    | Authenticate and request Conjur access token                                     |
-     |                                                    |--------------------------------------------------------------------------------->|
-     |                                                    |                                                                                  |
-     |                                                    |      Return Conjur access token encrypted by Conjur server certificate, or error |
-     |                                                    |<---------------------------------------------------------------------------------|
-     |                                                    |                                                                                  |
-     |     Return Conjur access token encrypted over mTLS |                                                                                  |
-     |<---------------------------------------------------|                                                                                  |
-     |                                                    |                                                                                  |
-     | Request secret values using token                  |                                                                                  |
-     |-------------------------------------------------------------------------------------------------------------------------------------->|
-     |                                                    |                                                                                  |
-     |                                                    |                                                   Return secret values, or error |
-     |<--------------------------------------------------------------------------------------------------------------------------------------|
-     |                                                    |                                                                                  |
-     | Return secret values, or error                     |                                                                                  |
-     |--------------------------------------------------->|                                                                                  |
-     |                                                    |                                                                                  |
+- [Using Conjur Host Identity with Host Factory](#using-conjur-host-identity-with-host-factory)
+- [Using Windows Registry / Windows Credential Manager Pre-Provisioning](#using-windows-registry--windows-credential-manager-pre-provisioning)
+- [Using Host Identity with API Key Configured in Puppet Manifest](#using-host-identity-with-api-key-configured-in-puppet-manifest)
+
+#### Using Conjur Host Identity with Host Factory
+
+This workflow is described in the
+[Conjur host factory](README.md#conjur-host-factory)
+section in the [README.md](README.md) file.
+
+##### Initial Use of HFT:
+
+![Workflow](diagrams/host_factory_workflow.png)
+
+Diagram Source: [host_factory_workflow.txt](diagrams/host_factory_workflow.txt)
+
+##### Consequent Use of HFT:
+
+![Workflow](diagrams/host_factory_workflow2.png)
+
+Diagram Source: [host_factory_workflow2.txt](diagrams/host_factory_workflow2.txt)
+
+##### References
+
+- [Puppet Forge documentation](https://forge.puppet.com/conjur/conjur#conjur-host-identity-with-host-factory)
+- [Configuration documentation](README.md#conjur-host-factory)
+
+##### Puppet Configuration
+
+- [Puppet Manifest Configuration](README.md#updating-the-puppet-manifest-1) 
+- [Using Hiera](README.md#using-hiera-1) 
+
+#### Using Windows Registry / Windows Credential Manager Pre-Provisioning
+
+This workflow is described in the
+[Using Windows Registry / Windows Credential Manager (Windows agents only)](README.md#using-windows-registry--windows-credential-manager-windows-agents-only)
+section in the [README.md](README.md) file.
+
+![workflow](diagrams/windows_pre_provision_workflow.png)
+
+Diagram Source: [windows_pre_provision_workflow.txt](diagrams/windows_pre_provision_workflow.txt)
+
+##### References
+
+- [Puppet Forge documentation](https://forge.puppet.com/conjur/conjur#pre-established-host-identity)
+- [Configuration documentation](README.md#using-windows-registry--windows-credential-manager-windows-agents-only)
+
+##### Puppet Configuration
+
+###### Puppet Manifest on Master
+
+File: /etc/puppetlabs/code/environments/production/manifests/site.pp
+
+```
+  node default {
+    include conjur
+  }
 ```
 
-This was generated by https://textart.io/sequence using the sequence:
-```
-object server agent conjur
-server->server: Configured with Conjur connection information
-server->agent: Send Conjur login info to agent
-agent->conjur: Authenticate and request Conjur access token
-conjur->agent: Return Conjur access token encrypted by Conjur server certificate, or error
-agent->server: Return Conjur access token encrypted over mTLS
-server->conjur: Request secret values using token
-conjur->server: Return secret values, or error
-server->agent: Return secret values, or error
-```
+###### Windows Puppet Agent Configuration
+
+Conjur connection information and the node's Conjur API key can be configured
+using the PowerShell scripts described in the
+[Using Windows Registry / Windows Credential Manager](README.md#using-windows-registry--windows-credential-manager-windows-agents-only)
+section of the [README.md](README.md) file.
+
+#### Using Host Identity with API Key Configured in Puppet Manifest
+
+This workflow is described in the
+[Conjur host identity with API key](README.md#conjur-host-identity-with-api-key)
+section in the [README.md](README.md) file.
+
+##### Initial Use
+
+![workflow](diagrams/host_id_with_api_key_workflow.png)
+
+Diagram Source: [host_id_with_api_key_workflow.txt](diagrams/host_id_with_api_key_workflow.txt)
+
+##### Consequent Use:
+
+![Workflow](diagrams/host_id_with_api_key_workflow2.png)
+
+Diagram Source: [host_id_with_api_key_workflow2.txt](diagrams/host_id_with_api_key_workflow2.txt)
+
+##### References
+
+- [Puppet Forge documentation](https://forge.puppet.com/conjur/conjur#conjur-host-identity-with-api-key)
+
+##### Puppet Configuration
+
+- [Puppet Manifest Configuration](README.md#updating-the-puppet-manifest) 
+- [Using Hiera](README.md#using-hiera) 
 
 ### Running a Conjur server locally
 
