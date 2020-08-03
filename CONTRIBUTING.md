@@ -35,11 +35,13 @@ section in the [README.md](README.md) file.
 ##### Initial Use of HFT:
 
 ![Workflow](diagrams/host_factory_workflow.png)
+
 Diagram Source: [host_factory_workflow.txt](diagrams/host_factory_workflow.txt)
 
 ##### Consequent Use of HFT:
 
 ![Workflow](diagrams/host_factory_workflow2.png)
+
 Diagram Source: [host_factory_workflow2.txt](diagrams/host_factory_workflow2.txt)
 
 ##### References
@@ -92,9 +94,17 @@ This workflow is described in the
 [Conjur host identity with API key](README.md#conjur-host-identity-with-api-key)
 section in the [README.md](README.md) file.
 
+##### Initial Use
+
 ![workflow](diagrams/host_id_with_api_key_workflow.png)
 
 Diagram Source: [host_id_with_api_key_workflow.txt](diagrams/host_id_with_api_key_workflow.txt)
+
+##### Consequent Use:
+
+![Workflow](diagrams/host_id_with_api_key_workflow2.png)
+
+Diagram Source: [host_id_with_api_key_workflow2.txt](diagrams/host_id_with_api_key_workflow2.txt)
 
 ##### References
 
