@@ -32,9 +32,15 @@ This workflow is described in the
 [Conjur host factory](README.md#conjur-host-factory)
 section in the [README.md](README.md) file.
 
-![Workflow](diagrams/host_factory_workflow.png)
+##### Initial Use of HFT:
 
+![Workflow](diagrams/host_factory_workflow.png)
 Diagram Source: [host_factory_workflow.txt](diagrams/host_factory_workflow.txt)
+
+##### Consequent Use of HFT:
+
+![Workflow](diagrams/host_factory_workflow2.png)
+Diagram Source: [host_factory_workflow2.txt](diagrams/host_factory_workflow2.txt)
 
 ##### References
 

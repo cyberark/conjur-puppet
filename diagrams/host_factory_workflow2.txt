@@ -1,5 +1,4 @@
 @startuml
-
 hide footbox
 
 participant "Puppet Master" as Master
@@ -7,17 +6,13 @@ participant "Puppet Agent" as Agent
 participant Conjur
 
 Agent->Agent: Gather Facts
-Agent->Master: Facts
-Master->Conjur: Create Host (with HF Token)
-Conjur->Conjur: Authenticate HF Token
-Conjur->Master: Host ID, API Key
-Master->Conjur: Authenticate (with API Key)
-Conjur->Master: Auth Token
+Agent->Conjur: Authenticate (with API Key)
+Conjur->Agent: Auth Token
+Agent->Master: Facts (with Auth token)
 Master->Conjur: Request Secrets (with Auth Token)
 Conjur->Conjur: Authorize
 Conjur->Master: Secrets
 Master->Master: Update Catalog
 Master->Agent: Send Catalog
 Agent->Agent: Update Config Based on Catalog
-
 @enduml
