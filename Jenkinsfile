@@ -41,42 +41,18 @@ pipeline {
       }
     }
 
-    stage('Linting and unit tests') {
+
+    stage('Tests') {
       parallel {
-        stage('Unit tests - Puppet 6') {
-          steps {
-            sh './test.sh 6'
-          }
-
-          post {
-            always {
-              junit 'spec/output/rspec.xml'
-              archiveArtifacts artifacts: 'spec/output/rspec.xml', fingerprint: true
-            }
-          }
-        }
-
-        stage('Unit tests - Puppet 5') {
+        stage('Linting and unit tests') {
           steps {
             sh './test.sh'
           }
 
           post {
             always {
-              junit 'spec/output/rspec_puppet5.xml'
-              archiveArtifacts artifacts: 'spec/output/rspec_puppet5.xml', fingerprint: true
-            }
-          }
-        }
-      }
-    }
-
-    stage('Run smoke tests') {
-      parallel {
-        stage('E2E - Puppet 5 - Conjur 5') {
-          steps {
-            dir('examples/puppetmaster') {
-              sh './test.sh 5'
+              junit 'spec/output/rspec.xml'
+              archiveArtifacts artifacts: 'spec/output/rspec.xml', fingerprint: true
             }
           }
         }

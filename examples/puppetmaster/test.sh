@@ -61,20 +61,8 @@ main() {
       converge_node_agent_apikey "$agent_image"
 
       echo
-      echo "=> Hiera config, API Key <="
-      converge_node_hiera_apikey "$agent_image"
-
-      echo
-      echo "=> Hiera config, HF Token <="
-      converge_node_hiera_hft "$agent_image"
-
-      echo
-      echo "=> Manifest config, API Key <="
-      converge_node_manifest_apikey "$agent_image"
-
-      echo
-      echo "=> Manifest config, HF Token <="
-      converge_node_manifest_hft "$agent_image"
+      echo "=> Hiera manifest config, API Key <="
+      converge_node_hiera_manifest_apikey "$agent_image"
 
       echo "Tests for '$agent_image': OK"
     done
@@ -236,9 +224,9 @@ converge_node_agent_apikey() {
   rm -rf $TMPDIR
 }
 
-converge_node_hiera_apikey() {
+converge_node_hiera_manifest_apikey() {
   local agent_image="$1"
-  local node_name="hiera-apikey-node"
+  local node_name="hiera-manifest-apikey-node"
   local hostname="${node_name}_$(openssl rand -hex 3)"
 
   local login="host/$node_name"
@@ -246,8 +234,10 @@ converge_node_hiera_apikey() {
   echo "API key for $node_name: $api_key"
 
   local hiera_config_file="./code/data/nodes/$hostname.yaml"
+  local manifest_config_file="./code/environments/production/manifests/00_$hostname.pp"
 
   local ssl_certificate="$(cat https_config/ca.crt | sed 's/^/  /')"
+
   echo "---
 lookup_options:
   '^conjur::authn_api_key':
@@ -261,103 +251,29 @@ conjur::ssl_certificate: |
 $ssl_certificate
   " > $hiera_config_file
 
-  revoke_cert_for "$hostname"
-
-  set -x
-  docker run --rm -t \
-    --net $NETNAME \
-    --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
-    --hostname "$hostname" \
-    "$agent_image" \
-      agent --verbose \
-            --onetime \
-            --no-daemonize \
-            --summarize \
-            --certname "$hostname"
-  set +x
-
-  rm -rf "$hiera_config_file"
-}
-
-converge_node_hiera_hft() {
-  local agent_image="$1"
-  local node_name="hiera-hft-node"
-  local hostname="${node_name}_$(openssl rand -hex 3)"
-
-  local login="host/$node_name"
-  local hf_token=$(get_hf_token)
-  echo "HF token for $node_name: $hf_token"
-
-  local hiera_config_file="./code/data/nodes/$hostname.yaml"
-
-  local ssl_certificate="$(cat https_config/ca.crt | sed 's/^/  /')"
-  echo "---
-lookup_options:
-  '^conjur::host_factory_token':
-    convert_to: 'Sensitive'
-
-conjur::account: 'cucumber'
-conjur::appliance_url: 'https://conjur.cyberark.com:$(conjur_host_port)'
-conjur::authn_login: 'host/$node_name'
-conjur::host_factory_token: '$hf_token'
-conjur::ssl_certificate: |
-$ssl_certificate
-  " > $hiera_config_file
-
-  revoke_cert_for "$hostname"
-
-  set -x
-  docker run --rm -t \
-    --net $NETNAME \
-    --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
-    --hostname "$hostname" \
-    "$agent_image" \
-      agent --verbose \
-            --onetime \
-            --no-daemonize \
-            --summarize \
-            --certname "$hostname"
-  set +x
-
-  rm -rf "$hiera_config_file"
-}
-
-converge_node_manifest_apikey() {
-  local agent_image="$1"
-  local node_name="manifest-apikey-node"
-  local hostname="${node_name}_$(openssl rand -hex 3)"
-
-  local login="host/$node_name"
-  local api_key=$(get_host_key $node_name)
-  echo "API key for $node_name: $api_key"
-
-  local manifest_config_file="./code/environments/production/manifests/00_$hostname.pp"
-
-  local ssl_certificate="$(cat https_config/ca.crt)"
   echo "
     node '$hostname' {
-      \$sslcert = @("EOT")
-$ssl_certificate
-      |-EOT
-
-      class { 'conjur':
-        appliance_url      => 'https://conjur.cyberark.com:$(conjur_host_port)',
-        account            => 'cucumber',
-        authn_login        => 'host/$node_name',
-        authn_api_key      => Sensitive('$api_key'),
-        ssl_certificate    => \$sslcert
-      }
-
-      include conjur
       \$pem_file  = '/tmp/test.pem'
-      \$secret = conjur::secret('inventory/db-password')
-      notify { \"Writing secret '\${secret.unwrap}' to \$pem_file...\": }
+      \$secret = Sensitive(Deferred(conjur::secret, ['inventory/db-password',
+        lookup('conjur::appliance_url'),
+        lookup('conjur::account'),
+        lookup('conjur::authn_login'),
+        lookup('conjur::authn_api_key'),
+        lookup('conjur::ssl_certificate')
+      ]))
+
+      notify { \"Writing secret to \${pem_file}...\": }
       file { \$pem_file:
         ensure  => file,
-        content => conjur::secret('inventory/db-password'),
+        content => \$secret,
       }
-    }
-  " > $manifest_config_file
+
+      exec { \"cat \${pem_file}\":
+        path      => '/usr/bin:/usr/sbin:/bin',
+        provider  => shell,
+        logoutput => true,
+      }
+    }" > $manifest_config_file
 
   revoke_cert_for "$hostname"
 
@@ -374,62 +290,7 @@ $ssl_certificate
             --certname "$hostname"
   set +x
 
-  rm -rf "$manifest_config_file"
-}
-
-converge_node_manifest_hft() {
-  local agent_image="$1"
-  local node_name="manifest-hft-node"
-  local hostname="${node_name}_$(openssl rand -hex 3)"
-
-  local login="host/$node_name"
-  local hf_token=$(get_hf_token)
-  echo "HF token for $node_name: $hf_token"
-
-  local manifest_config_file="./code/environments/production/manifests/00_$hostname.pp"
-
-  local ssl_certificate="$(cat https_config/ca.crt)"
-  echo "
-    node '$hostname' {
-      \$sslcert = @("EOT")
-$ssl_certificate
-      |-EOT
-
-      class { 'conjur':
-        appliance_url      => 'https://conjur.cyberark.com:$(conjur_host_port)',
-        account            => 'cucumber',
-        authn_login        => 'host/$node_name',
-        host_factory_token => Sensitive('$hf_token'),
-        ssl_certificate => \$sslcert
-      }
-
-      include conjur
-      \$pem_file  = '/tmp/test.pem'
-      \$secret = conjur::secret('inventory/db-password')
-      notify { \"Writing secret '\${secret.unwrap}' to \$pem_file...\": }
-      file { \$pem_file:
-        ensure  => file,
-        content => conjur::secret('inventory/db-password'),
-      }
-    }
-  " > $manifest_config_file
-
-  revoke_cert_for "$hostname"
-
-  set -x
-  docker run --rm -t \
-    --net $NETNAME \
-    --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
-    --hostname "$hostname" \
-    "$agent_image" \
-      agent --verbose \
-            --onetime \
-            --no-daemonize \
-            --summarize \
-            --certname "$hostname"
-  set +x
-
-  rm -rf "$manifest_config_file"
+  rm -rf "$manifest_config_file" "$hiera_config_file"
 }
 
 main "$@"

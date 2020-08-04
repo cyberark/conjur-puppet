@@ -6,9 +6,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+- Support for using `Deferred` secrets fetching via `conjur::secret`.
+  [cyberark/conjur-puppet#13](https://github.com/cyberark/conjur-puppet/issues/13).
+
+### Changed
+- `conjur::secret` now must be used as a `Deferred` function. Method signature has
+  changed as well. [cyberark/conjur-puppet#13](https://github.com/cyberark/conjur-puppet/issues/13).
+
 ### Removed
 - Support for using the Conjur Puppet module with Conjur Enterprise v4 is removed
-  [cyberark/conjur-puppet#66](https://github.com/cyberark/conjur-puppet/issues/20).
+  [cyberark/conjur-puppet#66](https://github.com/cyberark/conjur-puppet/issues/66).
+- Support for using this module with Puppet v5.
+  [cyberark/conjur-puppet#104](https://github.com/cyberark/conjur-puppet/issues/104).
+- Support for using host factory tokens, `conjur` class, `cert_file` parameter, and using
+  server-side `conjur` class to pre-populate on-agent info.
+  [cyberark/conjur-puppet#104](https://github.com/cyberark/conjur-puppet/issues/104).
 
 ## [2.0.5] - 2020-07-28
 

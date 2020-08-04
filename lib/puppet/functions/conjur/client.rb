@@ -2,16 +2,23 @@
 
 require 'net/http'
 
-# This function is really a Ruby class. Since we can't bind a class
-# to a Ruby constant (which would dirty the interpreter state),
-# we make it anonymous module and 'bless' a hash with it.
+# This function is a representation of a Conjur / DAP client with majority
+# of the functionality that allows us to authenticate against a server.
 Puppet::Functions.create_function :'conjur::client' do
+  # @param uri The URL of the Conjur or DAP instance.
+  # @param version Conjur API version.
+  # @param cert The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance
+  # @return [Class] Conjur client instance
   dispatch :new do
     param 'String', :uri
     param 'Integer', :version
     param 'String', :cert
   end
 
+  # @param uri The URL of the Conjur or DAP instance.
+  # @param version Conjur API version.
+  # @param cert The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance
+  # @return [Class] Conjur client instance
   dispatch :new do
     param 'String', :uri
     param 'Integer', :version
@@ -80,6 +87,7 @@ Puppet::Functions.create_function :'conjur::client' do
 
       def variable_value account, id, token = nil
         raise ArgumentError, "account is required for v5" unless account
+        raise ArgumentError, "token is required for fetching secrets" unless token
 
         path = ['secrets', account, 'variable', ERB::Util.url_encode(id)].join('/')
 
