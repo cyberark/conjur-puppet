@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Deprecated
+- Support for using the Conjur Puppet module with Puppet v5 is now deprecated.
+  Support will be removed in the next major release.
+  [cyberark/conjur-puppet#180](https://github.com/cyberark/conjur-puppet/issues/180)
+- Support for configuring this module to exchange
+  [host factory](https://docs.conjur.org/Latest/en/Content/Operations/Services/host_factory.html)
+  tokens for Conjur host identities and API keys is now deprecated. You may still configure your
+  systems to [create a host](https://docs.conjur.org/Latest/en/Content/Developer/Conjur_API_Create_Host.htm)
+  using host factory, however, as long as you provide this module with the Conjur host identity
+  and API key.
+  [cyberark/conjur-puppet#180](https://github.com/cyberark/conjur-puppet/issues/180)
+
 ## [2.0.5] - 2020-07-28
 
 ### Added
