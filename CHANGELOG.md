@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [2.0.6] - 2020-08-10
+
 ### Deprecated
 - Support for using the Conjur Puppet module with Puppet v5 is now deprecated.
   Support will be removed in the next major release.
