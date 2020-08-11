@@ -11,6 +11,11 @@ node default {
 
   notify { "Grabbing 'inventory/db-password' secret...": }
   $secret = Sensitive(Deferred(conjur::secret, ['inventory/db-password']))
+
+  # If using server-supplied identity for the agent's Conjur / DAP connection,
+  # you would use the optional parameters to the `conjur::secret` function as
+  # shown below.
+  #
   # $secret = Sensitive(Deferred(conjur::secret, ['inventory/db-password',
   #   lookup('conjur::appliance_url'),
   #   lookup('conjur::account'),

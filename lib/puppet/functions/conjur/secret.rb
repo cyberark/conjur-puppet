@@ -18,6 +18,7 @@ Puppet::Functions.create_function :'conjur::secret' do
   # @example Server-based identity invocation
   #   $sslcert = @("EOT")
   #   -----BEGIN CERTIFICATE-----
+  #   ...
   #   -----END CERTIFICATE-----
   #   |-EOT
   #   
