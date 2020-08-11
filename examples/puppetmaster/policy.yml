@@ -19,13 +19,8 @@
       annotations:
         puppet: true
 
-    - !host &h_hiera_apikey
-      id: /hiera-apikey-node
-      annotations:
-        puppet: true
-
-    - !host &h_manifest_apikey
-      id: /manifest-apikey-node
+    - !host &h_hiera_manifest_apikey
+      id: /hiera-manifest-apikey-node
       annotations:
         puppet: true
 
@@ -39,6 +34,5 @@
       role: !layer
       members:
         - *h_agent_apikey
-        - *h_hiera_apikey
-        - *h_manifest_apikey
+        - *h_hiera_manifest_apikey
         - *h_node01

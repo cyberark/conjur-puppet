@@ -15,7 +15,7 @@ require 'puppet/network/http_pool'
 require 'helpers/fs'
 
 RSpec.configure do |config|
-  config.default_facts = { conjur_version: 4 }
+  config.default_facts = { conjur_version: 5 }
 end
 
 shared_context "mock conjur connection", conjur: :mock do

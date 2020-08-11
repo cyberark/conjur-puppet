@@ -1,5 +1,5 @@
-FROM ruby:2.4
-MAINTAINER Conjur Inc
+FROM ruby:2.5
+MAINTAINER CyberArk Software Ltd.
 
 RUN mkdir /conjur
 WORKDIR /conjur

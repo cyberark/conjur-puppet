@@ -38,7 +38,7 @@ describe 'conjur::client' do
         end
 
         let(:cert_hostname) { 'localhost' }
-        let(:uri) { "https://localhost:#{port}/api/" }
+        let(:uri) { "https://localhost:#{port}" }
         let(:port) { 31390 }
 
         let(:server) do
@@ -48,7 +48,7 @@ describe 'conjur::client' do
             Logger: WEBrick::Log.new(STDERR, ($DEBUG ? 4 : 1)),
             AccessLog: $DEBUG ? nil : []
           ).tap do |server|
-            server.mount_proc '/api/test' do |req, res|
+            server.mount_proc '/test' do |req, res|
               res.body = 'ok'
             end
           end
@@ -106,7 +106,7 @@ xCbuhI/IUunMm+F/8gOcAGd9L3j0g5ZOsGSF34NXi21BrlFGQdWFzg==
       end
 
       context "with mock conjur service", conjur: :mock do
-        let(:uri) { "https://conjur.test/api" }
+        let(:uri) { "https://conjur.test" }
         let(:cert) { nil }
         describe '#create_host' do
           it "creates a host and returns the description hash" do
@@ -115,7 +115,7 @@ xCbuhI/IUunMm+F/8gOcAGd9L3j0g5ZOsGSF34NXi21BrlFGQdWFzg==
                       "Authorization" => "Token token=\"hostfactorytokenn\"") \
             do |request_path|
               uri = URI request_path
-              expect(uri.path).to eq '/api/host_factories/hosts'
+              expect(uri.path).to eq '/host_factories/hosts'
               expect(URI.decode_www_form uri.query).to include(
                 ['id', 'test+plus!'], ['annotations[puppet]', 'true'])
               http_ok '{ "api_key": "theapikey" }'
@@ -138,7 +138,7 @@ xCbuhI/IUunMm+F/8gOcAGd9L3j0g5ZOsGSF34NXi21BrlFGQdWFzg==
           context "with Conjur v5 API" do
             before do
               allow(conjur_connection).to receive(:post) \
-                  .with('/api/authn/test/alice/authenticate', 'the api key', nil) \
+                  .with('/authn/test/alice/authenticate', 'the api key', nil) \
                   .and_return http_ok 'the token'
             end
             let(:version) { 5 }
@@ -147,7 +147,7 @@ xCbuhI/IUunMm+F/8gOcAGd9L3j0g5ZOsGSF34NXi21BrlFGQdWFzg==
 
       it "correctly encodes username" do
         allow(conjur_connection).to receive(:post) \
-            .with('/api/authn/test/host%2Fpuppettest/authenticate', 'the api key', nil) \
+            .with('/authn/test/host%2Fpuppettest/authenticate', 'the api key', nil) \
             .and_return http_ok 'the host token'
 
         expect(subject.authenticate 'host/puppettest', 'the api key', 'test') \
@@ -156,7 +156,7 @@ xCbuhI/IUunMm+F/8gOcAGd9L3j0g5ZOsGSF34NXi21BrlFGQdWFzg==
 
         it "raises error when server errors" do
           allow(conjur_connection).to receive(:post) \
-              .with('/api/authn/test/alice/authenticate', 'the api key', nil) \
+              .with('/authn/test/alice/authenticate', 'the api key', nil) \
               .and_return http_unauthorized
 
           expect { subject.authenticate 'alice', 'the api key', 'test' } \

@@ -1,15 +1,15 @@
 {
   "name": "cyberark-conjur",
-  "version": "2.0.5",
+  "version": "3.0.0",
   "author": "CyberArk Software, Inc.",
   "summary": "Register nodes as Conjur hosts and securely use secrets stored in Conjur",
   "license": "Apache-2.0",
   "source": "https://github.com/cyberark/conjur-puppet",
   "project_page": "https://github.com/cyberark/conjur-puppet",
   "issues_url": "https://github.com/cyberark/conjur-puppet/issues",
-  "tags": ["conjur", "cyberark", "dap", "secrets"],
+  "tags": ["conjur", "cyberark", "dap", "secrets", "security", "credentials"],
   "dependencies": [
-    { "name":"puppetlabs/registry","version_requirement":">= 2.1.0" }
+    { "name":"puppetlabs/registry", "version_requirement":">= 2.1.0" }
   ],
   "operatingsystem_support": [
     {
@@ -40,7 +40,7 @@
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 5.0.0 < 7.0.0"
+      "version_requirement": ">= 6.0.0 < 7.0.0"
     }
   ]
 }

@@ -29,7 +29,9 @@ describe Conjur::PuppetModule::Identity do
   end
 
   describe '.from_wincred', wincred: :mock do
-    before { Puppet.features.stub(:microsoft_windows?) { true } }
+    before(:each) do
+      expect(Puppet.features).to receive(:microsoft_windows?).and_return(true)
+    end
 
     let(:wincred_credentials) do
       {

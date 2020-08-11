@@ -7,19 +7,23 @@
 - [Description](#description)
 - [Setup](#setup)
   * [Setup requirements](#setup-requirements)
-  * [Using `conjur-puppet` with Conjur OSS](#using-conjur-puppet-with-conjur-oss)
+  * [Installation](#installation)
+  * [Using conjur-puppet with Conjur OSS](#using-conjur-puppet-with-conjur-oss)
   * [Conjur module basics](#conjur-module-basics)
     + [Sensitive data type](#sensitive-data-type)
 - [Usage](#usage)
-  - [Creating a Conjur host and providing its identity and API key](#conjur-host-identity-with-api-key)
-  - [Using Conjur host factory](#conjur-host-factory)
+  * [Methods to establish Conjur host identity](#methods-to-establish-conjur-host-identity)
+    + [Conjur host identity with API key](#conjur-host-identity-with-api-key)
+      * [Updating the Puppet manifest](#updating-the-puppet-manifest)
+      * [Using Hiera](#using-hiera)
+      * [Using Conjur identity files (Linux agents only)](#using-conjur-identity-files--linux-agents-only-)
+      * [Using Windows Registry / Windows Credential Manager (Windows agents only)](#using-windows-registry---windows-credential-manager--windows-agents-only-)
 - [Reference](#reference)
 - [Limitations](#limitations)
 - [Contributing](#contributing)
 - [Support](#support)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
 
 ## Description
 
@@ -35,7 +39,6 @@ You can find our official distributable releases on Puppet Forge under [`cyberar
 ### Setup requirements
 
 This module requires that you have:
-- Puppet v5 _or equivalent EE version_
 - Puppet v6 _or equivalent EE version_ (**Preliminary [Community level](https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md#community)
   support only**)
 - Conjur endpoint available to both the Puppet server and the Puppet nodes using this
@@ -43,9 +46,22 @@ This module requires that you have:
   - Conjur OSS v1+
   - DAP v10+
 
-**Note that Conjur Enterprise v4 support is deprecated. If you are still using this version,
-please use the [v2](https://github.com/cyberark/conjur-puppet/tree/v2) branch of this
-project or a release version `<=2.0.5`**
+**Note that Conjur Enterprise v4 support is not supported by this version of the module. If you
+are still using this version of Conjur, please use the [v2](https://github.com/cyberark/conjur-puppet/tree/v2)i
+branch of this project or a release version `<=2.0.5`**
+
+### Installation
+
+To install this module, run the following command on the Puppet server:
+```
+puppet module install cyberark-conjur
+```
+
+To install a specific version of this module (e.g. `v1.2.3`), run the following
+command on the Puppet server:
+```
+puppet module install cyberark-conjur --version 1.2.3
+```
 
 ### Using conjur-puppet with Conjur OSS
 
@@ -60,32 +76,31 @@ questions, please contact us on [Discourse](https://discuss.cyberarkcommons.org/
 
 ### Conjur module basics
 
-This module provides a `conjur::secret` function that can be used to retrieve secrets
-from Conjur. Given a Conjur variable identifier, `conjur::secret` uses the node’s
-Conjur identity to resolve and return the variable’s value.
+This module provides a `conjur::secret` [`Deferred` function](https://puppet.com/docs/puppet/6.17/deferring_functions.html)
+that can be used to retrieve secrets from Conjur. Given a Conjur variable identifier and optional
+identity parameters, `conjur::secret` uses the node’s Conjur identity to resolve and return
+the variable’s value as a `Sensitive` variable.
+
+Using agent-side identity:
 
 ```puppet
-$dbpass = conjur::secret('production/postgres/password')
+$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password']))
 ```
 
-Hiera attributes can also be used to inform which secret should be fetched,
-depending on the node running the Conjur module. For example, if `hiera('domain')`
-returns `app1.example.com` and a Conjur variable named `domains/app1.example.com/ssl-cert`
-exists, the SSL certificate can be retrieved and written to a file as shown below:
-
+Using server-provided configuration:
 ```puppet
-file { '/abslute/path/to/cert.pem':
-  ensure    => file,
-  content   => conjur::secret("domains/%{hiera('domain')}/ssl-cert"),
-  show_diff => false # only required for Puppet < 4.6
-  # diff will automatically get redacted in 4.6 if content is Sensitive
-}
-```
+$sslcert = @("EOT")
+-----BEGIN CERTIFICATE-----
+-----END CERTIFICATE-----
+|-EOT
 
-To install a specific version of this module (e.g. `v1.2.3`), run the following
-command on the Puppet server:
-```
-puppet module install cyberark-conjur --version 1.2.3
+$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password',
+  "https://my.conjur.org",
+  "myaccount",
+  "host/myhost",
+  Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
+  $sslcert
+]))
 ```
 
 #### Sensitive data type
@@ -104,7 +119,7 @@ if you can avoid it. Many resource types support `Sensitive` data type and
 handle it correctly. If a resource you're using does not, file a bug.
 
 ```puppet
-$dbpass = conjur::secret('production/postgres/password')
+$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password']))
 
 # Use Sensitive data type to handle anything sensitive
 $db_yaml = Sensitive("password: ${dbpass.unwrap}")
@@ -128,16 +143,10 @@ Conjur requires an
 [application identity](https://docs.conjur.org/Latest/en/Content/Get%20Started/key_concepts/machine_identity.html)
 for any applications, machines, or processes that need to interact with Conjur.
 
-In this module, we provide multiple ways to establish Conjur application identity for
-Puppet nodes, including:
-- [Creating a Conjur host and providing its identity and API key](#conjur-host-identity-with-api-key)
-- [Using Conjur host factory](#conjur-host-factory)
-
 Please note that before getting started configuring your Puppet environment, you'll need
 to load a policy in Conjur to define the application identities that you will be using to
 authenticate to Conjur. To learn more about
-[creating hosts](https://docs.conjur.org/Latest/en/Content/Operations/Policy/statement-ref-host.htm)
-or [using host factories](https://docs.conjur.org/Latest/en/Content/Operations/Services/host_factory.html),
+[creating hosts](https://docs.conjur.org/Latest/en/Content/Operations/Policy/statement-ref-host.htm),
 please see [the Conjur documentation](https://docs.conjur.org/Latest/en/Content/Resources/_TopNav/cc_Home.htm).
 
 In the sections below, we'll outline the different methods of providing this
@@ -152,10 +161,8 @@ refer often to the following Conjur configuration variables:
   by `host/`, eg `host/production/my-app-host`.
 - `authn_api_key`: The API key of the identity you are using to authenticate to the
   Conjur / DAP instance.
-- `host_factory_token`: The Conjur host factory token, provided as a string or using the
-  [Puppet file resource type](https://puppet.com/docs/puppet/latest/types/file.html).
-- `ssl_certificate`: The PEM-encoded x509 CA certificate chain for the DAP instance you
-  are connecting to, provided as a string or using the
+- `ssl_certificate`: The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance you
+  are connecting to, provided as a string (including newlines) or using the
   [Puppet file resource type](https://puppet.com/docs/puppet/latest/types/file.html).
   This value may be obtained by running the command:
   ```sh-session
@@ -166,7 +173,7 @@ refer often to the following Conjur configuration variables:
   ...
   -----END CERTIFICATE-----
   ```
-- `version`: Conjur API version, defaults to 5.
+- `version` (optional): Conjur API version, defaults to 5.
 
 _Note that not all variables are required for each method of configuration._
 
@@ -184,21 +191,29 @@ When you update the Puppet manifest to include the Conjur host identity and API 
 are configuring the Puppet **server** with the Conjur identity information.
 
 In this example, after you have created a Conjur host named `redis001`, you can add
-its host identity and its API key to your manifest like this:
+its host identity information and its API key to your `Deferred` invocation like this:
 ```puppet
-class { 'conjur':
-  appliance_url   => 'https://conjur.mycompany.com/',
-  account         => 'myorg',
-  authn_login     => 'host/redis001',
-  authn_api_key   => Sensitive('f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'),
-  ssl_certificate => file('/absolute/path/to/conjur-ca.pem')
-}
+$sslcert = @("EOT")
+-----BEGIN CERTIFICATE-----
+-----END CERTIFICATE-----
+|-EOT
+
+$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password',
+  "https://my.conjur.org",
+  "default",
+  "host/redis001",
+  Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
+  $sslcert
+]))
 ```
+
+**Keep in mind that order of the optional arguments to the `Deferred` function is important!**
 
 ##### Using Hiera
 
 You can also add the Conjur identity configuration to Hiera, which provides the Conjur
-identity information to the Puppet **server**:
+identity information to the Puppet **server**. You then would use that information to
+populate the host identity information:
 
 ```yaml
 ---
@@ -206,15 +221,33 @@ lookup_options:
   '^conjur::authn_api_key':
     convert_to: 'Sensitive'
 
-conjur::appliance_url: 'https://conjur.mycompany.com/'
-conjur::account: 'myorg'
-conjur::authn_login: 'host/redis001'
-conjur::authn_api_key: 'f9yykd2r0dajz398rh32xz2fxp1tws1qq2baw4112n4am9x3ncqbk3'
+conjur::account: 'default'
+conjur::appliance_url: 'https://my.conjur.org'
+conjur::authn_login: 'host/myhost'
+conjur::authn_api_key: '<REPLACE_ME>'
 conjur::ssl_certificate: |
   -----BEGIN CERTIFICATE-----
   ...
   -----END CERTIFICATE-----
 ```
+
+Then in your manifest, you can fetch the secret like this:
+```puppet
+$sslkey = Sensitive(Deferred(conjur::secret, ["domains/%{hiera('domain')}/ssl-cert",
+  lookup('conjur::appliance_url'),
+  lookup('conjur::account'),
+  lookup('conjur::authn_login'),
+  lookup('conjur::authn_api_key'),
+  lookup('conjur::ssl_certificate')
+]))
+
+file { '/abslute/path/to/cert.pem':
+  ensure    => file,
+  content   => $sslkey,
+}
+```
+
+**Keep in mind that order of the optional arguments to the `Deferred` function is important!**
 
 ##### Using Conjur identity files (Linux agents only)
 
@@ -241,13 +274,19 @@ machine conjur.mycompany.com
 ```
 
 _**NOTE: The `conjur.conf` and `conjur.identity` files contain sensitive
-         Conjur connection information. Care must be taken to ensure that
-         the permissions for these files are set to `600` to
-         disallow any access to these files by unauthorized (non-root) users
-         on a Linux Puppet agent node.**_
+  Conjur connection information. Care must be taken to ensure that
+  the permissions for these files are set to `600` to
+  disallow any access to these files by unauthorized (non-root) users
+  on a Linux Puppet agent node.**_
 
 The Conjur Puppet Module automatically checks for these files on your node and uses them if they
 are available.
+
+To then fetch your credential, you would use the default form of `conjur::secret`:
+```puppet
+$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password']))
+```
+
 ##### Using Windows Registry / Windows Credential Manager (Windows agents only)
 
 To configure **Windows agents** with a Conjur host identity, you set up the Conjur
@@ -273,7 +312,6 @@ These may be set using Powershell (**use either `SslCertificate` _or_ `CertFile`
 > reg ADD HKLM\Software\CyberArk\Conjur /v Version /t REG_DWORD /d 5
 > reg ADD HKLM\Software\CyberArk\Conjur /v Account /t REG_SZ /d myorg
 > reg ADD HKLM\Software\CyberArk\Conjur /v SslCertificate /t REG_SZ /d "-----BEGIN CERTIFICATE-----..."
-> reg ADD HKLM\Software\CyberArk\Conjur /v CertFile /t REG_SZ /d "C:\Absolute\Path\To\SslCertificate"
 ```
 
 Or using a `.reg` registry file (**use either `SslCertificate` _or_ `CertFile` but not both**):
@@ -287,7 +325,6 @@ Windows Registry Editor Version 5.00
 "SslCertificate"="-----BEGIN CERTIFICATE-----
 ...
 -----END CERTIFICATE-----"
-"CertFile"="C:\Absolute\Path\To\SslCertificate"
 ```
 
 _**NOTE: It is important from a security perspective to ensure that
@@ -321,62 +358,9 @@ Enter the password for 'host/my-host' to connect to 'https://conjur.net/authn': 
 CMDKEY: Credential added successfully.
 ```
 
-#### Conjur host factory
-
-Conjur [Host Factories](https://docs.conjur.org/Latest/en/Content/Operations/Services/host_factory.html)
-are another method for creating new host identities in Conjur, and it ensures
-new hosts are created in an existing Conjur policy
-[layer](https://docs.conjur.org/Latest/en/Content/Operations/Policy/statement-ref-layer.htm)
-that is already entitled to access some secret values in Conjur. That is, when
-using host factory, nodes inherit the permissions of the layer for which the Host Factory
-token was generated.
-
-The Conjur Puppet module is provided with a host factory token which is only used on
-the initial Puppet run to establish identity. In the initial Puppet run, the Conjur identity
-is created by the Puppet server and then stored on the agent's host. Subsequent runs
-use the created identity for Conjur authentication on the agent side (at the time of collecting facts), and
-the agent only provides the Puppet server with a temporary token to fetch secrets from Conjur.
-
-##### Updating the Puppet manifest
-
-To use a Host Factory token with this module, set variables `authn_login` and
-`host_factory_token` in the Puppet manifest. Do not set the variable `authn_api_key`
-when using `host_factory_token` as it is not required. `authn_login` should have a
-`host/` prefix. The part after the slash is used as the node’s name in Conjur.
-
+To then fetch your credential, you would use the default form of `conjur::secret`:
 ```puppet
-class { 'conjur':
-  appliance_url      => 'https://conjur.mycompany.com/',
-  account            => 'myorg',
-  authn_login        => 'host/redis001',
-  host_factory_token => Sensitive('3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'),
-  ssl_certificate    => file('/absolute/path/to/conjur-ca.pem')
-}
-```
-
-Conjur automatically adds the annotation `puppet: true` to the Conjur host
-identities of all nodes using this Puppet module to bootstrap identity with
-`host_factory_token`.
-
-##### Using Hiera
-
-Rather than storing the host factory token in the manifest, Puppet server can also be
-configured to retrieve the host factory token from Hiera when communicating with its agents:
-
-```yaml
----
-lookup_options:
-  '^conjur::host_factory_token':
-    convert_to: 'Sensitive'
-
-conjur::appliance_url: 'https://conjur.mycompany.com/'
-conjur::account: 'myorg'
-conjur::authn_login: 'host/redis001'
-conjur::host_factory_token: '3zt94bb200p69nanj64v9sdn1e15rjqqt12kf68x1d6gb7z33vfskx'
-conjur::ssl_certificate: |
-  -----BEGIN CERTIFICATE-----
-  ...
-  -----END CERTIFICATE-----
+$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password']))
 ```
 
 ## Reference
