@@ -7,6 +7,7 @@ For general contribution and community guidelines, please see the [community rep
   * [Running a Conjur server locally](#running-a-conjur-server-locally)
   * [Running a Puppet master locally](#running-a-puppet-master-locally)
   * [Running a Puppet node locally](#running-a-puppet-node-locally)
+  * [Generating the documentation](#generating-the-documentation)
 - [Testing](#testing)
 - [Releases](#releases)
 - [Contributing](#contributing)
@@ -161,17 +162,24 @@ Note that if you want to run manifests directly then need to be mounted into the
 
 See [jenkins.sh](jenkins.sh).
 
+## Generating the documentation
+
+To (re)generate the documentation, you just need to run `./gen-docs.sh` from the root of the
+project and commit the changes.
+
 ## Releases
 
 To release a new version of the module to the Puppet Forge:
 
 1. Update the `version` field in [metadata.json](metadata.json).
 2. Update [CHANGELOG.md](CHANGELOG.md).
-3. Commit and push these changes to a branch, and create a PR.
-4. Once the PR is approved, create an annotated tag on the main branch and push
+3. Verify that nothing changed in the `REFERENCE.md` by
+   [regenerating the docs](#generating-the-documentation).
+4. Commit and push these changes to a branch, and create a PR.
+5. Once the PR is approved, create an annotated tag on the main branch and push
    it (`git tag -a <VERSION> -m <VERSION> && git push --tags`)
-5. Verify the Jenkins pipeline completes successfully.
-6. Verify the updated module on [Puppet Forge](https://forge.puppet.com/cyberark/conjur).
+6. Verify the Jenkins pipeline completes successfully.
+7. Verify the updated module on [Puppet Forge](https://forge.puppet.com/cyberark/conjur).
 
 ## Running a Puppet master and Windows-based Puppet node locally
 
