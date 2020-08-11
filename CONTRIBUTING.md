@@ -9,7 +9,8 @@ For general contribution and community guidelines, please see the [community rep
   * [Running a Puppet node locally](#running-a-puppet-node-locally)
 - [Testing](#testing)
 - [Releases](#releases)
-- [Contributing](#contributing)
+  * [Verify and update dependencies](#verify-and-update-dependencies)
+  * [Publishing a Release](#publishing-a-release)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents
 generated with markdown-toc</a></i></small>
@@ -162,6 +163,24 @@ Note that if you want to run manifests directly then need to be mounted into the
 See [jenkins.sh](jenkins.sh).
 
 ## Releases
+
+### Verify and update dependencies
+
+1. Check for files added since last release and any modules that are newly
+   linked from code or used that were not written by CyberArk employees. Keep
+   in mind that dependency module version changes count as new modules.
+
+1. If any module(s) from that list does not have a matching entry in the
+   NOTICES.txt file you should add (or update) its version and license/copyright
+   in NOTICES.txt.
+
+1. If any external modules are no longer linked to or an external dependency removed
+   from source, remove that version of the software and its license/copyright from
+   NOTICES.txt.
+
+If no dependencies have changed, you can move on to the next step.
+
+### Publishing a Release
 
 To release a new version of the module to the Puppet Forge:
 
