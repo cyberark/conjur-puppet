@@ -16,13 +16,13 @@ node default {
   # you would use the optional parameters to the `conjur::secret` function as
   # shown below.
   #
-  # $secret = Sensitive(Deferred(conjur::secret, ['inventory/db-password',
-  #   lookup('conjur::appliance_url'),
-  #   lookup('conjur::account'),
-  #   lookup('conjur::authn_login'),
-  #   lookup('conjur::authn_api_key'),
-  #   lookup('conjur::ssl_certificate')
-  # ]))
+  # $secret = Sensitive(Deferred(conjur::secret, ['inventory/db-password', {
+  #   appliance_url => lookup('conjur::appliance_url'),
+  #   account => lookup('conjur::account'),
+  #   authn_login => lookup('conjur::authn_login'),
+  #   authn_api_key => lookup('conjur::authn_api_key'),
+  #   ssl_certificate => lookup('conjur::ssl_certificate')
+  # }]))
 
   notify { "Writing secret to ${pem_file}...": }
   file { $pem_file: ensure => file, content => $secret }
