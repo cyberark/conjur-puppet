@@ -91,6 +91,7 @@ Using server-provided configuration:
 ```puppet
 $sslcert = @("EOT")
 -----BEGIN CERTIFICATE-----
+...
 -----END CERTIFICATE-----
 |-EOT
 
@@ -195,6 +196,7 @@ its host identity information and its API key to your `Deferred` invocation like
 ```puppet
 $sslcert = @("EOT")
 -----BEGIN CERTIFICATE-----
+...
 -----END CERTIFICATE-----
 |-EOT
 

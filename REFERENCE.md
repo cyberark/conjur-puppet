@@ -128,6 +128,7 @@ Sensitive(Deferred(conjur::secret, ['production/postgres/password']))
 ```puppet
 $sslcert = @("EOT")
 -----BEGIN CERTIFICATE-----
+...
 -----END CERTIFICATE-----
 |-EOT
 
@@ -159,6 +160,7 @@ Sensitive(Deferred(conjur::secret, ['production/postgres/password']))
 ```puppet
 $sslcert = @("EOT")
 -----BEGIN CERTIFICATE-----
+...
 -----END CERTIFICATE-----
 |-EOT
 
