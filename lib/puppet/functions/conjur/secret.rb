@@ -6,12 +6,14 @@ require 'conjur/puppet_module/identity'
 # Function to retrieve a Conjur / DAP secret
 Puppet::Functions.create_function :'conjur::secret' do
   # @param variable_id Conjur / DAP variable ID that you want the value of.
-  # @param appliance_url The URL of the Conjur or DAP instance..
-  # @param account Name of the Conjur account that contains this variable.
-  # @param authn_login The identity you are using to authenticate to the Conjur / DAP instance.
-  # @param authn_api_key The API key of the identity you are using to authenticate with.
-  # @param ssl_certificate The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance.
-  # @param version Conjur API version, defaults to 5.
+  # @param options Optional parameter specifying server identity overrides
+  #   The following keys are supported in the options hash:
+  #   - appliance_url: The URL of the Conjur or DAP instance..
+  #   - account: Name of the Conjur account that contains this variable.
+  #   - authn_login: The identity you are using to authenticate to the Conjur / DAP instance.
+  #   - authn_api_key: The API key of the identity you are using to authenticate with.
+  #   - ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance.
+  #   - version: Conjur API version, defaults to 5.
   # @return [Sensitive] Value of the Conjur variable.
   # @example Agent-based identity invocation
   #   Sensitive(Deferred(conjur::secret, ['production/postgres/password']))
@@ -22,21 +24,16 @@ Puppet::Functions.create_function :'conjur::secret' do
   #   -----END CERTIFICATE-----
   #   |-EOT
   #   
-  #   $dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password',
-  #     "https://my.conjur.org",
-  #     "myaccount",
-  #     "host/myhost",
-  #     Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
-  #     $sslcert
-  #   ]))
+  #   $dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password', {
+  #     appliance_url => "https://my.conjur.org",
+  #     account => "myaccount",
+  #     authn_login => "host/myhost",
+  #     authn_api_key => Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
+  #     ssl_certificate => $sslcert
+  #   }]))
   dispatch :with_credentials do
-    param 'String', :variable_id
-    optional_param 'String', :appliance_url
-    optional_param 'String', :account
-    optional_param 'String', :authn_login
-    optional_param 'Sensitive', :authn_api_key
-    optional_param 'String', :ssl_certificate
-    optional_param 'String', :version
+    required_param 'String', :variable_id
+    optional_param 'Hash', :options
 
     return_type 'Sensitive'
   end
@@ -81,37 +78,44 @@ Puppet::Functions.create_function :'conjur::secret' do
     authenticate(appliance_url, account, authn_login, authn_api_key, ssl_certificate)
   end
 
-  def with_credentials id, appliance_url = nil, account = nil, authn_login = nil,
-    authn_api_key = nil, ssl_certificate = nil, version = 5
+  def with_credentials id, options = {}
+    # If we got an options hash, it may be frozen so we make a copy that is not since
+    # we will be modifying it
+    opts = options.dup
+
+    opts['version'] ||= 5
 
     # If we didn't get any config from the server, assume it's on the agent
-    if appliance_url.nil? || appliance_url.empty?
+    if opts['appliance_url'].nil? || opts['appliance_url'].empty?
       config = Conjur::PuppetModule::Config.load
       raise 'Conjur configuration not found on system' if config.empty?
 
       creds = Conjur::PuppetModule::Identity.load(config)
       raise 'Conjur identity not found on system' unless creds
 
-      appliance_url = config['appliance_url']
-      account = config['account']
-      ssl_certificate = config['ssl_certificate']
-      version = config['version']
+      # Overwrite values in the options hash with the ones from the agent. We may at
+      # some point want to support partial overwrite of only the set values.
+      ['appliance_url', 'account', 'ssl_certificate', 'version'].each do |key|
+        opts[key] = config[key]
+      end
 
-      authn_login, authn_api_key = creds
-      authn_api_key = Puppet::Pops::Types::PSensitiveType::Sensitive.new(authn_api_key)
+      opts['authn_login'], authn_api_key = creds
+      opts['authn_api_key'] = Puppet::Pops::Types::PSensitiveType::Sensitive.new(authn_api_key)
     end
 
     # Ideally we would be able to support `cert_file` here too
 
     Puppet.debug("Instantiating Conjur client...")
-    client = call_function('conjur::client', appliance_url, version, ssl_certificate)
+    client = call_function('conjur::client', opts['appliance_url'], opts['version'],
+                           opts['ssl_certificate'])
 
     Puppet.debug("Fetching Conjur token")
-    token = get_token(appliance_url, account, authn_login, authn_api_key, ssl_certificate)
+    token = get_token(opts['appliance_url'], opts['account'], opts['authn_login'],
+                      opts['authn_api_key'], opts['ssl_certificate'])
     Puppet.info("Conjur token retrieved")
 
     Puppet.debug("Fetching Conjur secret '#{id}'...")
-    secret = client.variable_value(account, id, token)
+    secret = client.variable_value(opts['account'], id, token)
     Puppet.info("Conjur secret #{id} retrieved")
 
     Puppet::Pops::Types::PSensitiveType::Sensitive.new(secret)

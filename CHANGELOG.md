@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - `conjur::secret` now must be used as a `Deferred` function. Method signature has
   changed as well. [cyberark/conjur-puppet#13](https://github.com/cyberark/conjur-puppet/issues/13).
+- `conjur::secret` Optional parameters now use a Hash instead of positional parameters.
+  [cyberark/conjur-puppet#184](https://github.com/cyberark/conjur-puppet/issues/184).
 
 ### Removed
 - Support for using the Conjur Puppet module with Conjur Enterprise v4 is removed

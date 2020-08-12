@@ -33,16 +33,21 @@ describe 'conjur::secret', conjur: :mock do
       end
 
       describe "with all parameters (server-side params)" do
+        let(:full_options) {
+          {
+            'appliance_url' => appliance_url,
+            'account' => account,
+            'authn_login' => authn_login,
+            'authn_api_key' => authn_api_key,
+            'ssl_certificate' => ssl_certificate
+          }
+        }
+
         it "fetches the given variable using token from conjur class" do
           expect(mock_connection).to receive(:post).with(authn_url, authn_api_key.unwrap)
             .and_return(http_ok mock_token)
 
-          actual_value = subject.execute(variable_id,
-                                         appliance_url,
-                                         account,
-                                         authn_login,
-                                         authn_api_key,
-                                         ssl_certificate).unwrap
+          actual_value = subject.execute(variable_id, full_options).unwrap
           expect(actual_value).to eq 'variable value'
         end
 
@@ -51,12 +56,7 @@ describe 'conjur::secret', conjur: :mock do
             .and_return(http_unauthorized)
 
           expect {
-            subject.execute(variable_id,
-                            appliance_url,
-                            account,
-                            authn_login,
-                            authn_api_key,
-                            ssl_certificate) }.to raise_error Net::HTTPError
+            subject.execute(variable_id, full_options) }.to raise_error Net::HTTPError
         end
       end
 

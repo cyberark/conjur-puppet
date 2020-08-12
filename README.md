@@ -95,13 +95,13 @@ $sslcert = @("EOT")
 -----END CERTIFICATE-----
 |-EOT
 
-$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password',
-  "https://my.conjur.org",
-  "myaccount",
-  "host/myhost",
-  Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
-  $sslcert
-]))
+$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password', {
+  appliance_url => "https://my.conjur.org",
+  account => "myaccount",
+  authn_login => "host/myhost",
+  authn_api_key => Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
+  ssl_certificate => $sslcert
+}]))
 ```
 
 #### Sensitive data type
@@ -192,7 +192,8 @@ When you update the Puppet manifest to include the Conjur host identity and API 
 are configuring the Puppet **server** with the Conjur identity information.
 
 In this example, after you have created a Conjur host named `redis001`, you can add
-its host identity information and its API key to your `Deferred` invocation like this:
+its host identity information and its API key to your `Deferred` invocation as an optional
+hash like this:
 ```puppet
 $sslcert = @("EOT")
 -----BEGIN CERTIFICATE-----
@@ -200,16 +201,14 @@ $sslcert = @("EOT")
 -----END CERTIFICATE-----
 |-EOT
 
-$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password',
-  "https://my.conjur.org",
-  "default",
-  "host/redis001",
-  Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
-  $sslcert
-]))
+$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password', {
+  appliance_url => "https://my.conjur.org",
+  account => "default",
+  authn_login => "host/redis001",
+  authn_api_key => Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
+  ssl_certificate => $sslcert
+}]))
 ```
-
-**Keep in mind that order of the optional arguments to the `Deferred` function is important!**
 
 ##### Using Hiera
 
@@ -235,21 +234,19 @@ conjur::ssl_certificate: |
 
 Then in your manifest, you can fetch the secret like this:
 ```puppet
-$sslkey = Sensitive(Deferred(conjur::secret, ["domains/%{hiera('domain')}/ssl-cert",
-  lookup('conjur::appliance_url'),
-  lookup('conjur::account'),
-  lookup('conjur::authn_login'),
-  lookup('conjur::authn_api_key'),
-  lookup('conjur::ssl_certificate')
-]))
+$sslkey = Sensitive(Deferred(conjur::secret, ["domains/%{hiera('domain')}/ssl-cert", {
+  appliance_url => lookup('conjur::appliance_url'),
+  account => lookup('conjur::account'),
+  authn_login => lookup('conjur::authn_login'),
+  authn_api_key => lookup('conjur::authn_api_key'),
+  ssl_certificate => lookup('conjur::ssl_certificate')
+}]))
 
 file { '/abslute/path/to/cert.pem':
   ensure    => file,
   content   => $sslkey,
 }
 ```
-
-**Keep in mind that order of the optional arguments to the `Deferred` function is important!**
 
 ##### Using Conjur identity files (Linux agents only)
 
@@ -302,10 +299,10 @@ values available to set are:
 
 | Value Name | Value Type | Description |
 |-|-|-|
-| Account | REG_SZ | Conjur account specified during Conjur setup. |
-| ApplianceUrl | REG_SZ | Conjur API endpoint. |
-| SslCertificate | REG_SZ | Public Conjur SSL cert. Overwritten by the contents read from `CertFile` when it is present. |
-| Version | REG_DWORD | Conjur API version. Defaults to `5`. |
+| `Account` | `REG_SZ` | Conjur account specified during Conjur setup. |
+| `ApplianceUrl` | `REG_SZ` | Conjur API endpoint. |
+| `SslCertificate` | `REG_SZ` | Public Conjur SSL cert. Overwritten by the contents read from `CertFile` when it is present. |
+| `Version` | `REG_DWORD` | Conjur API version. Defaults to `5`. |
 
 These may be set using Powershell (**use either `SslCertificate` _or_ `CertFile` but not both**):
 

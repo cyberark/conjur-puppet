@@ -132,16 +132,16 @@ $sslcert = @("EOT")
 -----END CERTIFICATE-----
 |-EOT
 
-$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password',
-  "https://my.conjur.org",
-  "myaccount",
-  "host/myhost",
-  Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
-  $sslcert
-]))
+$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password', {
+  appliance_url => "https://my.conjur.org",
+  account => "myaccount",
+  authn_login => "host/myhost",
+  authn_api_key => Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
+  ssl_certificate => $sslcert
+}]))
 ```
 
-#### `conjur::secret(String $variable_id, Optional[String] $appliance_url, Optional[String] $account, Optional[String] $authn_login, Optional[Sensitive] $authn_api_key, Optional[String] $ssl_certificate, Optional[String] $version)`
+#### `conjur::secret(String $variable_id, Optional[Hash] $options)`
 
 Function to retrieve a Conjur / DAP secret
 
@@ -164,13 +164,13 @@ $sslcert = @("EOT")
 -----END CERTIFICATE-----
 |-EOT
 
-$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password',
-  "https://my.conjur.org",
-  "myaccount",
-  "host/myhost",
-  Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
-  $sslcert
-]))
+$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password', {
+  appliance_url => "https://my.conjur.org",
+  account => "myaccount",
+  authn_login => "host/myhost",
+  authn_api_key => Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
+  ssl_certificate => $sslcert
+}]))
 ```
 
 ##### `variable_id`
@@ -179,39 +179,16 @@ Data type: `String`
 
 Conjur / DAP variable ID that you want the value of.
 
-##### `appliance_url`
+##### `options`
 
-Data type: `Optional[String]`
+Data type: `Optional[Hash]`
 
-The URL of the Conjur or DAP instance..
-
-##### `account`
-
-Data type: `Optional[String]`
-
-Name of the Conjur account that contains this variable.
-
-##### `authn_login`
-
-Data type: `Optional[String]`
-
-The identity you are using to authenticate to the Conjur / DAP instance.
-
-##### `authn_api_key`
-
-Data type: `Optional[Sensitive]`
-
-The API key of the identity you are using to authenticate with.
-
-##### `ssl_certificate`
-
-Data type: `Optional[String]`
-
-The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance.
-
-##### `version`
-
-Data type: `Optional[String]`
-
-Conjur API version, defaults to 5.
+Optional parameter specifying server identity overrides
+The following keys are supported in the options hash:
+- appliance_url: The URL of the Conjur or DAP instance..
+- account: Name of the Conjur account that contains this variable.
+- authn_login: The identity you are using to authenticate to the Conjur / DAP instance.
+- authn_api_key: The API key of the identity you are using to authenticate with.
+- ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance.
+- version: Conjur API version, defaults to 5.
 

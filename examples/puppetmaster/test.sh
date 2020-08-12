@@ -11,13 +11,6 @@ COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-puppetmaster_$(openssl rand -hex 3)
 
 PUPPET_SERVER_TAG=latest
 PUPPET_AGENT_TAGS=( latest )
-if [ "${1:-}" = "5" ]; then
-  PUPPET_SERVER_TAG="5.3.7"
-  PUPPET_AGENT_TAGS=(
-    "5.5.1"
-    "latest"
-  )
-fi
 export PUPPET_SERVER_TAG
 
 echo "Using Puppet server '$PUPPET_SERVER_TAG' with agents: '${PUPPET_AGENT_TAGS[@]}'"
@@ -254,13 +247,13 @@ $ssl_certificate
   echo "
     node '$hostname' {
       \$pem_file  = '/tmp/test.pem'
-      \$secret = Sensitive(Deferred(conjur::secret, ['inventory/db-password',
-        lookup('conjur::appliance_url'),
-        lookup('conjur::account'),
-        lookup('conjur::authn_login'),
-        lookup('conjur::authn_api_key'),
-        lookup('conjur::ssl_certificate')
-      ]))
+      \$secret = Sensitive(Deferred(conjur::secret, ['inventory/db-password', {
+          appliance_url => lookup('conjur::appliance_url'),
+          account => lookup('conjur::account'),
+          authn_login => lookup('conjur::authn_login'),
+          authn_api_key => lookup('conjur::authn_api_key'),
+          ssl_certificate => lookup('conjur::ssl_certificate')
+      }]))
 
       notify { \"Writing secret to \${pem_file}...\": }
       file { \$pem_file:
