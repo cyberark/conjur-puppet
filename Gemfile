@@ -1,7 +1,6 @@
 source ENV['GEM_SOURCE'] || 'https://rubygems.org'
 
-# 5.5.1 is the oldest officially supported version as of 2019-04
-puppetversion = ENV['PUPPET_VERSION'].to_s.empty? ? '~> 5.5.1' : ENV['PUPPET_VERSION']
+puppetversion = ENV['PUPPET_VERSION'].to_s.empty? ? '~> 6.17.0' : ENV['PUPPET_VERSION']
 
 gem 'metadata-json-lint'
 gem 'puppet', puppetversion
