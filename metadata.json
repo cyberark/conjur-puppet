@@ -7,26 +7,42 @@
   "source": "https://github.com/cyberark/conjur-puppet",
   "project_page": "https://github.com/cyberark/conjur-puppet",
   "issues_url": "https://github.com/cyberark/conjur-puppet/issues",
-  "tags": ["conjur", "cyberark", "dap", "secrets", "security", "credentials"],
   "dependencies": [
-    { "name":"puppetlabs/registry", "version_requirement":">= 2.1.0" }
+    {
+      "name": "puppetlabs/registry",
+      "version_requirement": ">= 2.1.0"
+    }
   ],
   "operatingsystem_support": [
     {
       "operatingsystem": "Ubuntu",
-      "operatingsystemrelease": ["14.04", "16.04", "18.04", "20.04"]
+      "operatingsystemrelease": [
+        "14.04",
+        "16.04",
+        "18.04",
+        "20.04"
+      ]
     },
     {
       "operatingsystem": "Centos",
-      "operatingsystemrelease": ["6", "7"]
+      "operatingsystemrelease": [
+        "6",
+        "7"
+      ]
     },
     {
       "operatingsystem": "Debian",
-      "operatingsystemrelease": ["8", "9", "10"]
+      "operatingsystemrelease": [
+        "8",
+        "9",
+        "10"
+      ]
     },
     {
       "operatingsystem": "Alpine",
-      "operatingsystemrelease": ["3.9"]
+      "operatingsystemrelease": [
+        "3.9"
+      ]
     },
     {
       "operatingsystem": "Windows",
@@ -42,5 +58,16 @@
       "name": "puppet",
       "version_requirement": ">= 6.0.0 < 7.0.0"
     }
-  ]
+  ],
+  "tags": [
+    "conjur",
+    "cyberark",
+    "dap",
+    "secrets",
+    "security",
+    "credentials"
+  ],
+  "pdk-version": "1.18.1",
+  "template-url": "pdk-default#1.18.1",
+  "template-ref": "tags/1.18.1-0-g3d2e75c"
 }
