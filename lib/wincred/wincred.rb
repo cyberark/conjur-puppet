@@ -1,6 +1,10 @@
+# rubocop:disable Style/FrozenStringLiteralComment
+
 require_relative './conversion'
 require_relative './native'
 
+# This module provides a high-level API for interations with the Windows Credential
+# Manager
 module WinCred
   class << self
     def exist?(target)
@@ -10,10 +14,10 @@ module WinCred
         target.encode('utf-16le'),
         Native::CRED_TYPE_GENERIC,
         Native::FLAGS_NONE,
-        cred_ptr.ref
+        cred_ptr.ref,
       )
 
-      read_result > 0
+      read_result.positive?
     ensure
       Native.CredFree(cred_ptr) if cred_ptr
     end
@@ -28,17 +32,20 @@ module WinCred
         nil,
         Native::FLAGS_NONE,
         cred_count_ptr,
-        pp_credentials.ref
+        pp_credentials.ref,
       )
 
       if enum_result.zero?
-        raise "Enumerate credentials in WinCred failed. Error code: #{Native.GetLastError}" 
+        raise "Enumerate credentials in WinCred failed. Error code: #{Native.GetLastError}"
       end
 
       # Convert count bytes to Ruby int
       count = cred_count_ptr[0, 4].unpack('L').first
 
       # Convert memory struct array into Ruby array
+      # RuboCop disabled rule here may be a valid find but this code is very fragile
+      # and old.
+      # rubocop:disable Performance/TimesMap
       count.times.map do |ndx|
         cred_ptr = (pp_credentials + (ndx * Fiddle::SIZEOF_VOIDP)).ptr
         cred = Native::CREDENTIALW.new(cred_ptr)
@@ -53,10 +60,10 @@ module WinCred
         target:,
         username:,
         value: # binary string
-      )
+    )
 
       if value.bytes.size != value.size
-        raise "Write to WinCred failed. Value is not a binary string. Encoding is (#{value.encoding})." 
+        raise "Write to WinCred failed. Value is not a binary string. Encoding is (#{value.encoding})."
       end
 
       cred = Native::CREDENTIALW.malloc
@@ -88,7 +95,7 @@ module WinCred
         target.encode('utf-16le'),
         Native::CRED_TYPE_GENERIC,
         Native::FLAGS_NONE,
-        cred_ptr.ref
+        cred_ptr.ref,
       )
 
       raise "Read from WinCred failed. Error code: #{Native.GetLastError}" if read_result.zero?
@@ -103,7 +110,7 @@ module WinCred
       delete_result = Native.CredDeleteW(
         target.encode('utf-16le'),
         Native::CRED_TYPE_GENERIC,
-        Native::FLAGS_NONE
+        Native::FLAGS_NONE,
       )
 
       raise "Delete from WinCred failed. Error code: #{Native.GetLastError}" if delete_result.zero?
@@ -115,7 +122,7 @@ module WinCred
       {
         target: Conversion.pwchar_to_str(cred.TargetName).encode('utf-8'),
         username: Conversion.pwchar_to_str(cred.UserName).encode('utf-8'),
-        value: (cred.CredentialBlobSize > 0 ? cred.CredentialBlob.to_str(cred.CredentialBlobSize) : nil)
+        value: (cred.CredentialBlobSize.positive? ? cred.CredentialBlob.to_str(cred.CredentialBlobSize) : nil),
       }
     end
   end

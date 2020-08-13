@@ -9,6 +9,7 @@ AllCops:
   - "./**/*.rb"
   Exclude:
   - bin/*
+  - examples/**/*
   - ".vendor/**/*"
   - "**/Gemfile"
   - "**/Rakefile"
@@ -33,6 +34,9 @@ RSpec/BeforeAfterAll:
     A necessary evil in acceptance testing.
   Exclude:
   - spec/acceptance/**/*.rb
+RSpec/FilePath:
+  Exclude:
+  - spec/unit/wincred/wincred_spec.rb
 RSpec/HookArgument:
   Description: Prefer explicit :each argument, matching existing module's style
   EnforcedStyle: each
@@ -119,6 +123,8 @@ Metrics/ParameterLists:
   Enabled: false
 Metrics/PerceivedComplexity:
   Enabled: false
+RSpec/AnyInstance:
+  Enabled: false
 RSpec/DescribeClass:
   Enabled: false
 RSpec/ExampleLength:
@@ -127,9 +133,15 @@ RSpec/MessageExpectation:
   Enabled: false
 RSpec/MultipleExpectations:
   Enabled: false
+RSpec/NamedSubject:
+  Enabled: false
+RSpec/VerifiedDoubles:
+  Enabled: false
 RSpec/NestedGroups:
   Enabled: false
 Style/AsciiComments:
+  Enabled: false
+Style/ClassAndModuleChildren:
   Enabled: false
 Style/IfUnlessModifier:
   Enabled: false

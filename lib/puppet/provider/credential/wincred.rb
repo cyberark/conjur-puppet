@@ -1,11 +1,13 @@
+# frozen_string_literal: true
+
 require 'puppet/type'
 require 'wincred/wincred' if Puppet.features.microsoft_windows?
 
 # Type describing a WinCred credential
 Puppet::Type.type(:credential).provide(:wincred) do
-  desc "Type describing a WinCred credential"
-  defaultfor :operatingsystem => :windows
-  confine    :operatingsystem => :windows
+  desc 'Type describing a WinCred credential'
+  defaultfor operatingsystem: :windows
+  confine    operatingsystem: :windows
 
   def exists?
     Puppet.debug("Checking the existence of WinCred credential: #{self}")
@@ -54,7 +56,7 @@ Puppet::Type.type(:credential).provide(:wincred) do
     WinCred.write_credential(
       target: resource.parameter(:target).value,
       username: resource[:username],
-      value: resource[:value].encode('utf-16le').force_encoding('binary')
+      value: resource[:value].encode('utf-16le').force_encoding('binary'),
     )
   end
 

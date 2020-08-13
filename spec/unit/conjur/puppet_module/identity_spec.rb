@@ -21,29 +21,28 @@ describe Conjur::PuppetModule::Identity do
         NETRC
         netrc.close
 
-        expect(Conjur::PuppetModule::Identity.from_file(
-            URI('https://conjur.test/authn/foo'), 'netrc_path' => netrc.path
-        )).to eq %w(conjur-login secret)
+        uri = URI('https://conjur.test/authn/foo')
+        expect(described_class.from_file(uri, 'netrc_path' => netrc.path))
+          .to eq ['conjur-login', 'secret']
       end
     end
   end
 
   describe '.from_wincred', wincred: :mock do
     before(:each) do
-      expect(Puppet.features).to receive(:microsoft_windows?).and_return(true)
+      allow(Puppet.features).to receive(:microsoft_windows?).and_return(true)
     end
 
     let(:wincred_credentials) do
       {
-          # password needs an encoding
-          'conjur.test' => ["conjur-login", "secret".encode('utf-16le').force_encoding('binary')]
+        # password needs an encoding
+        'conjur.test' => ['conjur-login', 'secret'.encode('utf-16le').force_encoding('binary')],
       }
     end
 
     it 'reads credentials from wincred' do
-      expect(Conjur::PuppetModule::Identity.from_wincred(
-          URI('https://conjur.test/authn/foo')
-      )).to eq %w(conjur-login secret)
+      uri = URI('https://conjur.test/authn/foo')
+      expect(described_class.from_wincred(uri)).to eq ['conjur-login', 'secret']
     end
   end
 

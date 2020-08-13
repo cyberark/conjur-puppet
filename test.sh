@@ -9,8 +9,8 @@ checks=( syntax
          check:symlinks
          check:git_ignore
          check:dot_underscore
-         check:test_file )
-         # rubocop )
+         check:test_file
+         rubocop )
 
 echo "Building the test image..."
 docker-compose -f "$compose_file" build --pull

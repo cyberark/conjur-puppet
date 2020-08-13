@@ -2,15 +2,18 @@
 
 module Conjur
   module PuppetModule
+    # This module is in charge of retrieving Conjur identity information
+    # from the agent
     module Identity
       NETRC_FILE_PATH = '/etc/conjur.identity'
 
       class << self
         def load(config)
-          if (url = config['appliance_url'])
-            uri = URI.parse(url)
-            Puppet.features.microsoft_windows? ? from_wincred(uri) : from_file(uri, config)
-          end
+          appliance_url = config['appliance_url']
+          return unless appliance_url
+
+          uri = URI.parse(appliance_url)
+          Puppet.features.microsoft_windows? ? from_wincred(uri) : from_file(uri, config)
         end
 
         def from_file(uri, config)
@@ -21,7 +24,7 @@ module Conjur
           File.open netrc_path do |netrc|
             found = login = password = nil
             netrc.each_line do |line|
-              key, value, _ = line.split
+              key, value, = line.split
               case key
               when 'machine'
                 found = value.start_with?(uri.to_s) || value == uri.host
@@ -34,7 +37,7 @@ module Conjur
               return [login, password] if login && password
             end
 
-            warn "Could not find conjur authentication info for host '#{uri}'" if not found
+            warn "Could not find conjur authentication info for host '#{uri}'" unless found
           end
         end
 
@@ -52,8 +55,8 @@ module Conjur
           end
 
           if matching_creds.empty?
-            Puppet.warning "Couldn't find any pre-populated Conjur credentials in WinCred " +
-              "storage for #{uri}"
+            Puppet.warning "Couldn't find any pre-populated Conjur credentials in WinCred " \
+                           "storage for #{uri}"
             return []
           end
 
