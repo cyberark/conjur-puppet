@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Support for using `Deferred` secrets fetching via `conjur::secret`.
   [cyberark/conjur-puppet#13](https://github.com/cyberark/conjur-puppet/issues/13).
+- Support for PDK-based testing and releasing.
+  [cyberark/conjur-puppet#64](https://github.com/cyberark/conjur-puppet/issues/64).
 
 ### Changed
 - `conjur::secret` now must be used as a `Deferred` function. Method signature has
