@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module WinCred
   # Responsible for converting w_char pointer to Ruby string
   module Conversion

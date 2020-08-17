@@ -1,7 +1,10 @@
+# frozen_string_literal: true
+
 require 'fiddle/import'
 require 'fiddle/types'
 
 module WinCred
+  # This module is in charge of interacting with the Credential Manager via libffi
   module Native
     extend Fiddle::Importer
     dlload 'Advapi32', 'kernel32'
@@ -18,8 +21,8 @@ module WinCred
         'LPWSTR    Keyword',
         'DWORD      Flags',
         'DWORD      ValueSize',
-        'LPBYTE     Value'
-      ]
+        'LPBYTE     Value',
+      ],
     )
     typealias 'PCREDENTIAL_ATTRIBUTEW', 'CREDENTIAL_ATTRIBUTEW*'
 
@@ -41,8 +44,8 @@ module WinCred
         'DWORD                  AttributeCount',
         'PCREDENTIAL_ATTRIBUTEW Attributes',
         'LPWSTR                 TargetAlias',
-        'LPWSTR                 UserName'
-      ]
+        'LPWSTR                 UserName',
+      ],
     )
     typealias 'PCREDENTIALW', 'CREDENTIALW*'
 

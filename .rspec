@@ -1,5 +1,4 @@
---pattern "spec/**/*.rb"
---exclude-pattern "spec/fixtures/**/*_spec.rb"
+--color
 --format documentation
 --format RspecJunitFormatter
 --out spec/output/rspec.xml

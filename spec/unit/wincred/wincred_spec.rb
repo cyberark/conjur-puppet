@@ -8,8 +8,8 @@ require 'wincred/wincred'
 describe WinCred, wincred: :mock do
   let(:wincred_credentials) do
     {
-      'some.test' => %w(alice secret),
-      'other.test' => %w(bob password)
+      'some.test' => ['alice', 'secret'],
+      'other.test' => ['bob', 'password'],
     }
   end
 
@@ -24,7 +24,7 @@ describe WinCred, wincred: :mock do
     it 'enumerates all credentials' do
       expect(WinCred.enumerate_credentials).to eq [
         { target: 'some.test', username: 'alice', value: 'secret' },
-        { target: 'other.test', username: 'bob', value: 'password' }
+        { target: 'other.test', username: 'bob', value: 'password' },
       ]
     end
   end
@@ -33,7 +33,7 @@ describe WinCred, wincred: :mock do
     it 'writes given credential' do
       WinCred.write_credential \
         target: 'write.test', username: 'eve', value: 'evil'
-      expect(wincred_credentials['write.test']).to eq %w(eve evil)
+      expect(wincred_credentials['write.test']).to eq ['eve', 'evil']
     end
   end
 
