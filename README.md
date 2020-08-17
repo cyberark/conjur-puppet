@@ -7,6 +7,10 @@
 - [Description](#description)
 - [Setup](#setup)
   * [Setup requirements](#setup-requirements)
+  * [Deprecations](#deprecations)
+    + [Puppet v5](#puppet-v5)
+    + [Conjur Enterprise v4](#conjur-enterprise-v4)
+    + [Use of Host Factory Tokens](#use-of-host-factory-tokens)
   * [Using `conjur-puppet` with Conjur OSS](#using-conjur-puppet-with-conjur-oss)
   * [Conjur module basics](#conjur-module-basics)
     + [Sensitive data type](#sensitive-data-type)
@@ -34,14 +38,38 @@ secrets from Conjur.
 ### Setup requirements
 
 This module requires that you have:
-- Puppet v5 _or equivalent EE version_
-- Puppet v6 _or equivalent EE version_ (**Preliminary [Community level](https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md#community)
+- Supported Puppet version:
+  - Puppet v6 _or equivalent EE version_ (**Preliminary [Community level](https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md#community
   support only**)
+  - Puppet v5 _or equivalent EE version_
 - Conjur endpoint available to both the Puppet server and the Puppet nodes using this
   module. Supported versions:
   - Conjur OSS v1+
   - DAP v10+
   - Conjur Enterprise v4.9+
+
+### Deprecations
+
+#### Puppet v5
+
+Puppet v5 support is deprecated. If you are still using this version,
+please use the [v2](https://github.com/cyberark/conjur-puppet/tree/v2) branch of this
+project or a release version `<3.0.0`.
+
+#### Conjur Enterprise v4
+
+Conjur Enterprise v4 support is deprecated. If you are still using this version,
+please use the [v2](https://github.com/cyberark/conjur-puppet/tree/v2) branch of this
+project or a release version `<3.0.0`.
+
+#### Use of Host Factory Tokens
+
+Establishment of identity using host factory tokens through this module is
+deprecated and will be removed in the next major version. Host factory tokens can still
+be used to create host identities, but these identities need to be established outside of
+the module itself. If you are still using the creation of identities with host factory
+tokens via this module, please use the [v2](https://github.com/cyberark/conjur-puppet/tree/v2)
+branch of this project or a release version `<3.0.0`.
 
 ### Using conjur-puppet with Conjur OSS
 
@@ -129,6 +157,9 @@ Puppet nodes, including:
 - [Creating a Conjur host and providing its identity and API key](#conjur-host-identity-with-api-key)
 - [Using Conjur host factory](#conjur-host-factory)
 - [Using pre-established host identities (**Conjur Enterprise v4 only**)](#pre-established-host-identity-conjur-enterprise-v4-only)
+
+**Note that the establishment of identity using host factory tokens and use of this module
+against Conjur Enterprise v4 is deprecated. See [deprecations](#deprecations) for more info.**
 
 Please note that before getting started configuring your Puppet environment, you'll need
 to load a policy in Conjur to define the application identities that you will be using to
@@ -320,6 +351,9 @@ CMDKEY: Credential added successfully.
 
 #### Conjur host factory
 
+**Note that the establishment of identity using host factory tokens is deprecated. See
+[deprecations](#deprecations) for more info.**
+
 Conjur [Host Factories](https://docs.conjur.org/Latest/en/Content/Operations/Services/host_factory.html)
 are another method for creating new host identities in Conjur, and it ensures
 new hosts are created in an existing Conjur policy
@@ -355,6 +389,9 @@ Conjur automatically adds the annotation `puppet: true` to the Conjur host
 identities of all nodes using this Puppet module to bootstrap identity with
 `host_factory_token`.
 
+**Note that the establishment of identity using host factory tokens is deprecated. See
+[deprecations](#deprecations) for more info.**
+
 ##### Using Hiera
 
 Rather than storing the host factory token in the manifest, Puppet server can also be
@@ -376,7 +413,13 @@ conjur::ssl_certificate: |
   -----END CERTIFICATE-----
 ```
 
+**Note that the establishment of identity using host factory tokens is deprecated. See
+[deprecations](#deprecations) for more info.**
+
 ##### Pre-established host identity (Conjur Enterprise v4 only)
+
+**Note that support for Conjur Enterprise v4 is deprecated. See
+[deprecations](#deprecations) for more info.**
 
 **When using Conjur Enterprise v4 only**, you can use
 [conjurize](https://developer.conjur.net/tutorials/authorization/hosts.html)
