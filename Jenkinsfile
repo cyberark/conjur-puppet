@@ -110,10 +110,18 @@ pipeline {
     stage('Release Puppet module') {
       when {
         allOf {
+          // Only publish from mainline and v2 branches
+          anyOf {
+            branch 'master'
+            branch 'v2'
+          }
+
           // Current git HEAD is an annotated tag
           expression {
             sh(returnStatus: true, script: 'git describe --exact | grep -q \'^v[0-9.]\\+$\'') == 0
           }
+
+          // Don't try to publish during daily builds
           not { triggeredBy  'TimerTrigger' }
         }
       }
