@@ -7,8 +7,7 @@
 #       source set_env.sh
 
 export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-puppetmaster_$(openssl rand -hex 3)}"
-export PUPPET_AGENT_VERSION="5.5.8"
-# export PUPPET_AGENT_VERSION="6.9.0"
+export PUPPET_AGENT_VERSION="6.9.0"
 export VAGRANT_CWD="windows2012"
 # export VAGRANT_CWD="windows2016"
 export SERVER_SIDE_CONFIG="false"

@@ -72,14 +72,5 @@ if [ "$cert_fqdn" != "" ]; then
     puppetserver ca clean --certname "$cert_fqdn" || true
 fi
 
-# Create a long-lived HFT that we can copy/paste into hiera config if we're testing
-# HFT-based flows
-echo "Creating a long-lived HFT token..."
-hft_token=$(docker exec $conjur_cli_container conjur hostfactory tokens create --duration-hours 999 inventory | jq -r ".[].token")
-echo "Long-lived HFT token: $hft_token"
-
-echo "Setting env variables to customize the Puppet manifest for this node"
-vagrant powershell -e -c /vagrant/set_facter_env.ps1
-
 echo "Running Puppet Agent..."
 vagrant powershell -e -c "/vagrant/run_puppet_agent.ps1 $(puppet_host_port)"
