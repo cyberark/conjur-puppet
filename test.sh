@@ -15,15 +15,17 @@ checks=( syntax
 echo "Building the test image..."
 docker-compose -f "$compose_file" build --pull
 
-echo "Sanity checking the plugin..."
+if [ ! "${SKIP_VALIDATION}" == "true" ]; then
+  echo "Sanity checking the plugin..."
 
-for check_type in ${checks[@]}; do
-  echo "- Checking [$check_type]"
-  docker-compose -f "$compose_file" run --rm test-runner \
-    bundle exec rake "$check_type"
+  for check_type in ${checks[@]}; do
+    echo "- Checking [$check_type]"
+    docker-compose -f "$compose_file" run --rm test-runner \
+      bundle exec rake "$check_type"
 
-  echo "- Checking [$check_type]: OK"
-done
+    echo "- Checking [$check_type]: OK"
+  done
+fi
 
 echo "Running specs..."
 docker-compose -f "$compose_file" run --rm test-runner \
