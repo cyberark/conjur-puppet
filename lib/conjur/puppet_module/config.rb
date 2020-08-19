@@ -14,28 +14,38 @@ module Conjur
         end
 
         def from_file
-          if File.exist?(CONFIG_FILE_PATH)
+          if File.file?(CONFIG_FILE_PATH)
             c = YAML.safe_load(File.read(CONFIG_FILE_PATH))
-            c['ssl_certificate'] ||= File.read c['cert_file'] \
-                if c['cert_file']
+
+            if c['cert_file']
+              raise "Cert file '#{c['cert_file']}' cannot be found!" unless File.file?(c['cert_file'])
+
+              c['ssl_certificate'] ||= File.read c['cert_file']
+            end
+
             c
           else
             {}
           end
         end
 
+        # We do this in a method to allow for easier testing
+        def load_registry_module
+          require 'win32/registry'
+        end
+
         def from_registry
           raise 'Conjur::PuppetModule::Config#from_registry is only supported on Windows' \
             unless Puppet.features.microsoft_windows?
 
-          require 'win32/registry'
+          load_registry_module
 
           c = {}
           begin
             Win32::Registry::HKEY_LOCAL_MACHINE.open(REG_KEY_NAME) do |reg|
               # Convert registry value names from camel case to underscores
               # e.g. ApplianceUrl => appliance_url
-              c = reg.map { |name, _type, data| [name.gsub(%r{/(.)([A-Z])/}, '\1_\2').downcase, data] }.to_h
+              c = reg.map { |name, _type, data| [name.gsub(%r{(.)([A-Z])}, '\1_\2').downcase, data] }.to_h
             end
           rescue
             Puppet.notice "Windows Registry on the agent did not contain path '#{REG_KEY_NAME}'. " \

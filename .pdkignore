@@ -41,10 +41,15 @@
 /spec/
 /.vscode/
 
-# dev stuff
+# Dev files
+.tmp/
+.github/
+.vagrant/
+examples/
+tmp/
+*.msi
+/.bundle
+/conjur.conf
 /conjur.pem
 /rspec.xml
-/.bundle
-
-/conjur.conf
-/tmp/
+puppet_install_log.txt
