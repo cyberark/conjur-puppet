@@ -7,6 +7,10 @@
 - [Description](#description)
 - [Setup](#setup)
   * [Setup requirements](#setup-requirements)
+  * [Deprecations](#deprecations)
+    + [Puppet v5](#puppet-v5)
+    + [Conjur Enterprise v4](#conjur-enterprise-v4)
+    + [Use of Host Factory Tokens](#use-of-host-factory-tokens)
   * [Installation](#installation)
   * [Using conjur-puppet with Conjur OSS](#using-conjur-puppet-with-conjur-oss)
   * [Conjur module basics](#conjur-module-basics)
@@ -46,9 +50,28 @@ This module requires that you have:
   - Conjur OSS v1+
   - DAP v10+
 
-**Note that Conjur Enterprise v4 support is not supported by this version of the module. If you
-are still using this version of Conjur, please use the [v2](https://github.com/cyberark/conjur-puppet/tree/v2)i
-branch of this project or a release version `<=2.0.5`**
+### Deprecations
+
+#### Puppet v5
+
+Puppet v5 is not supported in v3+ of this module. If you are still using this version,
+please use the [v2](https://github.com/cyberark/conjur-puppet/tree/v2) branch of this
+project or a release version `<3.0.0`.
+
+#### Conjur Enterprise v4
+
+Conjur Enterprise v4 is not supported in v3+ of this module. If you are still using this
+version, please use the [v2](https://github.com/cyberark/conjur-puppet/tree/v2) branch
+of this project or a release version `<3.0.0`.
+
+#### Use of Host Factory Tokens
+
+Establishment of identity using host factory tokens directly through this module is no
+longer supported. Host factory tokens can still be used to create host identities, but
+these identities need to be established outside of the module itself. If you are still
+using the creation of identities with host factory tokens via this module, please use
+the [v2](https://github.com/cyberark/conjur-puppet/tree/v2) branch of this project or
+a release version `<3.0.0`.
 
 ### Installation
 
