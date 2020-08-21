@@ -39,6 +39,9 @@ end
 RSpec.configure do |c|
   c.default_facts = default_facts
   c.mock_with :rspec
+  c.expect_with :rspec do |expectations|
+    expectations.max_formatted_output_length = nil
+  end
 
   c.before :each do
     # set to strictest setting for testing

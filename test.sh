@@ -13,5 +13,5 @@ mkdir -p ./spec/output
 docker run --rm \
   -v $PWD:/root \
   -w /root \
-  puppet/pdk test unit --format=junit:./spec/output/rspec.xml
+  puppet/pdk test unit --format=junit:./spec/output/rspec.xml --format=text
 echo "Tests complete!"
