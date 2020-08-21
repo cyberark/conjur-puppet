@@ -17,23 +17,47 @@ describe 'conjur::secret', conjur: :mock do
       let(:variable_id) { 'variable_id' }
       let(:version) { 5 }
 
-      let(:mock_token) { double('token') }
+      let(:mock_token) { 'myverysecrettoken' }
       let(:mock_client) { double('conjur_client') }
-      let(:mock_connection) { double('conjur_connection') }
 
-      let(:authn_url) { "/authn/#{account}/#{authn_login}/authenticate" }
+      let(:authn_path) { "authn/#{account}/#{authn_login}/authenticate" }
+      let(:variable_path) { "secrets/#{account}/variable/#{variable_id}" }
 
-      before(:each) do
-        allow_any_instance_of(Puppet::Pops::Functions::Function).to receive(:call_function)
-          .with('conjur::client', appliance_url, version, ssl_certificate)
-          .and_return(mock_client)
+      shared_examples 'expected behavior' do
+        it 'fetches the given variable' do
+          expect(Conjur::PuppetModule::HTTP).to receive(:post)
+            .with(appliance_url, authn_path, ssl_certificate, authn_api_key.unwrap)
+            .and_return(mock_token)
+          expect(Conjur::PuppetModule::HTTP).to receive(:get)
+            .with(appliance_url, variable_path, ssl_certificate, mock_token)
+            .and_return('variable value')
 
-        allow(Net::HTTP).to receive(:start).with('conjur.test', 443, anything)
-                                           .and_yield(mock_connection)
+          actual_value = subject.execute(variable_id, options).unwrap
+          expect(actual_value).to eq 'variable value'
+        end
 
-        allow(mock_client).to receive(:variable_value)
-          .with(account, variable_id, mock_token)
-          .and_return('variable value')
+        it 'raises an error if the token is bad' do
+          expect(Conjur::PuppetModule::HTTP).to receive(:post)
+            .with(appliance_url, authn_path, ssl_certificate, authn_api_key.unwrap)
+            .and_raise '403'
+
+          expect {
+            subject.execute(variable_id, options)
+          }.to raise_error '403'
+        end
+
+        it 'raises an error if the variable is bad' do
+          expect(Conjur::PuppetModule::HTTP).to receive(:post)
+            .with(appliance_url, authn_path, ssl_certificate, authn_api_key.unwrap)
+            .and_return(mock_token)
+          expect(Conjur::PuppetModule::HTTP).to receive(:get)
+            .with(appliance_url, variable_path, ssl_certificate, mock_token)
+            .and_raise '404'
+
+          expect {
+            subject.execute(variable_id, options)
+          }.to raise_error '404'
+        end
       end
 
       describe 'with all parameters (server-side params)' do
@@ -47,25 +71,36 @@ describe 'conjur::secret', conjur: :mock do
           }
         end
 
-        it 'fetches the given variable using token from conjur class' do
-          expect(mock_connection).to receive(:post).with(authn_url, authn_api_key.unwrap)
-                                                   .and_return(http_ok(mock_token))
+        it_behaves_like 'expected behavior' do
+          let(:options) { full_options }
+        end
+
+        it 'encodes the values correctly' do
+          full_options['account'] = 'account!@#$%^&*()"\'[]{}:;'
+          full_options['authn_login'] = 'login!@#$%^&*()"\'[]{}:;'
+          variable_id = 'variable!@#$%^&*()"\'[]{}:;'
+          expected_authn_path = 'authn' \
+                                '/account%21%40%23%24%25%5E%26*%28%29%22%27%5B%5D%7B%7D%3A%3B' \
+                                '/login%21%40%23%24%25%5E%26*%28%29%22%27%5B%5D%7B%7D%3A%3B' \
+                                '/authenticate'
+          expected_var_path = 'secrets' \
+                              '/account%21%40%23%24%25%5E%26*%28%29%22%27%5B%5D%7B%7D%3A%3B' \
+                              '/variable' \
+                              '/variable%21%40%23%24%25%5E%26%2A%28%29%22%27%5B%5D%7B%7D%3A%3B'
+
+          expect(Conjur::PuppetModule::HTTP).to receive(:post)
+            .with(appliance_url, expected_authn_path, ssl_certificate, authn_api_key.unwrap)
+            .and_return(mock_token)
+          expect(Conjur::PuppetModule::HTTP).to receive(:get)
+            .with(appliance_url, expected_var_path, ssl_certificate, mock_token)
+            .and_return('variable value')
 
           actual_value = subject.execute(variable_id, full_options).unwrap
           expect(actual_value).to eq 'variable value'
         end
-
-        it 'raises an error if the token is bad' do
-          expect(mock_connection).to receive(:post).with(authn_url, authn_api_key.unwrap)
-                                                   .and_return(http_unauthorized)
-
-          expect {
-            subject.execute(variable_id, full_options)
-          }.to raise_error Net::HTTPError
-        end
       end
 
-      describe 'with default parameter (agent-side params)' do
+      describe 'with default parameters (agent-side params)' do
         let(:mock_creds) { [authn_login, authn_api_key.unwrap] }
         let(:mock_config) do
           {
@@ -74,6 +109,46 @@ describe 'conjur::secret', conjur: :mock do
             'ssl_certificate' => ssl_certificate,
             'version' => version,
           }
+        end
+
+        before(:each) do
+          allow(Conjur::PuppetModule::Config).to receive(:load)
+            .and_return(mock_config)
+          allow(Conjur::PuppetModule::Identity).to receive(:load).with(mock_config)
+                                                                 .and_return(mock_creds)
+        end
+
+        it_behaves_like 'expected behavior' do
+          let(:options) { {} }
+        end
+
+        it 'encodes the values correctly' do
+          mock_config['account'] = 'account!@#$%^&*()"\'[]{}:;'
+          mock_creds = ['login!@#$%^&*()"\'[]{}:;', authn_api_key.unwrap]
+          variable_id = 'variable!@#$%^&*()"\'[]{}:;'
+
+          expect(Conjur::PuppetModule::Config).to receive(:load)
+            .and_return(mock_config)
+          expect(Conjur::PuppetModule::Identity).to receive(:load).with(mock_config)
+                                                                  .and_return(mock_creds)
+          expected_authn_path = 'authn' \
+                                '/account%21%40%23%24%25%5E%26*%28%29%22%27%5B%5D%7B%7D%3A%3B' \
+                                '/login%21%40%23%24%25%5E%26*%28%29%22%27%5B%5D%7B%7D%3A%3B' \
+                                '/authenticate'
+          expected_var_path = 'secrets' \
+                              '/account%21%40%23%24%25%5E%26*%28%29%22%27%5B%5D%7B%7D%3A%3B' \
+                              '/variable' \
+                              '/variable%21%40%23%24%25%5E%26%2A%28%29%22%27%5B%5D%7B%7D%3A%3B'
+
+          expect(Conjur::PuppetModule::HTTP).to receive(:post)
+            .with(appliance_url, expected_authn_path, ssl_certificate, authn_api_key.unwrap)
+            .and_return(mock_token)
+          expect(Conjur::PuppetModule::HTTP).to receive(:get)
+            .with(appliance_url, expected_var_path, ssl_certificate, mock_token)
+            .and_return('variable value')
+
+          actual_value = subject.execute(variable_id).unwrap
+          expect(actual_value).to eq 'variable value'
         end
 
         it 'raises an error if creds cannot be retrieved' do
@@ -91,30 +166,6 @@ describe 'conjur::secret', conjur: :mock do
 
           expect { subject.execute(variable_id) }.to raise_error \
             'Conjur identity not found on system'
-        end
-
-        it 'fetches the given variable using token from conjur class' do
-          expect(Conjur::PuppetModule::Config).to receive(:load)
-            .and_return(mock_config)
-          expect(Conjur::PuppetModule::Identity).to receive(:load).with(mock_config)
-                                                                  .and_return(mock_creds)
-
-          expect(mock_connection).to receive(:post).with(authn_url, authn_api_key.unwrap)
-                                                   .and_return(http_ok(mock_token))
-
-          expect(subject.execute(variable_id).unwrap).to eq 'variable value'
-        end
-
-        it 'raises an error if the token is bad' do
-          expect(Conjur::PuppetModule::Config).to receive(:load)
-            .and_return(mock_config)
-          expect(Conjur::PuppetModule::Identity).to receive(:load).with(mock_config)
-                                                                  .and_return(mock_creds)
-
-          expect(mock_connection).to receive(:post).with(authn_url, authn_api_key.unwrap)
-                                                   .and_return(http_unauthorized)
-
-          expect { subject.execute(variable_id) }.to raise_error Net::HTTPError
         end
       end
     end

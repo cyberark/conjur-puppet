@@ -55,41 +55,6 @@ RSpec.configure do |c|
   end
 end
 
-shared_context 'mock conjur connection', conjur: :mock do
-  let(:conjur_connection) do
-    instance_double 'Net::HTTP', 'connection to Conjur'
-  end
-
-  before(:each) do
-    allow(Net::HTTP).to receive(:start) \
-      .with('conjur.test', 443, anything).and_return(conjur_connection)
-  end
-
-  def http_ok(body)
-    Net::HTTPOK.new('1.1', '200', 'ok').tap do |resp|
-      allow(resp).to receive(:body) { body }
-    end
-  end
-
-  def http_unauthorized
-    Net::HTTPUnauthorized.new '1.1', '403', 'unauthorized'
-  end
-
-  def expect_authorized_conjur_get(path)
-    expect(conjur_connection).to receive(:get).with(
-      path,
-      'Authorization' => 'Token token="dGhlIHRva2Vu"', # "the token" b64d
-    )
-  end
-
-  def allow_authorized_conjur_get(path)
-    allow(conjur_connection).to receive(:get).with(
-      path,
-      'Authorization' => 'Token token="dGhlIHRva2Vu"', # "the token" b64d
-    )
-  end
-end
-
 module RSpec::Puppet
   module ClassExampleGroup
     def environment_module
@@ -121,6 +86,11 @@ module RSpec::Puppet
       catalog.resource('File[var]')[:content]
     end
   end
+end
+
+# Loads a static fixture file from a common dir
+def fixture_file(path)
+  File.read("spec/fixtures/files/#{path}")
 end
 
 # Ensures that a module is defined
