@@ -10,7 +10,6 @@
 
 ### Functions
 
-* [`conjur::client`](#conjurclient): This function is a representation of a Conjur / DAP client with majority of the functionality that allows us to authenticate against a server
 * [`conjur::secret`](#conjursecret): Function to retrieve a Conjur / DAP secret
 
 ## Resource types
@@ -53,61 +52,6 @@ discover the appropriate provider for your platform.
 Conjur / DAP URL
 
 ## Functions
-
-### `conjur::client`
-
-Type: Ruby 4.x API
-
-This function is a representation of a Conjur / DAP client with majority
-of the functionality that allows us to authenticate against a server.
-
-#### `conjur::client(String $uri, Integer $version, String $cert)`
-
-The conjur::client function.
-
-Returns: `Class` Conjur client instance
-
-##### `uri`
-
-Data type: `String`
-
-The URL of the Conjur or DAP instance.
-
-##### `version`
-
-Data type: `Integer`
-
-Conjur API version.
-
-##### `cert`
-
-Data type: `String`
-
-The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance
-
-#### `conjur::client(String $uri, Integer $version, Optional[Undef] $cert)`
-
-The conjur::client function.
-
-Returns: `Class` Conjur client instance
-
-##### `uri`
-
-Data type: `String`
-
-The URL of the Conjur or DAP instance.
-
-##### `version`
-
-Data type: `Integer`
-
-Conjur API version.
-
-##### `cert`
-
-Data type: `Optional[Undef]`
-
-The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance
 
 ### `conjur::secret`
 
