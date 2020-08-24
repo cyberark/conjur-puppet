@@ -1,5 +1,7 @@
 Gemfile.lock
 
+/.cache/
+/.config/
 /coverage/
 /pkg/
 /examples/

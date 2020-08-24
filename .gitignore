@@ -5,7 +5,10 @@
 .yardwarns
 *.iml
 /.bundle/
+/.cache/
+/.config/
 /.idea/
+/.pdk/
 /.rvmrc*
 /.vagrant/
 /conjur.conf
