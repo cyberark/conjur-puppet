@@ -8,7 +8,7 @@ SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
 SimpleCov.start
 
 # Ensure that RSpec is set as mocking framework before anything else
-# as the `require` statemens throw warnings otherwise
+# as the `require` statements throw warnings otherwise
 RSpec.configure do |c|
   c.mock_with :rspec
 end
