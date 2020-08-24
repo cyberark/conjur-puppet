@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'conjur/puppet_module/config'
+require 'conjur/puppet_module/http'
 require 'conjur/puppet_module/identity'
 
 # Function to retrieve a Conjur / DAP secret
@@ -38,44 +39,36 @@ Puppet::Functions.create_function :'conjur::secret' do
     return_type 'Sensitive'
   end
 
-  def find_certs(certs)
-    cert_header = '-----BEGIN CERTIFICATE-----'
-    cert_footer = '-----END CERTIFICATE-----'
-    cert_re = %r{#{cert_header}\r?\n.*?\r?\n#{cert_footer}}m
-
-    certs.scan(cert_re).map(&OpenSSL::X509::Certificate.method(:new))
-  end
-
-  def cert_store(certs)
-    certs && OpenSSL::X509::Store.new.tap do |store|
-      find_certs(certs).each(&store.method(:add_cert))
-    end
-  end
-
   def authentication_path(account, login)
     ['authn', account, login, 'authenticate']
       .map(&URI.method(:encode_www_form_component)).join('/')
   end
 
-  def directory_uri(url)
-    url += '/' unless url.end_with? '/'
-    URI url
-  end
-
   # Authenticates against a Conjur / DAP server returning the API token
-  def authenticate(url, account, authn_login, authn_api_key, ssl_certificate)
-    uri = directory_uri(url) + authentication_path(account, authn_login)
-    use_ssl = uri.scheme == 'https'
-
-    Net::HTTP.start uri.host, uri.port, use_ssl: use_ssl, cert_store: cert_store(ssl_certificate) do |http|
-      response = http.post uri.request_uri, authn_api_key.unwrap
-      raise Net::HTTPError.new response.message, response unless response.code.match?(%r{^2})
-      response.body
-    end
+  def authenticate(url, ssl_certificate, account, authn_login, authn_api_key)
+    Conjur::PuppetModule::HTTP.post(
+      url,
+      authentication_path(account, authn_login),
+      ssl_certificate,
+      authn_api_key.unwrap,
+    )
   end
 
-  def get_token(appliance_url, account, authn_login, authn_api_key, ssl_certificate)
-    authenticate(appliance_url, account, authn_login, authn_api_key, ssl_certificate)
+  # Fetches a variable from Conjur / DAP
+  def get_variable(url, ssl_certificate, account, variable_id, token)
+    secrets_path = [
+      'secrets',
+      URI.encode_www_form_component(account),
+      'variable',
+      ERB::Util.url_encode(variable_id),
+    ].join('/')
+
+    Conjur::PuppetModule::HTTP.get(
+      url,
+      secrets_path,
+      ssl_certificate,
+      token,
+    )
   end
 
   def with_credentials(id, options = {})
@@ -106,16 +99,14 @@ Puppet::Functions.create_function :'conjur::secret' do
     # Ideally we would be able to support `cert_file` here too
 
     Puppet.debug('Instantiating Conjur client...')
-    client = call_function('conjur::client', opts['appliance_url'], opts['version'],
-                           opts['ssl_certificate'])
-
     Puppet.debug('Fetching Conjur token')
-    token = get_token(opts['appliance_url'], opts['account'], opts['authn_login'],
-                      opts['authn_api_key'], opts['ssl_certificate'])
+    token = authenticate(opts['appliance_url'], opts['ssl_certificate'], opts['account'],
+                         opts['authn_login'], opts['authn_api_key'])
     Puppet.info('Conjur token retrieved')
 
     Puppet.debug("Fetching Conjur secret '#{id}'...")
-    secret = client.variable_value(opts['account'], id, token)
+    secret = get_variable(opts['appliance_url'], opts['ssl_certificate'], opts['account'],
+                          id, token)
     Puppet.info("Conjur secret #{id} retrieved")
 
     Puppet::Pops::Types::PSensitiveType::Sensitive.new(secret)
