@@ -1,5 +1,14 @@
 # frozen_string_literal: true
 
+# Ensure that SimpleCov loads before anything else
+require 'simplecov'
+require 'simplecov-cobertura'
+
+SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
+SimpleCov.start
+
+# Ensure that RSpec is set as mocking framework before anything else
+# as the `require` statements throw warnings otherwise
 RSpec.configure do |c|
   c.mock_with :rspec
 end

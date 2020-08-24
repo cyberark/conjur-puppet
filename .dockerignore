@@ -1,4 +1,7 @@
 Gemfile.lock
 
-pkg/
-examples/
+/.cache/
+/.config/
+/coverage/
+/pkg/
+/examples/
