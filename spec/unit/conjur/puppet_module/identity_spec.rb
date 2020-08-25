@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'helpers/fs'
 require 'helpers/native_wincred'
 
 require 'conjur/puppet_module/identity'
@@ -45,6 +44,4 @@ describe Conjur::PuppetModule::Identity do
       expect(described_class.from_wincred(uri)).to eq ['conjur-login', 'secret']
     end
   end
-
-  include FsMock
 end
