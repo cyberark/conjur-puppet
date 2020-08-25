@@ -31,7 +31,9 @@ module Conjur
 
         # We do this in a method to allow for easier testing
         def load_registry_module
+          # :nocov:
           require 'win32/registry'
+          # :nocov:
         end
 
         def from_registry
