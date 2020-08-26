@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   changed as well. [cyberark/conjur-puppet#13](https://github.com/cyberark/conjur-puppet/issues/13).
 - `conjur::secret` Optional parameters now use a Hash instead of positional parameters.
   [cyberark/conjur-puppet#184](https://github.com/cyberark/conjur-puppet/issues/184).
+- User experience for situations where Conjur identity cannot be resolved has been
+  improved with better errors/warnings.
+  [cyberark/conjur-puppet#125](https://github.com/cyberark/conjur-puppet/issues/125).
 
 ### Removed
 - Support for using the Conjur Puppet module with Conjur Enterprise v4 is removed

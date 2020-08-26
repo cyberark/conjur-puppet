@@ -14,24 +14,24 @@ module Conjur
         end
 
         def from_file
-          if File.file?(CONFIG_FILE_PATH)
-            c = YAML.safe_load(File.read(CONFIG_FILE_PATH))
+          return {} unless File.file?(CONFIG_FILE_PATH)
 
-            if c['cert_file']
-              raise "Cert file '#{c['cert_file']}' cannot be found!" unless File.file?(c['cert_file'])
+          c = YAML.safe_load(File.read(CONFIG_FILE_PATH))
 
-              c['ssl_certificate'] ||= File.read c['cert_file']
-            end
+          if c['cert_file']
+            raise "Cert file '#{c['cert_file']}' cannot be found!" unless File.file?(c['cert_file'])
 
-            c
-          else
-            {}
+            c['ssl_certificate'] ||= File.read c['cert_file']
           end
+
+          c
         end
 
         # We do this in a method to allow for easier testing
         def load_registry_module
+          # :nocov:
           require 'win32/registry'
+          # :nocov:
         end
 
         def from_registry

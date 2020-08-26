@@ -10,7 +10,11 @@ module Conjur
       class << self
         def load(config)
           appliance_url = config['appliance_url']
-          return unless appliance_url
+
+          unless appliance_url
+            Puppet.warning('Conjur identity cannot be found as the appliance_url is empty')
+            return []
+          end
 
           uri = URI.parse(appliance_url)
           Puppet.features.microsoft_windows? ? from_wincred(uri) : from_file(uri, config)
@@ -37,7 +41,8 @@ module Conjur
               return [login, password] if login && password
             end
 
-            warn "Could not find conjur authentication info for host '#{uri}'" unless found
+            Puppet.warning "Could not find Conjur authentication info for host '#{uri}'" unless found
+            return []
           end
         end
 
@@ -55,7 +60,7 @@ module Conjur
           end
 
           if matching_creds.empty?
-            Puppet.warning "Couldn't find any pre-populated Conjur credentials in WinCred " \
+            Puppet.warning 'Could not find any pre-populated Conjur credentials in WinCred ' \
                            "storage for #{uri}"
             return []
           end
