@@ -7,6 +7,7 @@ set -euo pipefail
 source vagrant/utils.sh
 
 CLEAN_UP_ON_EXIT=${CLEAN_UP_ON_EXIT:-true}
+INSTALL_PACKAGED_MODULE=${INSTALL_PACKAGED_MODULE:-true}
 COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-puppetmaster_$(openssl rand -hex 3)}
 
 PUPPET_SERVER_TAG=latest
@@ -31,14 +32,29 @@ cleanup() {
 
 main() {
   cleanup
-  if [ "$CLEAN_UP_ON_EXIT" = true ]; then
+  if [[ "${CLEAN_UP_ON_EXIT}" = true ]]; then
     trap cleanup EXIT
   fi
 
   start_services
   setup_conjur
   wait_for_puppetmaster
-  install_required_module_dependency
+
+  if [[ "${INSTALL_PACKAGED_MODULE}" = true ]]; then
+    # This branch is generally exercised for testing production builds. It installs the
+    # packaged module from the mounted onto directory '/conjur/pkg'.
+
+    install_conjur_module
+  else
+    # This brach is generally exercised during development. It symlinks the source from
+    # mounted onto directory '/conjur' to
+    # '/etc/puppetlabs/code/environments/production/modules/conjur', and installs any
+    # module dependencies.
+
+    symlink_conjur_module
+    install_required_module_dependency
+  fi
+
   get_docker_gateway_ip
   add_puppetmaster_etc_hosts
 
@@ -101,6 +117,20 @@ get_host_key() {
 
 get_hf_token() {
   run_in_conjur_cli conjur hostfactory tokens create --duration-hours 1 inventory | jq -r ".[].token"
+}
+
+symlink_conjur_module() {
+  echo "Creating a symlink of cyberark-conjur module source on server..."
+  run_in_puppet bash -c "
+    ln -s /conjur /etc/puppetlabs/code/environments/production/modules/conjur
+  "
+}
+
+install_conjur_module() {
+  echo "Installing packaged cyberark-conjur module to server..."
+  run_in_puppet bash -c "
+    puppet module install /conjur/pkg/cyberark-conjur.tar.gz --force;
+  "
 }
 
 install_required_module_dependency() {
