@@ -60,12 +60,20 @@
     }
   ],
   "tags": [
+    "access",
+    "account",
     "conjur",
+    "credential",
+    "credentials",
     "cyberark",
     "dap",
+    "devops",
+    "identity",
+    "privileged",
+    "secret",
     "secrets",
     "security",
-    "credentials"
+    "vault"
   ],
   "pdk-version": "1.18.1",
   "template-url": "pdk-default#1.18.1",
