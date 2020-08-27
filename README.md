@@ -12,6 +12,7 @@
     + [Conjur Enterprise v4](#conjur-enterprise-v4)
     + [Use of Host Factory Tokens](#use-of-host-factory-tokens)
   * [Installation](#installation)
+    + [Certified Versions](#certified-versions)
   * [Using conjur-puppet with Conjur OSS](#using-conjur-puppet-with-conjur-oss)
   * [Conjur module basics](#conjur-module-basics)
     + [Sensitive data type](#sensitive-data-type)
@@ -85,6 +86,13 @@ command on the Puppet server:
 ```
 puppet module install cyberark-conjur --version 1.2.3
 ```
+
+#### Certified Versions
+
+Releases of this module belonging to the `v3` major version are not currently
+certified. If a certified version of this module is desired, please use the highest
+available `v2.x.x` version available on PuppetForge under
+[`cyberark/conjur`](https://forge.puppet.com/cyberark/conjur).
 
 ### Using conjur-puppet with Conjur OSS
 
