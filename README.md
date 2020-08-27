@@ -90,9 +90,10 @@ puppet module install cyberark-conjur --version 1.2.3
 #### Certified Versions
 
 Releases of this module belonging to the `v3` major version are not currently
-certified. If a certified version of this module is desired, please use the highest
+Certified. If a Certified version of this module is desired, please use the highest
 available `v2.x.x` version available on PuppetForge under
-[`cyberark/conjur`](https://forge.puppet.com/cyberark/conjur).
+[`cyberark/conjur`](https://forge.puppet.com/cyberark/conjur).  More details about
+Certification Levels can be found in our [Community repo](https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md).
 
 ### Using conjur-puppet with Conjur OSS
 
