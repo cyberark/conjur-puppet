@@ -4,6 +4,7 @@
     description: Policy that governs access to the inventory database
   body:
     - !variable &db-password db-password
+    - !variable &funky-variable funky/special @#$%^&*(){}[].,+/variable
 
     - !layer
     - !host-factory
@@ -12,6 +13,11 @@
     - !permit
       role: [ !layer ]
       resource: *db-password
+      privilege: [ read, execute ]
+
+    - !permit
+      role: [ !layer ]
+      resource: *funky-variable
       privilege: [ read, execute ]
 
     - !host &h_agent_apikey

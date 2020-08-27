@@ -24,6 +24,7 @@ OSES=(
 export COMPOSE_PROJECT_NAME
 NETNAME=${COMPOSE_PROJECT_NAME//-/}_default
 EXPECTED_PASSWORD="supersecretpassword"
+EXPECTED_COMPLEX_ID_PASSWORD="complexidpassword"
 
 cleanup() {
   echo "Ensuring clean state..."
@@ -177,7 +178,14 @@ setup_conjur() {
   echo "Loading Conjur initial policy"
   echo "-----"
   run_in_conjur_cli conjur policy load root /src/policy.yml
-  run_in_conjur_cli conjur variable values add inventory/db-password $EXPECTED_PASSWORD  # load the secret's value
+
+  echo "-----"
+  echo "Setting variable values"
+  echo "-----"
+  run_in_conjur_cli conjur variable values add \
+    'inventory/db-password' "$EXPECTED_PASSWORD"
+  run_in_conjur_cli conjur variable values add \
+    'inventory/funky/special @#$%^&*(){}[].,+/variable' "$EXPECTED_COMPLEX_ID_PASSWORD"
 }
 
 revoke_cert_for() {
@@ -276,7 +284,8 @@ $ssl_certificate
 
   echo "
     node '$hostname' {
-      \$pem_file  = '/tmp/test.pem'
+      \$output_file1  = '/tmp/creds1.txt'
+      \$output_file2  = '/tmp/creds2.txt'
       \$secret = Sensitive(Deferred(conjur::secret, ['inventory/db-password', {
           appliance_url => lookup('conjur::appliance_url'),
           account => lookup('conjur::account'),
@@ -285,13 +294,33 @@ $ssl_certificate
           ssl_certificate => lookup('conjur::ssl_certificate')
       }]))
 
-      notify { \"Writing secret to \${pem_file}...\": }
-      file { \$pem_file:
+      \$funky_secret = Sensitive(Deferred(conjur::secret, ['inventory/funky/special @#$%^&*(){}[].,+/variable', {
+          appliance_url => lookup('conjur::appliance_url'),
+          account => lookup('conjur::account'),
+          authn_login => lookup('conjur::authn_login'),
+          authn_api_key => lookup('conjur::authn_api_key'),
+          ssl_certificate => lookup('conjur::ssl_certificate')
+      }]))
+
+      notify { \"Writing secret to \${output_file1}...\": }
+      file { \$output_file1:
         ensure  => file,
         content => \$secret,
       }
 
-      exec { \"cat \${pem_file}\":
+      notify { \"Writing funky secret to \${output_file2}...\": }
+      file { \$output_file2:
+        ensure  => file,
+        content => \$funky_secret,
+      }
+
+      exec { \"cat \${output_file1}\":
+        path      => '/usr/bin:/usr/sbin:/bin',
+        provider  => shell,
+        logoutput => true,
+      }
+
+      exec { \"cat \${output_file2}\":
         path      => '/usr/bin:/usr/sbin:/bin',
         provider  => shell,
         logoutput => true,

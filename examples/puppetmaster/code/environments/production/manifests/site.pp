@@ -2,15 +2,13 @@ File { backup => false }
 
 node default {
   if $facts['os']['family'] == 'Windows' {
-    $pem_file = 'c:/tmp/test.pem'
+    $cred_file_prefix = 'c:/tmp'
   } else {
-    $pem_file = '/tmp/test.pem'
+    $cred_file_prefix = '/tmp'
   }
 
-  notify { 'Including conjur module...': }
-
-  notify { "Grabbing 'inventory/db-password' secret...": }
-  $secret = Sensitive(Deferred(conjur::secret, ['inventory/db-password']))
+  $output_file1 = "${cred_file_prefix}/creds1.txt"
+  $output_file2 = "${cred_file_prefix}/creds2.txt"
 
   # If using server-supplied identity for the agent's Conjur / DAP connection,
   # you would use the optional parameters to the `conjur::secret` function as
@@ -24,10 +22,27 @@ node default {
   #   ssl_certificate => lookup('conjur::ssl_certificate')
   # }]))
 
-  notify { "Writing secret to ${pem_file}...": }
-  file { $pem_file: ensure => file, content => $secret }
+  notify { "Writing regular secret to ${output_file1}...": }
+  file { $output_file1:
+    ensure => file,
+    content => Sensitive(Deferred(conjur::secret, ['inventory/db-password'])),
+  }
 
-  exec { 'cat /tmp/test.pem':
+  notify { "Writing funky secret to ${output_file2}...": }
+  file { $output_file2:
+    ensure => file,
+    content => Sensitive(Deferred(conjur::secret, [
+          'inventory/funky/special @#$%^&*(){}[].,+/variable'
+    ])),
+  }
+
+  exec { "cat ${output_file1}":
+    path      => '/usr/bin:/usr/sbin:/bin',
+    provider  => shell,
+    logoutput => true,
+  }
+
+  exec { "cat ${output_file2}":
     path      => '/usr/bin:/usr/sbin:/bin',
     provider  => shell,
     logoutput => true,
