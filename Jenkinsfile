@@ -11,6 +11,10 @@ pipeline {
     cron(getDailyCronString())
   }
 
+  environment {
+    PDK_DISABLE_ANALYTICS = 'true'
+  }
+
   stages {
     stage('Validate') {
       parallel {

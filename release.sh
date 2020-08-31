@@ -9,5 +9,7 @@ summon docker run --rm -t \
   --env-file @SUMMONENVFILE \
   puppet-pdk \
   bash -ec """
-    pdk release --skip-documentation --skip-changelog --force
+    PDK_DISABLE_ANALYTICS=true pdk release --skip-documentation \
+                                           --skip-changelog \
+                                           --force
   """
