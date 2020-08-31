@@ -73,14 +73,9 @@ pipeline {
     }
 
     stage('Release Puppet module') {
+      // Only run this stage when triggered by a tag
       when {
-        allOf {
-          // Current git HEAD is an annotated tag
-          expression {
-            sh(returnStatus: true, script: 'git describe --exact | grep -q \'^v[0-9.]\\+$\'') == 0
-          }
-          not { triggeredBy  'TimerTrigger' }
-        }
+        tag "v*"
       }
       steps {
         sh './release.sh'
