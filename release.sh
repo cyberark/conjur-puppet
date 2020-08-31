@@ -11,5 +11,6 @@ summon docker run --rm -t \
   bash -ec """
     PDK_DISABLE_ANALYTICS=true pdk release --skip-documentation \
                                            --skip-changelog \
+                                           --forge-token='$PDK_FORGE_TOKEN' \
                                            --force
   """
