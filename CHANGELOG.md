@@ -6,29 +6,43 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [3.0.0-rc2] - 2020-08-26
+
 ### Added
-- Support for using `Deferred` secrets fetching via `conjur::secret`.
-  [cyberark/conjur-puppet#13](https://github.com/cyberark/conjur-puppet/issues/13).
-- Support for PDK-based testing and releasing.
-  [cyberark/conjur-puppet#64](https://github.com/cyberark/conjur-puppet/issues/64).
+- Secrets are now retrieved by the Puppet agent, instead of the server, using Puppet's
+  [deferred function feature](https://puppet.com/docs/puppet/6.17/deferring_functions.html).
+  This aligns with Puppet's documented best practices.
+  [cyberark/conjur-puppet#13](https://github.com/cyberark/conjur-puppet/issues/13)
+- Module now follows Puppet development best practices and uses
+  [PDK](https://puppet.com/docs/pdk/1.x/pdk.html) for linting, unit tests, and publishing.
+  [cyberark/conjur-puppet#64](https://github.com/cyberark/conjur-puppet/issues/64)
 
 ### Changed
 - `conjur::secret` now must be used as a `Deferred` function. Method signature has
-  changed as well. [cyberark/conjur-puppet#13](https://github.com/cyberark/conjur-puppet/issues/13).
-- `conjur::secret` Optional parameters now use a Hash instead of positional parameters.
-  [cyberark/conjur-puppet#184](https://github.com/cyberark/conjur-puppet/issues/184).
-- User experience for situations where Conjur identity cannot be resolved has been
-  improved with better errors/warnings.
-  [cyberark/conjur-puppet#125](https://github.com/cyberark/conjur-puppet/issues/125).
+  changed as well, including providing of optional parameters as a Hash.
+  [cyberark/conjur-puppet#13](https://github.com/cyberark/conjur-puppet/issues/13)
+  [cyberark/conjur-puppet#184](https://github.com/cyberark/conjur-puppet/issues/184)
+- When Conjur configuration cannot be resolved on the agent, we now log a warning
+  that this is potentially a result of misconfiguration.
+  [cyberark/conjur-puppet#125](https://github.com/cyberark/conjur-puppet/issues/125)
+- This module now logs a warning if no certificates are parsed from the provided certificate
+  string.
+  [cyberark/conjur-puppet#115](https://github.com/cyberark/conjur-puppet/issues/115)
+
+### Fixed
+- Account names with special characters that require encoding (eg. `+`, ` `, etc) are
+  now properly escaped when variables are fetched from Conjur / DAP within the
+  `conjur::secret` function.
+  [cyberark/conjur-puppet#170](https://github.com/cyberark/conjur-puppet/issues/170)
 
 ### Removed
-- Support for using the Conjur Puppet module with Conjur Enterprise v4 is removed
-  [cyberark/conjur-puppet#66](https://github.com/cyberark/conjur-puppet/issues/66).
+- Support for using the Conjur Puppet module with Conjur Enterprise v4.
+  [cyberark/conjur-puppet#66](https://github.com/cyberark/conjur-puppet/issues/66)
 - Support for using this module with Puppet v5.
-  [cyberark/conjur-puppet#104](https://github.com/cyberark/conjur-puppet/issues/104).
+  [cyberark/conjur-puppet#104](https://github.com/cyberark/conjur-puppet/issues/104)
 - Support for using host factory tokens, `conjur` class, `cert_file` parameter, and using
   server-side `conjur` class to pre-populate on-agent info.
-  [cyberark/conjur-puppet#104](https://github.com/cyberark/conjur-puppet/issues/104).
+  [cyberark/conjur-puppet#104](https://github.com/cyberark/conjur-puppet/issues/104)
 
 ## [2.0.6] - 2020-08-10
 
@@ -144,7 +158,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - fixed a bug in host identity manifest preventing usage of host factory
 
-[Unreleased]: https://github.com/cyberark/conjur-puppet/compare/v2.0.6...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-puppet/compare/v3.0.0-rc2...HEAD
+[3.0.0-rc2]: https://github.com/cyberark/conjur-puppet/compare/v2.0.6...v3.0.0-rc2
 [2.0.6]: https://github.com/cyberark/conjur-puppet/compare/v2.0.5...v2.0.6
 [2.0.5]: https://github.com/cyberark/conjur-puppet/compare/v2.0.4...v2.0.5
 [2.0.4]: https://github.com/cyberark/conjur-puppet/compare/v2.0.3...v2.0.4
