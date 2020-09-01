@@ -9,12 +9,21 @@ source vagrant/utils.sh
 CLEAN_UP_ON_EXIT=${CLEAN_UP_ON_EXIT:-true}
 INSTALL_PACKAGED_MODULE=${INSTALL_PACKAGED_MODULE:-true}
 COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-puppetmaster_$(openssl rand -hex 3)}
+PACKAGED_MODULE_PATH='pkg/cyberark-conjur.tar.gz'
 
 PUPPET_SERVER_TAG=latest
 PUPPET_AGENT_TAGS=( latest )
 export PUPPET_SERVER_TAG
 
 echo "Using Puppet server '$PUPPET_SERVER_TAG' with agents: '${PUPPET_AGENT_TAGS[@]}'"
+
+# Sanity check
+if [[ "$INSTALL_PACKAGED_MODULE" == 'true' ]] && \
+  [[ ! -e "../../$PACKAGED_MODULE_PATH" ]]; then
+
+  echo 'INSTALL_PACKAGED_MODULE is true but module was not found at '../../$PACKAGED_MODULE_PATH'!'
+  exit 1
+fi
 
 OSES=(
   "alpine"
@@ -129,7 +138,7 @@ symlink_conjur_module() {
 install_conjur_module() {
   echo "Installing packaged cyberark-conjur module to server..."
   run_in_puppet bash -c "
-    puppet module install /conjur/pkg/cyberark-conjur.tar.gz --force;
+    puppet module install /conjur/$PACKAGED_MODULE_PATH --force;
   "
 }
 
