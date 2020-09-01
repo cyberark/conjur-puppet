@@ -131,7 +131,8 @@ get_hf_token() {
 symlink_conjur_module() {
   echo "Creating a symlink of cyberark-conjur module source on server..."
   run_in_puppet bash -c "
-    ln -s /conjur /etc/puppetlabs/code/environments/production/modules/conjur
+    rm -rf /etc/puppetlabs/code/environments/production/modules/conjur
+    ln -fs /conjur /etc/puppetlabs/code/environments/production/modules/conjur
   "
 }
 
