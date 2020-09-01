@@ -1,6 +1,7 @@
 version: "3"
 
 services:
+  # Puppet - Main Server
   puppet:
     image: puppet/puppetserver:${PUPPET_SERVER_TAG:-latest}
     ports:
@@ -13,32 +14,35 @@ services:
     # In some environments puppetdb host gets cert for puppetdb.local.
     # Make sure the connection works either way.
     environment:
-      - PUPPETDB_SERVER_URLS=https://puppetdb:8081
+      - PUPPETDB_SERVER_URLS=https://puppetdb-main:8081
     depends_on:
-      - puppetdb
+      - puppetdb-main
 
-  postgres:
+  postgres-main:
     image: postgres:9.6
     environment:
-      - POSTGRES_PASSWORD=puppetdb
-      - POSTGRES_USER=puppetdb
-      - POSTGRES_DB=puppetdb
+      - POSTGRES_PASSWORD=puppetdb-main
+      - POSTGRES_USER=puppetdb-main
+      - POSTGRES_DB=puppetdb-main
     expose:
       - 5432
 
-  puppetdb:
+  puppetdb-main:
     image: puppet/puppetdb
     environment:
+      - CERTNAME=puppetdb-main
       - PUPPETSERVER_HOSTNAME=puppet
-      - PUPPETDB_POSTGRES_HOSTNAME=postgres
-      - PUPPETDB_PASSWORD=puppetdb
-      - PUPPETDB_USER=puppetdb
+      - PUPPETDB_POSTGRES_DATABASE=puppetdb-main
+      - PUPPETDB_POSTGRES_HOSTNAME=postgres-main
+      - PUPPETDB_PASSWORD=puppetdb-main
+      - PUPPETDB_USER=puppetdb-main
     ports:
       - 8080
       - 8081
     depends_on:
-      - postgres
+      - postgres-main
 
+  # Puppet tools
   puppetboard:
     image: puppet/puppetboard
     ports:
@@ -50,20 +54,24 @@ services:
       - 8080:80
     read_only: true
 
+  # Conjur OSS
   conjur:
     image: cyberark/conjur
     ports:
       - 80
     environment:
       CONJUR_ADMIN_PASSWORD: ADmin123!!!!
-      DATABASE_URL: postgres://postgres@db
+      DATABASE_URL: postgres://postgres@conjur-db
       CONJUR_DATA_KEY: testing//testing//testing//testing//testing=
     volumes:
       - .:/src:ro
     working_dir: /src
     command: server
     depends_on:
-      - db
+      - conjur-db
+
+  conjur-db:
+    image: postgres:9.3
 
   conjur-https:
     image: nginx:alpine
@@ -78,9 +86,6 @@ services:
       - ./https_config/ca.crt:/ca/tls.crt:ro
     depends_on:
       - conjur
-
-  db:
-    image: postgres:9.3
 
   cli:
     environment:
