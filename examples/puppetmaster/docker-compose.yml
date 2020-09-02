@@ -14,7 +14,9 @@ services:
     # In some environments puppetdb host gets cert for puppetdb.local.
     # Make sure the connection works either way.
     environment:
+      - PUPPETSERVER_HOSTNAME=puppet
       - PUPPETDB_SERVER_URLS=https://puppetdb-main:8081
+      - DNS_ALT_NAMES=puppet-compiler1
     depends_on:
       - puppetdb-main
 
@@ -41,6 +43,46 @@ services:
       - 8081
     depends_on:
       - postgres-main
+
+  # Puppet - Compilation Server 1
+  puppet-compiler1:
+    image: puppet/puppetserver:${PUPPET_SERVER_TAG:-latest}
+    ports:
+      - 8140
+    volumes:
+      - ./code:/etc/puppetlabs/code/
+      - ../../.:/conjur
+    environment:
+      - PUPPETDB_SERVER_URLS=https://puppetdb-compiler1:8081
+      - PUPPETSERVER_HOSTNAME=puppet-compiler1
+      - CA_ENABLED=false
+      - CA_HOSTNAME=puppet
+    depends_on:
+      - puppetdb-compiler1
+
+  postgres-compiler1:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_PASSWORD=puppetdb-compiler1
+      - POSTGRES_USER=puppetdb-compiler1
+      - POSTGRES_DB=puppetdb-compiler1
+    expose:
+      - 5432
+
+  puppetdb-compiler1:
+    image: puppet/puppetdb
+    environment:
+      - CERTNAME=puppetdb-compiler1
+      - PUPPETSERVER_HOSTNAME=puppet-compiler1
+      - PUPPETDB_POSTGRES_DATABASE=puppetdb-compiler1
+      - PUPPETDB_POSTGRES_HOSTNAME=postgres-compiler1
+      - PUPPETDB_PASSWORD=puppetdb-compiler1
+      - PUPPETDB_USER=puppetdb-compiler1
+    ports:
+      - 8080
+      - 8081
+    depends_on:
+      - postgres-compiler1
 
   # Puppet tools
   puppetboard:

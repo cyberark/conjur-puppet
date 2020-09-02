@@ -27,7 +27,7 @@ fi
 
 OSES=(
   "alpine"
-  "ubuntu"
+#  "ubuntu"
 )
 
 export COMPOSE_PROJECT_NAME
@@ -80,7 +80,7 @@ main() {
 
       echo
       echo "=> Hiera manifest config, API Key <="
-      converge_node_hiera_manifest_apikey "$agent_image"
+#      converge_node_hiera_manifest_apikey "$agent_image"
 
       echo "Tests for '$agent_image': OK"
     done
@@ -103,7 +103,9 @@ run_in_puppet() {
 }
 
 start_services() {
-  docker-compose up -d conjur-https puppet
+  docker-compose up -d conjur-https \
+                       puppet \
+                       puppet-compiler1
 }
 
 wait_for_conjur() {
@@ -111,12 +113,15 @@ wait_for_conjur() {
 }
 
 wait_for_puppetmaster() {
-  echo -n "Waiting on puppetmaster to be ready..."
-  while ! run_in_conjur curl -ks https://puppet:8140 >/dev/null; do
-    echo -n "."
-    sleep 2
+  echo "Waiting on Puppet to be ready..."
+  for server in puppet puppet-compiler1; do
+    echo -n "Waiting for puppet server '$server'..."
+    while ! run_in_conjur curl -ks https://$server:8140 >/dev/null; do
+      echo -n "."
+      sleep 2
+    done
+    echo "OK"
   done
-  echo "OK"
 }
 
 get_host_key() {
@@ -250,8 +255,10 @@ converge_node_agent_apikey() {
       agent --verbose \
             --onetime \
             --no-daemonize \
-            --summarize \
-            --certname "$hostname"
+            --ca-server 'puppet' \
+            --server 'puppet-compiler1' \
+            --certname "$hostname" \
+            --summarize
   set +x
 
   rm -rf $TMPDIR
