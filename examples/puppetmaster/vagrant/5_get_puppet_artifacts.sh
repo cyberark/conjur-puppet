@@ -4,5 +4,8 @@
 
 set -eou pipefail
 
-echo "Getting C:\tmp\test.pem from Windows VM"
-vagrant powershell -c "cat \tmp\test.pem"
+echo 'Getting C:\tmp\creds1.txt from Windows VM'
+vagrant powershell -c 'cat \tmp\creds1.txt'
+
+echo 'Getting C:\tmp\creds2.txt from Windows VM'
+vagrant powershell -c 'cat \tmp\creds2.txt'
