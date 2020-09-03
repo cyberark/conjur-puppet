@@ -333,7 +333,8 @@ values available to set are:
 |-|-|-|
 | `Account` | `REG_SZ` | Conjur account specified during Conjur setup. |
 | `ApplianceUrl` | `REG_SZ` | Conjur API endpoint. |
-| `SslCertificate` | `REG_SZ` | Public Conjur SSL cert. Overwritten by the contents read from `CertFile` when it is present. |
+| `CertFile` | `REG_SZ` | Path to a file containing the public Conjur SSL cert. This value **must** be an absolute path and not a relative one. |
+| `SslCertificate` | `REG_SZ` | Raw public Conjur SSL cert. Overwritten by the contents read from `CertFile` when it is present. |
 | `Version` | `REG_DWORD` | Conjur API version. Defaults to `5`. |
 
 These may be set using Powershell (**use either `SslCertificate` _or_ `CertFile` but not both**):
@@ -342,10 +343,12 @@ These may be set using Powershell (**use either `SslCertificate` _or_ `CertFile`
 > reg ADD HKLM\Software\CyberArk\Conjur /v ApplianceUrl /t REG_SZ /d https://conjur.mycompany.com
 > reg ADD HKLM\Software\CyberArk\Conjur /v Version /t REG_DWORD /d 5
 > reg ADD HKLM\Software\CyberArk\Conjur /v Account /t REG_SZ /d myorg
+> reg ADD HKLM\Software\CyberArk\Conjur /v CertFile /t REG_SZ /d "C:\path\to\ca.pem"
 > reg ADD HKLM\Software\CyberArk\Conjur /v SslCertificate /t REG_SZ /d "-----BEGIN CERTIFICATE-----..."
 ```
 
-Or using a `.reg` registry file (**use either `SslCertificate` _or_ `CertFile` but not both**):
+Or using a `.reg` registry file (**`SslCertificate` value cannot be set this way - you must
+set this value via command line**):
 ```reg
 Windows Registry Editor Version 5.00
 
@@ -353,9 +356,7 @@ Windows Registry Editor Version 5.00
 "ApplianceUrl"="https://conjur.mycompany.com"
 "Version"=dword:00000005
 "Account"="myorg"
-"SslCertificate"="-----BEGIN CERTIFICATE-----
-...
------END CERTIFICATE-----"
+"CertFile"="C:\path\to\ca.pem"
 ```
 
 _**NOTE: It is important from a security perspective to ensure that
