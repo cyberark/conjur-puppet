@@ -6,6 +6,7 @@
 *.iml
 /.bundle/
 /.idea/
+/.pdk/
 /.vagrant/
 /coverage/
 /bin/
