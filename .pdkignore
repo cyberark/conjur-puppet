@@ -35,6 +35,7 @@
 /.pdkignore
 /Rakefile
 /rakelib/
+/.cache
 /.rspec
 /.rubocop.yml
 /.travis.yml
@@ -53,4 +54,5 @@ tmp/
 /conjur.conf
 /conjur.pem
 /rspec.xml
+cc-test-reporter
 puppet_install_log.txt
