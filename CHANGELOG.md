@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Fixed
+- Release artifact excludes files that may be inadvertently added to the archive
+  during builds.
+  [cyberark/conjur-puppet#213](https://github.com/cyberark/conjur-puppet/issues/213)
+
 ## [3.0.0-rc2] - 2020-08-26
 
 ### Added
