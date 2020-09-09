@@ -3,18 +3,18 @@
 For general contribution and community guidelines, please see the [community repo](https://github.com/cyberark/community).
 
 - [Development](#development)
-  * [Sequence diagrams](#sequence-diagrams)
-  * [Running a Conjur server locally](#running-a-conjur-server-locally)
-  * [Running a Puppet master locally](#running-a-puppet-master-locally)
-  * [Running a Puppet node locally](#running-a-puppet-node-locally)
-  * [Generating the documentation](#generating-the-documentation)
+  + [Sequence diagrams](#sequence-diagrams)
+    - [Manifest-Provided Identity](#manifest-provided-identity)
+    - [Pre-Provisioned Identity](#pre-provisioned-identity)
+  + [Running a test environment](#running-a-test-environment)
+  + [Running a Puppet node locally](#running-a-puppet-node-locally)
+  + [Running a Puppet master and Windows-based Puppet node locally](#running-a-puppet-master-and-windows-based-puppet-node-locally)
 - [Testing](#testing)
+- [Generating the documentation](#generating-the-documentation)
 - [Releases](#releases)
-  * [Verify and update dependencies](#verify-and-update-dependencies)
-  * [Publishing a Release](#publishing-a-release)
-
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents
-generated with markdown-toc</a></i></small>
+  + [Verify and update dependencies](#verify-and-update-dependencies)
+  + [Publishing a Release](#publishing-a-release)
+- [Pull request workflow](#pull-request-workflow)
 
 ## Development
 
@@ -24,144 +24,113 @@ It may help to understand some typical flows when this Puppet module is
 included in your Puppet workflows. The following Conjur Puppet module
 workflows are portrayed below:
 
-- [Using Conjur Host Identity with Host Factory](#using-conjur-host-identity-with-host-factory)
-- [Using Windows Registry / Windows Credential Manager Pre-Provisioning](#using-windows-registry--windows-credential-manager-pre-provisioning)
-- [Using Host Identity with API Key Configured in Puppet Manifest](#using-host-identity-with-api-key-configured-in-puppet-manifest)
+- [Manifest-provided Identity](#manifest-provided-identity)
+- [Pre-Provisioned Identity](#pre-provisioned-identity)
 
-#### Using Conjur Host Identity with Host Factory
-
-This workflow is described in the
-[Conjur host factory](README.md#conjur-host-factory)
-section in the [README.md](README.md) file.
-
-##### Initial Use of HFT:
-
-![Workflow](diagrams/host_factory_workflow.png)
-
-Diagram Source: [host_factory_workflow.txt](diagrams/host_factory_workflow.txt)
-
-##### Consequent Use of HFT:
-
-![Workflow](diagrams/host_factory_workflow2.png)
-
-Diagram Source: [host_factory_workflow2.txt](diagrams/host_factory_workflow2.txt)
-
-##### References
-
-- [Puppet Forge documentation](https://forge.puppet.com/conjur/conjur#conjur-host-identity-with-host-factory)
-- [Configuration documentation](README.md#conjur-host-factory)
-
-##### Puppet Configuration
-
-- [Puppet Manifest Configuration](README.md#updating-the-puppet-manifest-1) 
-- [Using Hiera](README.md#using-hiera-1) 
-
-#### Using Windows Registry / Windows Credential Manager Pre-Provisioning
+#### Manifest-Provided Identity
 
 This workflow is described in the
-[Using Windows Registry / Windows Credential Manager (Windows agents only)](README.md#using-windows-registry--windows-credential-manager-windows-agents-only)
+[Updating the Puppet manifest](README.md#updating-the-puppet-manifest)
 section in the [README.md](README.md) file.
 
-![workflow](diagrams/windows_pre_provision_workflow.png)
+![workflow](diagrams/manifest-provided-identity.png)
 
-Diagram Source: [windows_pre_provision_workflow.txt](diagrams/windows_pre_provision_workflow.txt)
+#### Pre-Provisioned Identity
 
-##### References
+This workflow is described in the
+["Using Conjur identity files (Linux agents only)"](README.md#using-conjur-identity-files--linux-agents-only-)
+and
+["Using Windows Registry / Windows Credential Manager (Windows agents only)"](README.md#using-windows-registry---windows-credential-manager--windows-agents-only-)
+sections of the [README.md](README.md) file.
 
-- [Puppet Forge documentation](https://forge.puppet.com/conjur/conjur#pre-established-host-identity)
-- [Configuration documentation](README.md#using-windows-registry--windows-credential-manager-windows-agents-only)
+![workflow](diagrams/pre-provisioned-host-identity.png)
 
-##### Puppet Configuration
+### Running a test environment
 
-###### Puppet Manifest on Master
-
-File: /etc/puppetlabs/code/environments/production/manifests/site.pp
-
-```
-  node default {
-    include conjur
-  }
+Run a pre-configured Conjur and Puppet master instance by going into the
+`examples/puppetmaster` folder and running the following:
+```sh-session
+$ export CLEAN_UP_ON_EXIT=false
+$ export INSTALL_PACKAGED_MODULE=false
+$ export COMPOSE_PROJECT_NAME=puppetmaster_manual
+$ ./test.sh
 ```
 
-###### Windows Puppet Agent Configuration
-
-Conjur connection information and the node's Conjur API key can be configured
-using the PowerShell scripts described in the
-[Using Windows Registry / Windows Credential Manager](README.md#using-windows-registry--windows-credential-manager-windows-agents-only)
-section of the [README.md](README.md) file.
-
-#### Using Host Identity with API Key Configured in Puppet Manifest
-
-This workflow is described in the
-[Conjur host identity with API key](README.md#conjur-host-identity-with-api-key)
-section in the [README.md](README.md) file.
-
-##### Initial Use
-
-![workflow](diagrams/host_id_with_api_key_workflow.png)
-
-Diagram Source: [host_id_with_api_key_workflow.txt](diagrams/host_id_with_api_key_workflow.txt)
-
-##### Consequent Use:
-
-![Workflow](diagrams/host_id_with_api_key_workflow2.png)
-
-Diagram Source: [host_id_with_api_key_workflow2.txt](diagrams/host_id_with_api_key_workflow2.txt)
-
-##### References
-
-- [Puppet Forge documentation](https://forge.puppet.com/conjur/conjur#conjur-host-identity-with-api-key)
-
-##### Puppet Configuration
-
-- [Puppet Manifest Configuration](README.md#updating-the-puppet-manifest) 
-- [Using Hiera](README.md#using-hiera) 
-
-### Running a Conjur server locally
-
-Run a preconfigured Conjur instance with `docker-compose up -d`.
-Username is 'admin', password is 'ADmin123!!!!'. The HTTPS endpoint is mapped to port `9443`.
-Once the server is running, view the UI at [localhost:9443/ui](https://localhost:9443/ui).
-You can ignore the cert warning; a self-signed cert is used.
-
-### Running a Puppet master locally
-
-Run a Puppet master with `./puppet-master.sh`. This script wraps running `docker-compose.puppet.yml`, where
-all services needed to run the master are defined. The `code` directory in this project is mounted
-onto the master at `/etc/puppetlabs/code/`. Open [localhost:8080](http://localhost:8080) to view the Puppet Dashboard.
-You can stop and remove all services with `docker-compose -f docker-compose.puppet.yml down`.
+This command will run the integration tests and exit with the Puppet master and
+Conjur instances still available.
 
 ### Running a Puppet node locally
 
-Puppet [provides Docker images](https://github.com/puppetlabs/puppet-in-docker#description)
-that make running ephemeral Puppet agents pretty easy.
+After you have your test environment up, you can test changes using pre-built
+[agent images](https://github.com/puppetlabs/puppet-in-docker#description)
+that makes the test cycle really fast.
 
 For example, once the Puppet master is up you can run this to converge an agent:
-
 ```sh-session
-$ docker run --rm --net puppet_default puppet/puppet-agent-ubuntu
+$ # Get IP of docker-compose gateway. This only needs to be run once.
+$ export DOCKER_GATEWAY_IP="$(docker inspect $(docker-compose ps -q puppet) | \
+    jq .[0].NetworkSettings.Networks[].Gateway | tr -d '"')"
+
+$ # Run the agent
+$ docker run --rm -it \
+    --net puppetmaster_manual_default \
+    --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
+    --hostname "my-agent-name" \
+    "puppet/puppet-agent-ubuntu"
 ```
 
 You will see Puppet converge on the node.
 
 A couple notes:
 
-1. docker-compose creates the `puppet_default` network by default. The agent needs to connect to this
-   network to be able to see the Puppet master.
+1. `docker-compose` creates the `$COMPOSE_PROJECT_NAME_default` network by default.
+  The agent needs to connect to this network to be able to see the Puppet master
+  and Conjur.
 2. The default command for these agent images is `agent --verbose --one-time --no-daemonize --summarize`.
    The default entrypoint is `/opt/puppetlabs/bin/puppet `.
-   This can easily be overridden for your purposes, e.g.
+   This can be overridden for your purposes with CLI parameters:
 
    ```sh-session
-   $ docker run --rm --net puppet_default \
-     puppet/puppet-agent-ubuntu apply --modulepath=$PWD examples/init.pp
+   $ docker run --rm -it \
+                --net puppetmaster_manual_default \
+                --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
+                --hostname 'test-machine' \
+                puppet_default \
+                puppet/puppet-agent-ubuntu agent --trace \
+                                                 --one-time \
+                                                 --no-daemonize \
+                                                 --certname 'myhost.com'
    ```
 
-Note that if you want to run manifests directly then need to be mounted into the container.
+### Running a Puppet master and Windows-based Puppet node locally
+
+The [examples/puppetmaster/vagrant](examples/puppetmaster/vagrant) directory
+contains Vagrantfiles, Bash scripts, and PowerShell scripts that can be used
+to create a Vagrant/VirtualBox-based development and test environment for
+testing the Conjur Puppet module with Puppet Agents running on Windows2016
+or Windows2012.
+
+These Vagrantfiles and scripts can be used to:
+
+- Spin up a containerized Puppet Server and Conjur server via docker-compose.
+- Create a Windows2016 or Windows2012 VM.
+- Dynamically install the desired version of Puppet Agent on the VM.
+- Run Puppet Agent on the VM to install a Puppet catalog.
+- Confirm that Puppet has been provisioned according to the configured
+  Puppet manifest on the Puppet master.
+
+For details, refer to
+[examples/puppetmaster/vagrant/README.md](examples/puppetmaster/vagrant/README.md).
 
 ## Testing
 
-See [jenkins.sh](jenkins.sh).
+Run the following at the base of the project:
+
+```sh-session
+$ ./test.sh
+```
+
+This script leverages PDK to run both unit tests and validations of the module.
 
 ## Generating the documentation
 
@@ -200,35 +169,11 @@ To release a new version of the module to the Puppet Forge:
 6. Verify the Jenkins pipeline completes successfully.
 7. Verify the updated module on [Puppet Forge](https://forge.puppet.com/cyberark/conjur).
 
-## Running a Puppet master and Windows-based Puppet node locally
+## Pull Request Workflow
 
-The [examples/puppetmaster/vagrant](examples/puppetmaster/vagrant) directory
-contains Vagrantfiles, Bash scripts, and PowerShell scripts that can be used
-to create a Vagrant/VirtualBox-based development and test environment for
-testing the Conjur Puppet module with Puppet Agents running on Windows2016
-or Windows2012.
-
-These Vagrantfiles and scripts can be used to:
-
-- Spin up a containerized Puppet Server and Conjur server via docker-compose.
-- Create a Windows2016 or Windows2012 VM.
-- Dynamically install the desired version of Puppet Agent on the VM.
-- Run Puppet Agent on the VM to install a Puppet catalog.
-- Confirm that Puppet has been provisioned according to the configured
-  Puppet manifest on the Puppet master.
-
-For details, refer to
-[examples/puppetmaster/vagrant/README.md](examples/puppetmaster/vagrant/README.md).
-
-## Contributing
-
-1. [Fork the project](https://help.github.com/en/github/getting-started-with-github/fork-a-repo)
-2. [Clone your fork](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository)
-3. Make local changes to your fork by editing files
-3. [Commit your changes](https://help.github.com/en/github/managing-files-in-a-repository/adding-a-file-to-a-repository-using-the-command-line)
-4. [Push your local changes to the remote server](https://help.github.com/en/github/using-git/pushing-commits-to-a-remote-repository)
-5. [Create new Pull Request](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request-from-a-fork)
-
-From here your pull request will be reviewed and once you've responded to all
-feedback it will be merged into the project. Congratulations, you're a
-contributor!
+1. Search the [open issues](issues) in GitHub to find out what has been planned
+2. Select an existing issue or open an issue to propose changes or fixes
+3. Add the `implementing` label to the issue as you begin to work on it
+4. Run tests as described [here](#testing), ensuring they pass
+5. Submit a pull request, linking the issue in the description (e.g. `Connected to #123`)
+6. Add the `implemented` label to the issue, and ask another contributor to review and merge your code
