@@ -2,13 +2,18 @@ File { backup => false }
 
 node default {
   if $facts['os']['family'] == 'Windows' {
-    $cred_file_prefix = 'c:/tmp'
+    # There's a double backslash at the end of $cred_file_prefix because:
+    # When a backslash occurs at the very end of a single-quoted string, a double
+    # backslash must be used instead of a single backslash. For example:
+    # path => 'C:\Program Files(x86)\\'
+    $cred_file_prefix = 'c:\tmp\\'
+    $win_cmd_exe = 'C:\Windows\System32\cmd.exe'
   } else {
-    $cred_file_prefix = '/tmp'
+    $cred_file_prefix = '/tmp/'
   }
 
-  $output_file1 = "${cred_file_prefix}/creds1.txt"
-  $output_file2 = "${cred_file_prefix}/creds2.txt"
+  $output_file1 = "${cred_file_prefix}creds1.txt"
+  $output_file2 = "${cred_file_prefix}creds2.txt"
 
   # If using server-supplied identity for the agent's Conjur / DAP connection,
   # you would use the optional parameters to the `conjur::secret` function as
@@ -24,28 +29,42 @@ node default {
 
   notify { "Writing regular secret to ${output_file1}...": }
   file { $output_file1:
-    ensure => file,
+    ensure  => file,
     content => Sensitive(Deferred(conjur::secret, ['inventory/db-password'])),
   }
 
   notify { "Writing funky secret to ${output_file2}...": }
   file { $output_file2:
-    ensure => file,
+    ensure  => file,
     content => Sensitive(Deferred(conjur::secret, [
           'inventory/funky/special @#$%^&*(){}[].,+/variable'
     ])),
   }
 
-  exec { "cat ${output_file1}":
-    path      => '/usr/bin:/usr/sbin:/bin',
-    provider  => shell,
-    logoutput => true,
+  if $facts['os']['family'] == 'Windows' {
+    exec { "Read secret from ${output_file1}...":
+      command   => "${win_cmd_exe} /c type ${output_file1}",
+      logoutput => true,
+    }
+  } else {
+    exec { "cat ${output_file1}":
+      path      => '/usr/bin:/usr/sbin:/bin',
+      provider  => shell,
+      logoutput => true,
+    }
   }
 
-  exec { "cat ${output_file2}":
-    path      => '/usr/bin:/usr/sbin:/bin',
-    provider  => shell,
-    logoutput => true,
+  if $facts['os']['family'] == 'Windows' {
+    exec { "Read secret from ${output_file2}...":
+      command   => "${win_cmd_exe} /c type ${output_file2}",
+      logoutput => true,
+    }
+  } else {
+    exec { "cat ${output_file2}":
+      path      => '/usr/bin:/usr/sbin:/bin',
+      provider  => shell,
+      logoutput => true,
+    }
   }
 
   notify { 'Done!': }
