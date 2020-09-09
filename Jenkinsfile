@@ -5,6 +5,7 @@ pipeline {
 
   options {
     timestamps()
+    parallelsAlwaysFailFast()
   }
 
   triggers {
@@ -52,6 +53,79 @@ pipeline {
 
     stage('Tests') {
       parallel {
+        stage('Prepare Windows 2016 with containers') {
+          agent { label 'executor-windows-2016-containers' }
+          stages {
+            stage('Configure Windows Node'){
+              steps {
+                powershell '.\\expose-daemon.ps1'
+                script {
+                  env.WINDOWS_IP = powershell(returnStdout: true, script:  '(curl http://169.254.169.254/latest/meta-data/local-ipv4).Content').trim()
+                  env.WINDOWS_DOCKER_CERT_CA = powershell(returnStdout: true, script:  'cat $env:USERPROFILE\\.docker\\ca.pem')
+                  env.WINDOWS_DOCKER_CERT_CERT = powershell(returnStdout: true, script:  'cat $env:USERPROFILE\\.docker\\cert.pem')
+                  env.WINDOWS_DOCKER_CERT_KEY = powershell(returnStdout: true, script:  'cat $env:USERPROFILE\\.docker\\key.pem')
+                  env.WINDOWS_READY = true
+                }
+              }
+            }
+            stage('Wait for Main Node') {
+              steps {
+                waitUntil {
+                  script {
+                    return (env.MAIN_NODE_DONE == "true");
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        stage('With Windows 2016 containers') {
+          stages {
+            stage("Wait for Windows node") {
+              steps {
+                waitUntil {
+                  script {
+                    return (env.WINDOWS_READY == "true");
+                  }
+                }
+                script {
+                  env.WINDOWS_DOCKER_CERT_DIR = "${pwd()}/tmp-docker"
+                }
+
+                sh "mkdir ${env.WINDOWS_DOCKER_CERT_DIR}"
+                writeFile file: "${env.WINDOWS_DOCKER_CERT_DIR}/ca.pem", text: env.WINDOWS_DOCKER_CERT_CA
+                writeFile file: "${env.WINDOWS_DOCKER_CERT_DIR}/cert.pem", text: env.WINDOWS_DOCKER_CERT_CERT
+                writeFile file: "${env.WINDOWS_DOCKER_CERT_DIR}/key.pem", text: env.WINDOWS_DOCKER_CERT_KEY
+              }
+            }
+
+// Integration tests
+            stage('E2E - Puppet 6 - Conjur 5') {
+              steps {
+                dir('examples/puppetmaster') {
+                  sh '''
+                    MAIN_HOST_IP="$(curl http://169.254.169.254/latest/meta-data/local-ipv4)" \
+                    WINDOWS_DOCKER_HOST="tcp://${WINDOWS_IP}:2376" \
+                    WINDOWS_DOCKER_CERT_PATH="${WINDOWS_DOCKER_CERT_DIR}" \
+                    WINDOWS_DOCKER_TLS_VERIFY=1 \
+                    ./test.sh
+                  '''
+                }
+              }
+            }
+          }
+
+          post {
+            always {
+              script {
+                env.MAIN_NODE_DONE = true
+              }
+            }
+          }
+        }
+
+// Linting and unit tests
         stage('Linting and unit tests') {
           steps {
             sh './test.sh'
@@ -66,14 +140,6 @@ pipeline {
 
               sh 'cp coverage/coverage.xml cobertura.xml'
               ccCoverage("cobertura", "github.com/cyberark/conjur-puppet")
-            }
-          }
-        }
-
-        stage('E2E - Puppet 6 - Conjur 5') {
-          steps {
-            dir('examples/puppetmaster') {
-              sh './test.sh'
             }
           }
         }
