@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [3.0.0-rc3] - 2020-09-11
+
 ### Fixed
 - Release artifact excludes files that may be inadvertently added to the archive
   during builds.
@@ -163,7 +165,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - fixed a bug in host identity manifest preventing usage of host factory
 
-[Unreleased]: https://github.com/cyberark/conjur-puppet/compare/v3.0.0-rc2...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-puppet/compare/v3.0.0-rc3...HEAD
+[3.0.0-rc3]: https://github.com/cyberark/conjur-puppet/compare/v3.0.0-rc2...v3.0.0-rc3
 [3.0.0-rc2]: https://github.com/cyberark/conjur-puppet/compare/v2.0.6...v3.0.0-rc2
 [2.0.6]: https://github.com/cyberark/conjur-puppet/compare/v2.0.5...v2.0.6
 [2.0.5]: https://github.com/cyberark/conjur-puppet/compare/v2.0.4...v2.0.5
