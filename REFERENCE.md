@@ -64,7 +64,7 @@ Function to retrieve a Conjur / DAP secret
 ##### Agent-based identity invocation
 
 ```puppet
-Sensitive(Deferred(conjur::secret, ['production/postgres/password']))
+Deferred(conjur::secret, ['production/postgres/password'])
 ```
 
 ##### Server-based identity invocation
@@ -76,13 +76,13 @@ $sslcert = @("EOT")
 -----END CERTIFICATE-----
 |-EOT
 
-$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password', {
+$dbpass = Deferred(conjur::secret, ['production/postgres/password', {
   appliance_url => "https://my.conjur.org",
   account => "myaccount",
   authn_login => "host/myhost",
   authn_api_key => Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
   ssl_certificate => $sslcert
-}]))
+}])
 ```
 
 #### `conjur::secret(String $variable_id, Optional[Hash] $options)`
@@ -96,7 +96,7 @@ Returns: `Sensitive` Value of the Conjur variable.
 ###### Agent-based identity invocation
 
 ```puppet
-Sensitive(Deferred(conjur::secret, ['production/postgres/password']))
+Deferred(conjur::secret, ['production/postgres/password'])
 ```
 
 ###### Server-based identity invocation
@@ -108,13 +108,13 @@ $sslcert = @("EOT")
 -----END CERTIFICATE-----
 |-EOT
 
-$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password', {
+$dbpass = Deferred(conjur::secret, ['production/postgres/password', {
   appliance_url => "https://my.conjur.org",
   account => "myaccount",
   authn_login => "host/myhost",
   authn_api_key => Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
   ssl_certificate => $sslcert
-}]))
+}])
 ```
 
 ##### `variable_id`
@@ -132,7 +132,7 @@ The following keys are supported in the options hash:
 - appliance_url: The URL of the Conjur or DAP instance..
 - account: Name of the Conjur account that contains this variable.
 - authn_login: The identity you are using to authenticate to the Conjur / DAP instance.
-- authn_api_key: The API key of the identity you are using to authenticate with.
+- authn_api_key: The API key of the identity you are using to authenticate with (must be Sensitive type).
 - ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance.
 - version: Conjur API version, defaults to 5.
 
