@@ -21,6 +21,10 @@ pipeline {
         stage('Changelog') {
           steps { sh './parse-changelog.sh' }
         }
+
+        stage('Docs') {
+          steps { sh './gen-docs.sh' }
+        }
       }
     }
 
