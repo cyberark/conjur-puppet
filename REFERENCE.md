@@ -133,6 +133,7 @@ The following keys are supported in the options hash:
 - account: Name of the Conjur account that contains this variable.
 - authn_login: The identity you are using to authenticate to the Conjur / DAP instance.
 - authn_api_key: The API key of the identity you are using to authenticate with (must be Sensitive type).
-- ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance.
+- cert_file: The absolute path to CA certificate chain for the DAP instance on the agent. This variable overrides `ssl_certificate`.
+- ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance. Overwritten by the contents read from `cert_file` when it is present.
 - version: Conjur API version, defaults to 5.
 

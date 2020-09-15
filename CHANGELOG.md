@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+- Module now fully supports the use of `cert_file` parameter.
+  [cyberark/conjur-puppet#105](https://github.com/cyberark/conjur-puppet/issues/105)
+
 ## [3.0.0] - 2020-09-17
 
 ### Added

@@ -377,9 +377,25 @@ account: myorg
 plugins: []
 appliance_url: https://conjur.mycompany.com
 cert_file: "/absolute/path/to/conjur-ca.pem" # Read from the Puppet agent
+# Alternative for providing the SSL cert
+# ssl_certificate: |
+#  -----BEGIN CERTIFICATE-----
+#  ...
+#  -----END CERTIFICATE-----
 ```
 
-and a `conjur.identity` file that contains:
+| Value Name | Description |
+|-|-|
+| `account` | `Conjur account specified during Conjur setup. |
+| `appliance_url` | `Conjur API endpoint. |
+| `cert_file` | `Path to a file containing the public Conjur SSL cert on the agent. This value **must** be an absolute path and not a relative one. |
+| `ssl_certificate` | `Raw public Conjur SSL cert. Overwritten by the contents read from `cert_file` when it is present. |
+| `version` | Conjur API version. Defaults to `5`. |
+
+Note: **use either `SslCertificate` _or_ `CertFile` but not both as `cert_file`
+overrides the value of `ssl_certificate` setting.**
+
+You will also need a `conjur.identity` file that contains:
 ```netrc
 machine conjur.mycompany.com
     login host/redis001
@@ -392,8 +408,8 @@ _**NOTE: The `conjur.conf` and `conjur.identity` files contain sensitive
   disallow any access to these files by unauthorized (non-root) users
   on a Linux Puppet agent node.**_
 
-The Conjur Puppet Module automatically checks for these files on your node and uses them if they
-are available.
+The Conjur Puppet Module automatically checks for these files on your node and uses
+them if they are available.
 
 To then fetch your credential, you would use the default form of `conjur::secret`:
 ```puppet
@@ -415,7 +431,8 @@ values available to set are:
 |-|-|-|
 | `Account` | `REG_SZ` | Conjur account specified during Conjur setup. |
 | `ApplianceUrl` | `REG_SZ` | Conjur API endpoint. |
-| `SslCertificate` | `REG_SZ` | Raw public Conjur SSL cert.|
+| `CertFile` | `REG_SZ` | Path to a file containing the public Conjur SSL cert on the agent. This value **must** be an absolute path and not a relative one. |
+| `SslCertificate` | `REG_SZ` | Raw public Conjur SSL cert. Overwritten by the contents read from `CertFile` when it is present. |
 | `Version` | `REG_DWORD` | Conjur API version. Defaults to `5`. |
 
 These may be set using Powershell:
