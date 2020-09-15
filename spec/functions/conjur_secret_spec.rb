@@ -9,6 +9,14 @@ describe 'conjur::secret', conjur: :mock do
         { os: { family: os_family } }
       end
 
+      let(:cert_file) do
+        cert_file = Tempfile.new('puppet_cert_file')
+        cert_file.write 'ssl_certificate'
+        cert_file.close
+
+        cert_file
+      end
+
       let(:account) { 'testacct' }
       let(:appliance_url) { 'https://conjur.test' }
       let(:authn_login) { 'authn_login' }
@@ -22,6 +30,10 @@ describe 'conjur::secret', conjur: :mock do
 
       let(:authn_path) { "authn/#{account}/#{authn_login}/authenticate" }
       let(:variable_path) { "secrets/#{account}/variable/#{variable_id}" }
+
+      after(:each) do
+        cert_file.unlink
+      end
 
       shared_examples 'expected behavior' do
         it 'fetches the given variable' do
@@ -60,47 +72,93 @@ describe 'conjur::secret', conjur: :mock do
         end
       end
 
-      describe 'with all parameters (server-side params)' do
-        let(:full_options) do
-          {
-            'appliance_url' => appliance_url,
-            'account' => account,
-            'authn_login' => authn_login,
-            'authn_api_key' => authn_api_key,
-            'ssl_certificate' => ssl_certificate,
-          }
-        end
+      describe 'using all parameters (server-side params)' do
+        describe 'with ssl_certificate set' do
+          let(:full_options) do
+            {
+              'appliance_url' => appliance_url,
+              'account' => account,
+              'authn_login' => authn_login,
+              'authn_api_key' => authn_api_key,
+              'ssl_certificate' => ssl_certificate,
+            }
+          end
 
-        it_behaves_like 'expected behavior' do
-          let(:options) { full_options }
-        end
+          it_behaves_like 'expected behavior' do
+            let(:options) { full_options }
+          end
 
-        it 'encodes the values correctly' do
-          full_options['account'] = 'account!@#$%^&*()"\'[]{}:;'
-          full_options['authn_login'] = 'login!@#$%^&*()"\'[]{}:;'
-          variable_id = 'variable!@#$%^&*()"\'[]{}:;'
-          expected_authn_path = 'authn' \
+          it 'encodes the values correctly' do
+            full_options['account'] = 'account!@#$%^&*()"\'[]{}:;'
+            full_options['authn_login'] = 'login!@#$%^&*()"\'[]{}:;'
+            variable_id = 'variable!@#$%^&*()"\'[]{}:;'
+            expected_authn_path = 'authn' \
+                                  '/account%21%40%23%24%25%5E%26*%28%29%22%27%5B%5D%7B%7D%3A%3B' \
+                                  '/login%21%40%23%24%25%5E%26*%28%29%22%27%5B%5D%7B%7D%3A%3B' \
+                                  '/authenticate'
+            expected_var_path = 'secrets' \
                                 '/account%21%40%23%24%25%5E%26*%28%29%22%27%5B%5D%7B%7D%3A%3B' \
-                                '/login%21%40%23%24%25%5E%26*%28%29%22%27%5B%5D%7B%7D%3A%3B' \
-                                '/authenticate'
-          expected_var_path = 'secrets' \
-                              '/account%21%40%23%24%25%5E%26*%28%29%22%27%5B%5D%7B%7D%3A%3B' \
-                              '/variable' \
-                              '/variable%21%40%23%24%25%5E%26%2A%28%29%22%27%5B%5D%7B%7D%3A%3B'
+                                '/variable' \
+                                '/variable%21%40%23%24%25%5E%26%2A%28%29%22%27%5B%5D%7B%7D%3A%3B'
 
-          expect(Conjur::PuppetModule::HTTP).to receive(:post)
-            .with(appliance_url, expected_authn_path, ssl_certificate, authn_api_key.unwrap)
-            .and_return(mock_token)
-          expect(Conjur::PuppetModule::HTTP).to receive(:get)
-            .with(appliance_url, expected_var_path, ssl_certificate, mock_token)
-            .and_return('variable value')
+            expect(Conjur::PuppetModule::HTTP).to receive(:post)
+              .with(appliance_url, expected_authn_path, ssl_certificate, authn_api_key.unwrap)
+              .and_return(mock_token)
+            expect(Conjur::PuppetModule::HTTP).to receive(:get)
+              .with(appliance_url, expected_var_path, ssl_certificate, mock_token)
+              .and_return('variable value')
 
-          actual_value = subject.execute(variable_id, full_options).unwrap
-          expect(actual_value).to eq 'variable value'
+            actual_value = subject.execute(variable_id, full_options).unwrap
+            expect(actual_value).to eq 'variable value'
+          end
+        end
+
+        describe 'with cert_file set' do
+          it_behaves_like 'expected behavior' do
+            let(:options) do
+              {
+                'appliance_url' => appliance_url,
+                'account' => account,
+                'authn_login' => authn_login,
+                'authn_api_key' => authn_api_key,
+                'cert_file' => cert_file.path,
+              }
+            end
+          end
+
+          it 'raises error if cert file cannot be found' do
+            options = {
+              'appliance_url' => appliance_url,
+              'account' => account,
+              'authn_login' => authn_login,
+              'authn_api_key' => authn_api_key,
+              'cert_file' => '/bad/path',
+            }
+
+            expect { subject.execute(variable_id, options) }.to raise_error \
+              'Cert file \'/bad/path\' cannot be found!'
+          end
+        end
+
+        describe 'with ssl_certificate and cert_file set' do
+          let(:full_options) do
+            {
+              'appliance_url' => appliance_url,
+              'account' => account,
+              'authn_login' => authn_login,
+              'authn_api_key' => authn_api_key,
+              'cert_file' => cert_file.path,
+              'ssl_certificate' => 'this value is not used',
+            }
+          end
+
+          it_behaves_like 'expected behavior' do
+            let(:options) { full_options }
+          end
         end
       end
 
-      describe 'with default parameters (agent-side params)' do
+      describe 'using default parameters (agent-side params)' do
         let(:mock_creds) { [authn_login, authn_api_key.unwrap] }
         let(:mock_config) do
           {
