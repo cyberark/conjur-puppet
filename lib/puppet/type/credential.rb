@@ -4,11 +4,11 @@ require 'puppet/type'
 
 # Manages Credential Manager credentials on Windows systems.
 Puppet::Type.newtype(:credential) do
-  desc 'Manages Credential Manager credentials on Windows systems.'
+  @doc = 'Manages Credential Manager credentials on Windows systems.'
 
   ensurable
 
-  newparam(target, namevar: true) do
+  newparam(:target, namevar: true) do
     desc 'Conjur / DAP URL'
   end
 
