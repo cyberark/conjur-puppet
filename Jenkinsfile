@@ -29,7 +29,7 @@ pipeline {
       }
     }
 
-    // workaround for Jenkins not fetching tags
+    // Workaround for Jenkins not fetching tags
     stage('Fetch tags') {
       steps {
         withCredentials(
@@ -50,10 +50,9 @@ pipeline {
       }
     }
 
-
     stage('Tests') {
       parallel {
-        stage('Prepare Windows 2016 with containers') {
+        stage('Setup Win2016') {
           agent { label 'executor-windows-2016-containers' }
           stages {
             stage('Configure Windows Node'){
@@ -80,7 +79,7 @@ pipeline {
           }
         }
 
-        stage('With Windows 2016 containers') {
+        stage('Test Win2016') {
           stages {
             stage("Wait for Windows node") {
               steps {
@@ -100,8 +99,7 @@ pipeline {
               }
             }
 
-// Integration tests
-            stage('E2E - Puppet 6 - Conjur 5') {
+            stage('Puppet 6 & Conjur 5 Integration Tests') {
               steps {
                 dir('examples/puppetmaster') {
                   sh '''
@@ -125,8 +123,7 @@ pipeline {
           }
         }
 
-// Linting and unit tests
-        stage('Linting and unit tests') {
+        stage('Linting & Unit Tests') {
           steps {
             sh './test.sh'
           }
