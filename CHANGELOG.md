@@ -6,19 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-### Changed
-- Changed recommended usages to no longer wrap the whole invocation in Sensitive as
-  it is generally not needed.
-  [cyberark/conjur-puppet#198](https://github.com/cyberark/conjur-puppet/issues/198)
-
-## [3.0.0-rc3] - 2020-09-11
-
-### Fixed
-- Release artifact excludes files that may be inadvertently added to the archive
-  during builds.
-  [cyberark/conjur-puppet#213](https://github.com/cyberark/conjur-puppet/issues/213)
-
-## [3.0.0-rc2] - 2020-08-26
+## [3.0.0] - 2020-09-17
 
 ### Added
 - Secrets are now retrieved by the Puppet agent, instead of the server, using Puppet's
@@ -170,9 +158,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - fixed a bug in host identity manifest preventing usage of host factory
 
-[Unreleased]: https://github.com/cyberark/conjur-puppet/compare/v3.0.0-rc3...HEAD
-[3.0.0-rc3]: https://github.com/cyberark/conjur-puppet/compare/v3.0.0-rc2...v3.0.0-rc3
-[3.0.0-rc2]: https://github.com/cyberark/conjur-puppet/compare/v2.0.6...v3.0.0-rc2
+[Unreleased]: https://github.com/cyberark/conjur-puppet/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/cyberark/conjur-puppet/compare/v2.0.6...v3.0.0
 [2.0.6]: https://github.com/cyberark/conjur-puppet/compare/v2.0.5...v2.0.6
 [2.0.5]: https://github.com/cyberark/conjur-puppet/compare/v2.0.4...v2.0.5
 [2.0.4]: https://github.com/cyberark/conjur-puppet/compare/v2.0.3...v2.0.4
