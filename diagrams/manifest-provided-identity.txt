@@ -1,0 +1,20 @@
+@startuml
+hide footbox
+
+participant "Puppet Master" as Master
+participant "Puppet Compilation Master" as Compiler
+participant "Puppet Agent" as Agent
+participant Conjur
+
+Agent->Master: Get Agent Certificate
+Master->Agent: Signed Certificate
+Agent->Agent: Gather Facts
+Agent->Compiler: Facts
+Compiler->Agent: Send Catalog (with Credentials)
+Agent->Conjur: Authenticate (with API Key)
+Conjur->Conjur: Authorize
+Conjur->Agent: Auth Token
+Agent->Conjur: Request Secrets (with Auth Token)
+Conjur->Agent: Secrets
+Agent->Agent: Update Config Based on Catalog
+@enduml
