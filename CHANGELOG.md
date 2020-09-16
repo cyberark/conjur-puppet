@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+- Changed recommended usages to no longer wrap the whole invocation in Sensitive as
+  it is generally not needed.
+  [cyberark/conjur-puppet#198](https://github.com/cyberark/conjur-puppet/issues/198)
+
 ## [3.0.0-rc3] - 2020-09-11
 
 ### Fixed

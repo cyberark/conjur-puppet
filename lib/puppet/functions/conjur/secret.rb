@@ -12,12 +12,12 @@ Puppet::Functions.create_function :'conjur::secret' do
   #   - appliance_url: The URL of the Conjur or DAP instance..
   #   - account: Name of the Conjur account that contains this variable.
   #   - authn_login: The identity you are using to authenticate to the Conjur / DAP instance.
-  #   - authn_api_key: The API key of the identity you are using to authenticate with.
+  #   - authn_api_key: The API key of the identity you are using to authenticate with (must be Sensitive type).
   #   - ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance.
   #   - version: Conjur API version, defaults to 5.
   # @return [Sensitive] Value of the Conjur variable.
   # @example Agent-based identity invocation
-  #   Sensitive(Deferred(conjur::secret, ['production/postgres/password']))
+  #   Deferred(conjur::secret, ['production/postgres/password'])
   # @example Server-based identity invocation
   #   $sslcert = @("EOT")
   #   -----BEGIN CERTIFICATE-----
@@ -25,13 +25,13 @@ Puppet::Functions.create_function :'conjur::secret' do
   #   -----END CERTIFICATE-----
   #   |-EOT
   #
-  #   $dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password', {
+  #   $dbpass = Deferred(conjur::secret, ['production/postgres/password', {
   #     appliance_url => "https://my.conjur.org",
   #     account => "myaccount",
   #     authn_login => "host/myhost",
   #     authn_api_key => Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
   #     ssl_certificate => $sslcert
-  #   }]))
+  #   }])
   dispatch :with_credentials do
     required_param 'String', :variable_id
     optional_param 'Hash', :options

@@ -15,7 +15,9 @@
     + [Certified Versions](#certified-versions)
   * [Using conjur-puppet with Conjur OSS](#using-conjur-puppet-with-conjur-oss)
   * [Conjur module basics](#conjur-module-basics)
-    + [Sensitive data type](#sensitive-data-type)
+    + [Example usage](#example-usage)
+    + [`Deferred` functions](#deferred-functions)
+    + [`Sensitive` type](#sensitive-type)
 - [Usage](#usage)
   * [Methods to establish Conjur host identity](#methods-to-establish-conjur-host-identity)
     + [Conjur host identity with API key](#conjur-host-identity-with-api-key)
@@ -108,7 +110,7 @@ questions, please contact us on [Discourse](https://discuss.cyberarkcommons.org/
 
 ### Conjur module basics
 
-This module provides a `conjur::secret` [`Deferred` function](https://puppet.com/docs/puppet/6.17/deferring_functions.html)
+This module provides a `conjur::secret` [`Deferred` function](#deferred-functions)
 that can be used to retrieve secrets from Conjur. Given a Conjur variable identifier and optional
 identity parameters, `conjur::secret` uses the node’s Conjur identity to resolve and return
 the variable’s value as a `Sensitive` variable.
@@ -116,7 +118,7 @@ the variable’s value as a `Sensitive` variable.
 Using agent-side identity:
 
 ```puppet
-$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password']))
+$dbpass = Deferred(conjur::secret, ['production/postgres/password'])
 ```
 
 Using server-provided configuration:
@@ -127,42 +129,115 @@ $sslcert = @("EOT")
 -----END CERTIFICATE-----
 |-EOT
 
-$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password', {
+$dbpass = Deferred(conjur::secret, ['production/postgres/password', {
   appliance_url => "https://my.conjur.org",
   account => "myaccount",
   authn_login => "host/myhost",
   authn_api_key => Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
   ssl_certificate => $sslcert
-}]))
+}])
 ```
 
-#### Sensitive data type
+#### Example usage
 
-Note `conjur::secret` returns values wrapped in a `Sensitive` data type. In
+```puppet
+node 'server-123' {
+  $db_password = Deferred(conjur::secret, ['inventory/db-password'])
+
+  # Example of writing a secret to a file
+  file { '/tmp/creds.txt':
+    ensure => file,
+    mode => '0600',
+    content => $db_password,
+  }
+
+  # Example of using a secret in a templated file
+  file { '/tmp/creds.ini':
+    ensure => file,
+    mode => '0600',
+    content => Deferred('inline_epp', [
+      'password=<%= $db_password.unwrap %>',
+      { 'db_password' => $db_password }
+    ]),
+  }
+}
+```
+
+#### `Deferred` functions
+
+This module _requires_ the use of Puppet v6+
+[`Deferred` functions](https://puppet.com/docs/puppet/6.17/deferring_functions.html)
+to ensure that the credential retrieval is fully handled on the agent. Failure
+to use `Deferred` around the method will result in an error:
+
+```puppet
+# GOOD: Function `conjur::secret` is wrapped in `Deferred` call
+Deferred(conjur::secret, ['production/postgres/password'])
+```
+
+```puppet
+# BAD: This will not work!
+conjur::secret('production/postgres/password')
+```
+
+Since the resolution of variables is done also on the agent _after_ the catalog is
+compiled, anything that requires the value of the variable during the compilation
+step (e.g. template compilation)
+[must also be wrapped in a `Deferred` invocation](https://puppet.com/docs/puppet/6.17/template_with_deferred_values.html).
+
+It is also important to note that you should make sure that you invoke the
+`conjur::secret` function using the proper `Deferred` syntax:
+
+```puppet
+# GOOD: Passing the parameters as an array
+Deferred(conjur::secret, ['production/postgres/password'])
+```
+
+```puppet
+# BAD: This will not work!
+Deferred(conjur::secret('production/postgres/password'))
+```
+
+You can read more about Puppet's `Deferred` functions
+[here](https://puppet.com/docs/puppet/6.17/deferring_functions.html).
+
+#### `Sensitive` type
+
+`conjur::secret` returns values wrapped in a `Sensitive` data type. In
 some contexts, such as string interpolation, it might cause surprising results
 (interpolating to `Sensitive [value redacted]`). This is intentional, as it
 makes it more difficult to accidentally mishandle secrets.
 
-To use a secret as a string, you need to explicitly request it using the
-`unwrap` function; the result of the processing should be again wrapped in
-a `Sensitive` value.
-
-In particular, you should not pass unwrapped secrets as resource parameters
-if you can avoid it. Many resource types support `Sensitive` data type and
-handle it correctly. If a resource you're using does not, file a bug.
+To use a `Sensitive` value as a string, you need to explicitly request it using
+the `unwrap` function. If you are setting other Puppet variables to the value of
+this secret or if you are creating composite Puppet variables from it, you should
+ensure that the resulting value is also wrapped in a `Sensitive` type. In
+particular, you should not pass unwrapped variables as parameters to Puppet methods
+if you can avoid it. Many Puppet resource functions support `Sensitive` data type
+and handle it correctly.
 
 ```puppet
-$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password']))
+$dbpass = Deferred(conjur::secret, ['production/postgres/password'])
 
 # Use Sensitive data type to handle anything sensitive
-$db_yaml = Sensitive("password: ${dbpass.unwrap}")
+$db_yaml = Sensitive(Deferred('inline_epp', [
+  'password: <%= $db_password.unwrap %>',
+  { 'db_password' => $dbpass }
+]))
 
 file { '/etc/someservice/db.yaml':
   ensure  => file,
-  content => $db_yaml, # this correctly handles both Sensitive and String
-  mode    => '0600' # remember to limit reading
+  mode    => '0600',
+  content => $db_yaml, # This correctly handles both Sensitive and String
 }
 ```
+
+Note: We only enforce that the API key from the Conjur configuration is marked
+Sensitive, but if any other data in the function parameters is also considered
+sensitive by your organization you may also wrap the whole `Deferred` invocation
+in the `Sensitive` type to prevent accidental disclosure of the sensitive
+information to the logs. Note that if you do this, you will need to unwrap the
+output twice.
 
 ## Usage
 
@@ -233,13 +308,13 @@ $sslcert = @("EOT")
 -----END CERTIFICATE-----
 |-EOT
 
-$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password', {
+$dbpass = Deferred(conjur::secret, ['production/postgres/password', {
   appliance_url => "https://my.conjur.org",
   account => "default",
   authn_login => "host/redis001",
   authn_api_key => Sensitive("2z9mndg1950gcx1mcrs6w18bwnp028dqkmc34vj8gh2p500ny1qk8n"),
   ssl_certificate => $sslcert
-}]))
+}])
 ```
 
 ##### Using Hiera
@@ -266,13 +341,13 @@ conjur::ssl_certificate: |
 
 Then in your manifest, you can fetch the secret like this:
 ```puppet
-$sslkey = Sensitive(Deferred(conjur::secret, ["domains/%{hiera('domain')}/ssl-cert", {
+$sslkey = Deferred(conjur::secret, ["domains/%{hiera('domain')}/ssl-cert", {
   appliance_url => lookup('conjur::appliance_url'),
   account => lookup('conjur::account'),
   authn_login => lookup('conjur::authn_login'),
   authn_api_key => lookup('conjur::authn_api_key'),
   ssl_certificate => lookup('conjur::ssl_certificate')
-}]))
+}])
 
 file { '/abslute/path/to/cert.pem':
   ensure    => file,
@@ -315,7 +390,7 @@ are available.
 
 To then fetch your credential, you would use the default form of `conjur::secret`:
 ```puppet
-$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password']))
+$dbpass = Deferred(conjur::secret, ['production/postgres/password'])
 ```
 
 ##### Using Windows Registry / Windows Credential Manager (Windows agents only)
@@ -392,7 +467,7 @@ CMDKEY: Credential added successfully.
 
 To then fetch your credential, you would use the default form of `conjur::secret`:
 ```puppet
-$dbpass = Sensitive(Deferred(conjur::secret, ['production/postgres/password']))
+$dbpass = Deferred(conjur::secret, ['production/postgres/password'])
 ```
 
 ## Reference
