@@ -5,6 +5,8 @@
 #### Table of Contents
 
 - [Description](#description)
+- [Certification Level](#certification-level)
+  * [Certified Versions](#certified-versions)
 - [Setup](#setup)
   * [Setup requirements](#setup-requirements)
   * [Deprecations](#deprecations)
@@ -12,7 +14,6 @@
     + [Conjur Enterprise v4](#conjur-enterprise-v4)
     + [Use of Host Factory Tokens](#use-of-host-factory-tokens)
   * [Installation](#installation)
-    + [Certified Versions](#certified-versions)
   * [Using conjur-puppet with Conjur OSS](#using-conjur-puppet-with-conjur-oss)
   * [Conjur module basics](#conjur-module-basics)
     + [Example usage](#example-usage)
@@ -41,13 +42,27 @@ secrets from Conjur.
 
 You can find our official distributable releases on Puppet Forge under [`cyberark/conjur`](https://forge.puppet.com/cyberark/conjur).
 
+## Certification level
+
+![](https://img.shields.io/badge/Certification%20Level-Trusted-007BFF?link=https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md)
+
+This repo is a **Trusted** level project. It's been reviewed by CyberArk to verify that it will securely
+work with Conjur OSS as documented. For more detailed information on our certification levels, see
+[our community guidelines](https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md#community).
+
+### Certified Versions
+
+Releases of this module belonging to the `v3` major version are not currently
+Certified. If a Certified version of this module is desired, please use the highest
+available `v2.x.x` version available on PuppetForge under
+[`cyberark/conjur`](https://forge.puppet.com/cyberark/conjur).
+
 ## Setup
 
 ### Setup requirements
 
 This module requires that you have:
-- Puppet v6 _or equivalent EE version_ (**Preliminary [Community level](https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md#community)
-  support only**)
+- Puppet v6 _or equivalent EE version_
 - Conjur endpoint available to both the Puppet server and the Puppet nodes using this
   module. Supported versions:
   - Conjur OSS v1+
@@ -88,14 +103,6 @@ command on the Puppet server:
 ```
 puppet module install cyberark-conjur --version 1.2.3
 ```
-
-#### Certified Versions
-
-Releases of this module belonging to the `v3` major version are not currently
-Certified. If a Certified version of this module is desired, please use the highest
-available `v2.x.x` version available on PuppetForge under
-[`cyberark/conjur`](https://forge.puppet.com/cyberark/conjur).  More details about
-Certification Levels can be found in our [Community repo](https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md).
 
 ### Using conjur-puppet with Conjur OSS
 
