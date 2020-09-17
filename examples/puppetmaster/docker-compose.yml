@@ -10,34 +10,57 @@ services:
       # The mounted onto path '/conjur' is a proxy location that allows us to decide, at
       # runtime, between installing the packaged module or using the module source.
       - ../../.:/conjur
-    # In some environments puppetdb host gets cert for puppetdb.local.
-    # Make sure the connection works either way.
-    environment:
-      - PUPPETDB_SERVER_URLS=https://puppetdb:8081
-    depends_on:
-      - puppetdb
-
-  postgres:
-    image: postgres:9.6
-    environment:
-      - POSTGRES_PASSWORD=puppetdb
-      - POSTGRES_USER=puppetdb
-      - POSTGRES_DB=puppetdb
-    expose:
-      - 5432
-
-  puppetdb:
-    image: puppet/puppetdb
     environment:
       - PUPPETSERVER_HOSTNAME=puppet
-      - PUPPETDB_POSTGRES_HOSTNAME=postgres
+      - PUPPETDB_SERVER_URLS=https://puppet-db:8081
+      - CA_ALLOW_SUBJECT_ALT_NAMES=true
+      - DNS_ALT_NAMES=puppet,puppet-compiler
+    depends_on:
+      - puppet-db
+
+  puppet-compiler:
+    image: puppet/puppetserver:${PUPPET_SERVER_TAG:-latest}
+    ports:
+      - 8140
+    volumes:
+      - ./code:/etc/puppetlabs/code/
+      # The mounted onto path '/conjur' is a proxy location that allows us to decide, at
+      # runtime, between installing the packaged module or using the module source.
+      - ../../.:/conjur
+    environment:
+      - CA_ENABLED=false
+      - CA_HOSTNAME=puppet
+      - PUPPETSERVER_HOSTNAME=puppet-compiler
+      - PUPPETDB_SERVER_URLS=https://puppet-db:8081
+      - DNS_ALT_NAMES=puppet,puppet-compiler
+    depends_on:
+      - puppet
+      - puppet-db
+
+  puppet-db:
+    image: puppet/puppetdb
+    environment:
+      - CERTNAME=puppet-db
+      - PUPPETSERVER_HOSTNAME=puppet
+      - PUPPETDB_POSTGRES_HOSTNAME=puppet-pg
       - PUPPETDB_PASSWORD=puppetdb
       - PUPPETDB_USER=puppetdb
+      - PUPPETDB_POSTGRES_DATABASE=puppetdb-main
+      - DNS_ALT_NAMES=puppet-db
     ports:
       - 8080
       - 8081
     depends_on:
-      - postgres
+      - puppet-pg
+
+  puppet-pg:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_PASSWORD=puppetdb
+      - POSTGRES_USER=puppetdb
+      - POSTGRES_DB=puppetdb-main
+    expose:
+      - 5432
 
   puppetboard:
     image: puppet/puppetboard
@@ -56,14 +79,14 @@ services:
       - 80
     environment:
       CONJUR_ADMIN_PASSWORD: ADmin123!!!!
-      DATABASE_URL: postgres://postgres@db
+      DATABASE_URL: postgres://postgres@conjur-db
       CONJUR_DATA_KEY: testing//testing//testing//testing//testing=
     volumes:
       - .:/src:ro
     working_dir: /src
     command: server
     depends_on:
-      - db
+      - conjur-db
 
   conjur-https:
     image: nginx:alpine
@@ -79,7 +102,7 @@ services:
     depends_on:
       - conjur
 
-  db:
+  conjur-db:
     image: postgres:9.3
 
   cli:

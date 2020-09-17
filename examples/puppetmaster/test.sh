@@ -75,7 +75,8 @@ main() {
 
   start_services
   setup_conjur
-  wait_for_puppetmaster
+  wait_for_puppet "puppet"
+  wait_for_puppet "puppet-compiler"
 
   if [[ "${INSTALL_PACKAGED_MODULE}" = true ]]; then
     # This branch is generally exercised for testing production builds. It installs the
@@ -167,16 +168,19 @@ run_in_puppet() {
 }
 
 start_services() {
-  docker-compose up -d conjur-https puppet
+  echo "Starting services..."
+  docker-compose up -d conjur-https puppet puppet-compiler
 }
 
 wait_for_conjur() {
+  echo "Waiting for Conjur..."
   docker-compose exec -T conjur conjurctl wait
 }
 
-wait_for_puppetmaster() {
-  echo -n "Waiting on puppetmaster to be ready..."
-  while ! run_in_conjur curl -ks https://puppet:8140 >/dev/null; do
+wait_for_puppet() {
+  local server_name="$1"
+  echo -n "Waiting on ${server_name} to be ready..."
+  while ! run_in_conjur curl -ks https://${server_name}:8140 >/dev/null; do
     echo -n "."
     sleep 2
   done
@@ -325,7 +329,9 @@ converge_node_agent_apikey() {
             --onetime \
             --no-daemonize \
             --summarize \
-            --certname "$hostname"
+            --certname "$hostname" \
+            --ca_server puppet \
+            --server puppet-compiler
   set +x
 
   rm -rf $TMPDIR
@@ -415,7 +421,9 @@ $ssl_certificate
             --onetime \
             --no-daemonize \
             --summarize \
-            --certname "$hostname"
+            --certname "$hostname" \
+            --ca_server puppet \
+            --server puppet-compiler
   set +x
 
   rm -rf "$manifest_config_file" "$hiera_config_file"
@@ -439,6 +447,7 @@ converge_windows_node_agent_apikey() {
         # Allow resolution of the hostnames for conjur and puppet
         Add-Content -Path 'c:\Windows\System32\Drivers\etc\hosts' -Value '${MAIN_HOST_IP} conjur.cyberark.com'
         Add-Content -Path 'c:\Windows\System32\Drivers\etc\hosts' -Value '${MAIN_HOST_IP} puppet'
+        Add-Content -Path 'c:\Windows\System32\Drivers\etc\hosts' -Value '${MAIN_HOST_IP} puppet-compiler'
         Add-Content -Path 'c:\conjur-ca.crt' -Value '$(cat $PWD/https_config/ca.crt)'
 
 
@@ -451,7 +460,7 @@ converge_windows_node_agent_apikey() {
         # Set conjur.identity equivalent with auth details
         cmdkey /generic:conjur.cyberark.com /user:${login} /pass:${api_key}
 
-        puppet agent --verbose --onetime --no-daemonize --summarize --masterport $(puppet_host_port) --certname \$(hostname)
+        puppet agent --verbose --onetime --no-daemonize --summarize --masterport $(puppet_host_port) --certname \$(hostname) --ca_server puppet --server puppet-compiler
       "
   set +x
 }
@@ -516,8 +525,9 @@ $ssl_certificate
           # Allow resolution of the hostnames for conjur and puppet
           Add-Content -Path 'c:\Windows\System32\Drivers\etc\hosts' -Value '${MAIN_HOST_IP} conjur.cyberark.com'
           Add-Content -Path 'c:\Windows\System32\Drivers\etc\hosts' -Value '${MAIN_HOST_IP} puppet'
+          Add-Content -Path 'c:\Windows\System32\Drivers\etc\hosts' -Value '${MAIN_HOST_IP} puppet-compiler'
 
-          puppet agent --verbose --onetime --no-daemonize --summarize --masterport $(puppet_host_port) --certname \$(hostname)
+          puppet agent --verbose --onetime --no-daemonize --summarize --masterport $(puppet_host_port) --certname \$(hostname) --ca_server puppet --server puppet-compiler
         "
   set +x
 
