@@ -5,6 +5,8 @@
 #### Table of Contents
 
 - [Description](#description)
+- [Certification Level](#certification-level)
+  * [Certified Versions](#certified-versions)
 - [Setup](#setup)
   * [Setup requirements](#setup-requirements)
   * [Deprecations](#deprecations)
@@ -12,7 +14,6 @@
     + [Conjur Enterprise v4](#conjur-enterprise-v4)
     + [Use of Host Factory Tokens](#use-of-host-factory-tokens)
   * [Installation](#installation)
-    + [Certified Versions](#certified-versions)
   * [Using conjur-puppet with Conjur OSS](#using-conjur-puppet-with-conjur-oss)
   * [Conjur module basics](#conjur-module-basics)
     + [Example usage](#example-usage)
@@ -41,13 +42,27 @@ secrets from Conjur.
 
 You can find our official distributable releases on Puppet Forge under [`cyberark/conjur`](https://forge.puppet.com/cyberark/conjur).
 
+## Certification level
+
+![](https://img.shields.io/badge/Certification%20Level-Trusted-007BFF?link=https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md)
+
+This repo is a **Trusted** level project. It's been reviewed by CyberArk to verify that it will securely
+work with Conjur OSS as documented. For more detailed information on our certification levels, see
+[our community guidelines](https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md#community).
+
+### Certified Versions
+
+Releases of this module belonging to the `v3` major version are not currently
+Certified. If a Certified version of this module is desired, please use the highest
+available `v2.x.x` version available on PuppetForge under
+[`cyberark/conjur`](https://forge.puppet.com/cyberark/conjur).
+
 ## Setup
 
 ### Setup requirements
 
 This module requires that you have:
-- Puppet v6 _or equivalent EE version_ (**Preliminary [Community level](https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md#community)
-  support only**)
+- Puppet v6 _or equivalent EE version_
 - Conjur endpoint available to both the Puppet server and the Puppet nodes using this
   module. Supported versions:
   - Conjur OSS v1+
@@ -89,14 +104,6 @@ command on the Puppet server:
 puppet module install cyberark-conjur --version 1.2.3
 ```
 
-#### Certified Versions
-
-Releases of this module belonging to the `v3` major version are not currently
-Certified. If a Certified version of this module is desired, please use the highest
-available `v2.x.x` version available on PuppetForge under
-[`cyberark/conjur`](https://forge.puppet.com/cyberark/conjur).  More details about
-Certification Levels can be found in our [Community repo](https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md).
-
 ### Using conjur-puppet with Conjur OSS
 
 Are you using this project with [Conjur OSS](https://github.com/cyberark/conjur)? Then we
@@ -115,13 +122,13 @@ that can be used to retrieve secrets from Conjur. Given a Conjur variable identi
 identity parameters, `conjur::secret` uses the node’s Conjur identity to resolve and return
 the variable’s value as a `Sensitive` variable.
 
-Using agent-side identity:
+Using a pre-provisioned identity:
 
 ```puppet
 $dbpass = Deferred(conjur::secret, ['production/postgres/password'])
 ```
 
-Using server-provided configuration:
+Using a manifest-provided identity:
 ```puppet
 $sslcert = @("EOT")
 -----BEGIN CERTIFICATE-----
@@ -408,17 +415,15 @@ values available to set are:
 |-|-|-|
 | `Account` | `REG_SZ` | Conjur account specified during Conjur setup. |
 | `ApplianceUrl` | `REG_SZ` | Conjur API endpoint. |
-| `CertFile` | `REG_SZ` | Path to a file containing the public Conjur SSL cert. This value **must** be an absolute path and not a relative one. |
-| `SslCertificate` | `REG_SZ` | Raw public Conjur SSL cert. Overwritten by the contents read from `CertFile` when it is present. |
+| `SslCertificate` | `REG_SZ` | Raw public Conjur SSL cert.|
 | `Version` | `REG_DWORD` | Conjur API version. Defaults to `5`. |
 
-These may be set using Powershell (**use either `SslCertificate` _or_ `CertFile` but not both**):
+These may be set using Powershell:
 
 ```powershell
 > reg ADD HKLM\Software\CyberArk\Conjur /v ApplianceUrl /t REG_SZ /d https://conjur.mycompany.com
 > reg ADD HKLM\Software\CyberArk\Conjur /v Version /t REG_DWORD /d 5
 > reg ADD HKLM\Software\CyberArk\Conjur /v Account /t REG_SZ /d myorg
-> reg ADD HKLM\Software\CyberArk\Conjur /v CertFile /t REG_SZ /d "C:\path\to\ca.pem"
 > reg ADD HKLM\Software\CyberArk\Conjur /v SslCertificate /t REG_SZ /d "-----BEGIN CERTIFICATE-----..."
 ```
 
@@ -431,7 +436,6 @@ Windows Registry Editor Version 5.00
 "ApplianceUrl"="https://conjur.mycompany.com"
 "Version"=dword:00000005
 "Account"="myorg"
-"CertFile"="C:\path\to\ca.pem"
 ```
 
 _**NOTE: It is important from a security perspective to ensure that
@@ -472,11 +476,13 @@ $dbpass = Deferred(conjur::secret, ['production/postgres/password'])
 
 ## Reference
 
-For a complete reference, please see [REFERENCE.md](REFERENCE.md).
+For a complete reference, please see
+[REFERENCE.md](https://github.com/cyberark/conjur-puppet/blob/master/REFERENCE.md).
 
 ## Limitations
 
-See [metadata.json](metadata.json) for supported platforms.
+See [metadata.json](https://github.com/cyberark/conjur-puppet/blob/master/metadata.json)
+for supported platforms.
 
 At current, the Conjur Puppet module encrypts and decrypts the Conjur access
 token using the Puppet server’s private/public key pair. This is known to be
