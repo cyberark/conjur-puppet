@@ -122,13 +122,13 @@ that can be used to retrieve secrets from Conjur. Given a Conjur variable identi
 identity parameters, `conjur::secret` uses the node’s Conjur identity to resolve and return
 the variable’s value as a `Sensitive` variable.
 
-Using agent-side identity:
+Using a pre-provisioned identity:
 
 ```puppet
 $dbpass = Deferred(conjur::secret, ['production/postgres/password'])
 ```
 
-Using server-provided configuration:
+Using a manifest-provided identity:
 ```puppet
 $sslcert = @("EOT")
 -----BEGIN CERTIFICATE-----
