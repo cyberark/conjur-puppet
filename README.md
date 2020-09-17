@@ -476,11 +476,13 @@ $dbpass = Deferred(conjur::secret, ['production/postgres/password'])
 
 ## Reference
 
-For a complete reference, please see [REFERENCE.md](REFERENCE.md).
+For a complete reference, please see
+[REFERENCE.md](https://github.com/cyberark/conjur-puppet/blob/master/REFERENCE.md).
 
 ## Limitations
 
-See [metadata.json](metadata.json) for supported platforms.
+See [metadata.json](https://github.com/cyberark/conjur-puppet/blob/master/metadata.json)
+for supported platforms.
 
 At current, the Conjur Puppet module encrypts and decrypts the Conjur access
 token using the Puppet server’s private/public key pair. This is known to be
