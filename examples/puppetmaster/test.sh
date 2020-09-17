@@ -6,6 +6,15 @@ set -euo pipefail
 
 source vagrant/utils.sh
 
+# MAIN_HOST_IP is the IP address of the host where the tests are running that should be
+# accessible from containers running in the Windows Docker Daemon.
+export MAIN_HOST_IP=${MAIN_HOST_IP:-}
+# Configuration for the Windows Docker Daemon. If WINDOWS_DOCKER_HOST is not set then the
+# Windows tests are skipped.
+export WINDOWS_DOCKER_HOST=${WINDOWS_DOCKER_HOST:-}
+export WINDOWS_DOCKER_CERT_PATH=${WINDOWS_DOCKER_CERT_PATH:-}
+export WINDOWS_DOCKER_TLS_VERIFY=${WINDOWS_DOCKER_TLS_VERIFY:-0}
+
 CLEAN_UP_ON_EXIT=${CLEAN_UP_ON_EXIT:-true}
 INSTALL_PACKAGED_MODULE=${INSTALL_PACKAGED_MODULE:-true}
 COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-puppetmaster_$(openssl rand -hex 3)}
@@ -31,11 +40,38 @@ cleanup() {
   docker-compose down -v || true
 }
 
+build_windows_puppet_image() {
+  cat ./windows-agent.Dockerfile | run_with_docker_windows docker build -t puppet-agent -
+}
+
+prepare_windows() {
+  if [[ -z "${WINDOWS_DOCKER_HOST}" ]]; then
+    echo "---";
+    echo "Windows Daemon not available. Skipping tests for 'Windows'";
+
+    return
+  fi
+
+  echo "---"
+  echo "Windows Daemon available. Preparing test environment for 'Windows'"
+
+  if [[ -z "${MAIN_HOST_IP}" ]]; then
+    echo "MAIN_HOST_IP envvar must be set to accompany WINDOWS_DOCKER_HOST";
+    exit 1;
+  fi
+
+  echo
+  echo "=> Building puppet agent image for 'Windows' <="
+  build_windows_puppet_image
+}
+
 main() {
   cleanup
   if [[ "${CLEAN_UP_ON_EXIT}" = true ]]; then
     trap cleanup EXIT
   fi
+
+  prepare_windows
 
   start_services
   setup_conjur
@@ -78,8 +114,44 @@ main() {
     done
   done
 
+  run_windows_tests
+
   echo "==="
   echo "ALL TESTS COMPLETED"
+}
+
+run_windows_tests() {
+  # Run tests on Windows if there's a Windows Daemon
+  if [[ -z "${WINDOWS_DOCKER_HOST}" ]]; then
+    echo "---"
+
+    echo "Tests for 'Windows': Skipped"
+    return;
+  fi
+
+  echo "---"
+  echo "Running tests for 'Windows'..."
+
+  echo
+  echo "=> Agent config, API Key <="
+  converge_windows_node_agent_apikey
+
+  echo
+  echo "=> Hiera manifest config, API Key <="
+  converge_windows_node_hiera_manifest_apikey
+
+  echo "Tests for 'Windows': OK"
+}
+
+run_with_docker_windows() {
+  local DOCKER_HOST=${WINDOWS_DOCKER_HOST}
+  local DOCKER_CERT_PATH=${WINDOWS_DOCKER_CERT_PATH}
+  local DOCKER_TLS_VERIFY=${WINDOWS_DOCKER_TLS_VERIFY}
+  export DOCKER_HOST;
+  export DOCKER_CERT_PATH;
+  export DOCKER_TLS_VERIFY;
+
+  "$@"
 }
 
 run_in_conjur() {
@@ -210,7 +282,7 @@ revoke_cert_for() {
 converge_node_agent_apikey() {
   local agent_image="$1"
   local node_name="agent-apikey-node"
-  local hostname="${node_name}_$(openssl rand -hex 3)"
+  local hostname="${node_name}-$(openssl rand -hex 3)"
 
   local login="host/$node_name"
   local api_key=$(get_host_key $node_name)
@@ -262,7 +334,7 @@ converge_node_agent_apikey() {
 converge_node_hiera_manifest_apikey() {
   local agent_image="$1"
   local node_name="hiera-manifest-apikey-node"
-  local hostname="${node_name}_$(openssl rand -hex 3)"
+  local hostname="${node_name}-$(openssl rand -hex 3)"
 
   local login="host/$node_name"
   local api_key=$(get_host_key $node_name)
@@ -344,6 +416,109 @@ $ssl_certificate
             --no-daemonize \
             --summarize \
             --certname "$hostname"
+  set +x
+
+  rm -rf "$manifest_config_file" "$hiera_config_file"
+}
+
+converge_windows_node_agent_apikey() {
+  local node_name="agent-apikey-node"
+  local hostname="${node_name}-$(openssl rand -hex 3)"
+
+  local login="host/$node_name"
+  local api_key=$(get_host_key $node_name)
+  echo "API key for $node_name: $api_key"
+
+  revoke_cert_for "$hostname"
+
+  set -x
+  run_with_docker_windows docker run --rm -t \
+    --hostname "${hostname}" \
+    puppet-agent \
+      powershell -Command "
+        # Allow resolution of the hostnames for conjur and puppet
+        Add-Content -Path 'c:\Windows\System32\Drivers\etc\hosts' -Value '${MAIN_HOST_IP} conjur.cyberark.com'
+        Add-Content -Path 'c:\Windows\System32\Drivers\etc\hosts' -Value '${MAIN_HOST_IP} puppet'
+        Add-Content -Path 'c:\conjur-ca.crt' -Value '$(cat $PWD/https_config/ca.crt)'
+
+
+        # Set conjur.conf equivalent with connection details
+        reg ADD HKLM\Software\CyberArk\Conjur /v ApplianceUrl /t REG_SZ /d https://conjur.cyberark.com:$(conjur_host_port)/
+        reg ADD HKLM\Software\CyberArk\Conjur /v Version /t REG_DWORD /d 5
+        reg ADD HKLM\Software\CyberArk\Conjur /v Account /t REG_SZ /d cucumber
+        reg ADD HKLM\Software\CyberArk\Conjur /v CertFile /t REG_SZ /d c:\conjur-ca.crt
+
+        # Set conjur.identity equivalent with auth details
+        cmdkey /generic:conjur.cyberark.com /user:${login} /pass:${api_key}
+
+        puppet agent --verbose --onetime --no-daemonize --summarize --masterport $(puppet_host_port) --certname \$(hostname)
+      "
+  set +x
+}
+
+converge_windows_node_hiera_manifest_apikey() {
+  local node_name="hiera-manifest-apikey-node"
+  local hostname="${node_name}-$(openssl rand -hex 3)"
+
+  local login="host/$node_name"
+  local api_key=$(get_host_key $node_name)
+  echo "API key for $node_name: $api_key"
+
+  local hiera_config_file="./code/data/nodes/$hostname.yaml"
+  local manifest_config_file="./code/environments/production/manifests/00_$hostname.pp"
+
+  local ssl_certificate="$(cat https_config/ca.crt | sed 's/^/  /')"
+
+  echo "---
+lookup_options:
+  '^conjur::authn_api_key':
+    convert_to: 'Sensitive'
+
+conjur::account: 'cucumber'
+conjur::appliance_url: 'https://conjur.cyberark.com:$(conjur_host_port)'
+conjur::authn_login: 'host/$node_name'
+conjur::authn_api_key: '$api_key'
+conjur::ssl_certificate: |
+$ssl_certificate
+  " > $hiera_config_file
+
+  echo "
+    node '$hostname' {
+      \$pem_file  = 'c:\tmp\test.pem'
+      \$secret = Sensitive(Deferred(conjur::secret, ['inventory/db-password', {
+          appliance_url => lookup('conjur::appliance_url'),
+          account => lookup('conjur::account'),
+          authn_login => lookup('conjur::authn_login'),
+          authn_api_key => lookup('conjur::authn_api_key'),
+          ssl_certificate => lookup('conjur::ssl_certificate')
+      }]))
+
+      notify { \"Writing secret to \${pem_file}...\": }
+      file { \$pem_file:
+        ensure  => file,
+        content => \$secret,
+      }
+
+      exec { \"Read secret from \${pem_file}...\":
+        command => \"C:\Windows\System32\cmd.exe /c type \${pem_file}\",
+        logoutput => true,
+      }
+    }" > $manifest_config_file
+
+  revoke_cert_for "$hostname"
+
+  set -x
+  run_with_docker_windows \
+    docker run --rm -t \
+      --hostname "${hostname}" \
+      puppet-agent \
+        powershell -Command "
+          # Allow resolution of the hostnames for conjur and puppet
+          Add-Content -Path 'c:\Windows\System32\Drivers\etc\hosts' -Value '${MAIN_HOST_IP} conjur.cyberark.com'
+          Add-Content -Path 'c:\Windows\System32\Drivers\etc\hosts' -Value '${MAIN_HOST_IP} puppet'
+
+          puppet agent --verbose --onetime --no-daemonize --summarize --masterport $(puppet_host_port) --certname \$(hostname)
+        "
   set +x
 
   rm -rf "$manifest_config_file" "$hiera_config_file"
