@@ -29,20 +29,6 @@ pipeline {
       }
     }
 
-    // Workaround for Jenkins not fetching tags
-    stage('Fetch tags') {
-      steps {
-        withCredentials(
-          [usernameColonPassword(credentialsId: 'conjur-jenkins-api', variable: 'GITCREDS')]
-        ) {
-          sh '''
-            git fetch --tags `git remote get-url origin | sed -e "s|https://|https://$GITCREDS@|"`
-            git tag # just print them out to make sure, can remove when this is robust
-          '''
-        }
-      }
-    }
-
     stage('Build') {
       steps {
         sh './build.sh'
@@ -52,27 +38,27 @@ pipeline {
 
     stage('Tests') {
       parallel {
-        stage('Setup Win2016') {
-          agent { label 'executor-windows-2016-containers' }
-          stages {
-            stage('Configure Windows Node'){
-              steps {
+        stage('Setup & Hold Win2016 Node') {
+          steps {
+            script {
+              // Node used instead of agent to avoid the automatic git checkout that agent provides.
+              // This is because git checkout is unreliable on windows agents
+              node('executor-windows-2016-containers'){
+                // because the repo is not auto checked out, fetch the configure script via http
+                powershell """
+                  Invoke-WebRequest -Uri "https://raw.githubusercontent.com/cyberark/conjur-puppet/${BRANCH_NAME}/expose-daemon.ps1" -OutFile "expose-daemon.ps1"
+                """
                 powershell '.\\expose-daemon.ps1'
-                script {
-                  env.WINDOWS_IP = powershell(returnStdout: true, script:  '(curl http://169.254.169.254/latest/meta-data/local-ipv4).Content').trim()
-                  env.WINDOWS_DOCKER_CERT_CA = powershell(returnStdout: true, script:  'cat $env:USERPROFILE\\.docker\\ca.pem')
-                  env.WINDOWS_DOCKER_CERT_CERT = powershell(returnStdout: true, script:  'cat $env:USERPROFILE\\.docker\\cert.pem')
-                  env.WINDOWS_DOCKER_CERT_KEY = powershell(returnStdout: true, script:  'cat $env:USERPROFILE\\.docker\\key.pem')
-                  env.WINDOWS_READY = true
-                }
-              }
-            }
-            stage('Wait for Main Node') {
-              steps {
+                env.WINDOWS_IP = powershell(returnStdout: true, script:  '(curl http://169.254.169.254/latest/meta-data/local-ipv4).Content').trim()
+                env.WINDOWS_DOCKER_CERT_CA = powershell(returnStdout: true, script:  'cat $env:USERPROFILE\\.docker\\ca.pem')
+                env.WINDOWS_DOCKER_CERT_CERT = powershell(returnStdout: true, script:  'cat $env:USERPROFILE\\.docker\\cert.pem')
+                env.WINDOWS_DOCKER_CERT_KEY = powershell(returnStdout: true, script:  'cat $env:USERPROFILE\\.docker\\key.pem')
+                env.WINDOWS_READY = true
+
+                // The windows node is terminated when the containing node block ends, so we wait until the tests are finished
+                // before letting this block complete.
                 waitUntil {
-                  script {
-                    return (env.MAIN_NODE_DONE == "true");
-                  }
+                  return (env.MAIN_NODE_DONE == "true");
                 }
               }
             }
