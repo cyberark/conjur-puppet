@@ -1,7 +1,10 @@
 #!/bin/bash -e
 # Builds this Puppet module
 
-docker build -t puppet-pdk -f Dockerfile.pdk .
+# To ensure this script always executes relative to the repo root
+cd "$(dirname "$0")/.."
+
+docker build -t puppet-pdk -f ./ci/Dockerfile.pdk .
 
 docker run --rm \
   -v $PWD:/conjur -w /conjur \

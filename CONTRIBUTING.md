@@ -127,14 +127,14 @@ For details, refer to
 Run the following at the base of the project:
 
 ```sh-session
-$ ./test.sh
+$ ./ci/test.sh
 ```
 
 This script leverages PDK to run both unit tests and validations of the module.
 
 ## Generating the documentation
 
-To (re)generate the documentation, you just need to run `./gen-docs.sh` from the root of the
+To (re)generate the documentation, you just need to run `./ci/gen-docs.sh` from the root of the
 project and commit the changes.
 
 ## Releases

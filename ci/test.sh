@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+# To ensure this script always executes relative to the repo root
+cd "$(dirname "$0")/.."
+
 if [ ! "${SKIP_VALIDATION}" == "true" ]; then
   echo "Running validations..."
   docker run --rm \
