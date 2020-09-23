@@ -13,7 +13,8 @@ Puppet::Functions.create_function :'conjur::secret' do
   #   - account: Name of the Conjur account that contains this variable.
   #   - authn_login: The identity you are using to authenticate to the Conjur / DAP instance.
   #   - authn_api_key: The API key of the identity you are using to authenticate with (must be Sensitive type).
-  #   - ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance.
+  #   - cert_file: The absolute path to CA certificate chain for the DAP instance on the agent. This variable overrides `ssl_certificate`.
+  #   - ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance. Overwritten by the contents read from `cert_file` when it is present.
   #   - version: Conjur API version, defaults to 5.
   # @return [Sensitive] Value of the Conjur variable.
   # @example Agent-based identity invocation
@@ -96,7 +97,11 @@ Puppet::Functions.create_function :'conjur::secret' do
       opts['authn_api_key'] = Puppet::Pops::Types::PSensitiveType::Sensitive.new(authn_api_key)
     end
 
-    # Ideally we would be able to support `cert_file` here too
+    # If cert_file is set, use it to override ssl_certificate
+    if opts['cert_file']
+      raise "Cert file '#{opts['cert_file']}' cannot be found!" unless File.file?(opts['cert_file'])
+      opts['ssl_certificate'] = File.read opts['cert_file']
+    end
 
     Puppet.debug('Instantiating Conjur client...')
     Puppet.debug('Fetching Conjur token')

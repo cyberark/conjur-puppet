@@ -13,15 +13,18 @@ module Conjur
           Puppet.features.microsoft_windows? ? from_registry : from_file
         end
 
+        def load_cert_file(path)
+          raise "Cert file '#{path}' cannot be found!" unless File.file?(path)
+          File.read path
+        end
+
         def from_file
           return {} unless File.file?(CONFIG_FILE_PATH)
 
           c = YAML.safe_load(File.read(CONFIG_FILE_PATH))
 
           if c['cert_file']
-            raise "Cert file '#{c['cert_file']}' cannot be found!" unless File.file?(c['cert_file'])
-
-            c['ssl_certificate'] ||= File.read c['cert_file']
+            c['ssl_certificate'] = load_cert_file(c['cert_file'])
           end
 
           c
@@ -53,7 +56,9 @@ module Conjur
                           'expected behavior.'
           end
 
-          c['ssl_certificate'] ||= File.read c['cert_file'] if c['cert_file']
+          if c['cert_file']
+            c['ssl_certificate'] = load_cert_file(c['cert_file'])
+          end
 
           c
         end
