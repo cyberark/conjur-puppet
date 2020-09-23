@@ -20,18 +20,18 @@ pipeline {
     stage('Validate') {
       parallel {
         stage('Changelog') {
-          steps { sh './parse-changelog.sh' }
+          steps { sh './ci/parse-changelog.sh' }
         }
 
         stage('Docs') {
-          steps { sh './gen-docs.sh' }
+          steps { sh './ci/gen-docs.sh' }
         }
       }
     }
 
     stage('Build') {
       steps {
-        sh './build.sh'
+        sh './ci/build.sh'
         archiveArtifacts 'pkg/'
       }
     }
@@ -46,7 +46,7 @@ pipeline {
               node('executor-windows-2016-containers'){
                 // because the repo is not auto checked out, fetch the configure script via http
                 powershell """
-                  Invoke-WebRequest -Uri "https://raw.githubusercontent.com/cyberark/conjur-puppet/${BRANCH_NAME}/expose-daemon.ps1" -OutFile "expose-daemon.ps1"
+                  Invoke-WebRequest -Uri "https://raw.githubusercontent.com/cyberark/conjur-puppet/${BRANCH_NAME}/ci/expose-daemon.ps1" -OutFile "expose-daemon.ps1"
                 """
                 powershell '.\\expose-daemon.ps1'
                 env.WINDOWS_IP = powershell(returnStdout: true, script:  '(curl http://169.254.169.254/latest/meta-data/local-ipv4).Content').trim()
@@ -111,7 +111,7 @@ pipeline {
 
         stage('Linting & Unit Tests') {
           steps {
-            sh './test.sh'
+            sh './ci/test.sh'
           }
 
           post {
@@ -135,7 +135,7 @@ pipeline {
         tag "v*"
       }
       steps {
-        sh './release.sh'
+        sh './ci/release.sh'
       }
     }
   }
