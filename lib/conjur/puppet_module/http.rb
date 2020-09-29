@@ -7,14 +7,8 @@ module Conjur
     # This module is in charge of interacting with the Conjur endpoints
     module HTTP
       class << self
-        def directory_uri(url)
-          url += '/' unless url.end_with? '/'
-          URI url
-        end
-
         def get(host_url, path, ssl_certificate, token)
-          uri = directory_uri(host_url) + path
-          use_ssl = uri.scheme == 'https'
+          uri, use_ssl = parse_url(host_url, path)
           certs = Conjur::PuppetModule::SSL.load(ssl_certificate)
 
           headers = {}
@@ -33,12 +27,11 @@ module Conjur
         end
 
         def post(host_url, path, ssl_certificate, data)
-          uri = directory_uri(host_url) + path
+          uri, use_ssl = parse_url(host_url, path)
 
           raise(ArgumentError, "POST data to #{uri} must not be empty!") \
             if data.nil? || data.empty?
 
-          use_ssl = uri.scheme == 'https'
           certs = Conjur::PuppetModule::SSL.load(ssl_certificate)
 
           Net::HTTP.start uri.host, uri.port, use_ssl: use_ssl, cert_store: certs do |http|
@@ -48,6 +41,22 @@ module Conjur
 
             response.body
           end
+        end
+
+        private
+
+        def parse_url(url, path)
+          url += '/' unless url.end_with? '/'
+          normalized_uri = URI(url) + path
+
+          use_ssl = normalized_uri.scheme == 'https'
+
+          unless use_ssl
+            Puppet.warning("Conjur URL provided (#{url}) uses a non-HTTPS scheme" \
+                           ' - YOU ARE VULNERABLE TO MITM ATTACKS!')
+          end
+
+          return normalized_uri, use_ssl
         end
       end
     end

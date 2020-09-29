@@ -145,5 +145,7 @@ Style/ClassAndModuleChildren:
   Enabled: false
 Style/IfUnlessModifier:
   Enabled: false
+Style/RedundantReturn:
+  Enabled: false
 Style/SymbolProc:
   Enabled: false
