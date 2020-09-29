@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   with certificate contents in `ssl_certificate`.
   [cyberark/conjur-puppet#105](https://github.com/cyberark/conjur-puppet/issues/105)
 
+### Changed
+- If `authn_api_key` is not wrapped in `Sensitive` class, we now raise a descriptive
+  error as to why we cannot proceed.
+  [cyberark/conjur-puppet#232](https://github.com/cyberark/conjur-puppet/issues/232)
+
 ## [3.0.0] - 2020-09-17
 
 ### Added

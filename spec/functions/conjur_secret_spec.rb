@@ -73,6 +73,15 @@ describe 'conjur::secret', conjur: :mock do
       end
 
       describe 'using all parameters (server-side params)' do
+        it 'raises error if authn_api_key is not Sensitive type' do
+          options = {
+            'authn_api_key' => 'just a string',
+          }
+
+          expect { subject.execute(variable_id, options) }.to raise_error \
+            'Value of \'authn_api_key\' must be wrapped in \'Sensitive()\'!'
+        end
+
         describe 'with ssl_certificate set' do
           let(:full_options) do
             {

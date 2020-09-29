@@ -77,6 +77,11 @@ Puppet::Functions.create_function :'conjur::secret' do
     # we will be modifying it
     opts = options.dup
 
+    if opts['authn_api_key']
+      raise "Value of 'authn_api_key' must be wrapped in 'Sensitive()'!" \
+        unless opts['authn_api_key'].is_a? Puppet::Pops::Types::PSensitiveType::Sensitive
+    end
+
     opts['version'] ||= 5
 
     # If we didn't get any config from the server, assume it's on the agent
