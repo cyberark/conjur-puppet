@@ -25,13 +25,22 @@ describe Conjur::PuppetModule::HTTP do
   let(:mock_return_data) { double('my_retrieved_data') }
   let(:mock_connection) { double('conjur_connection') }
   let(:mock_cert_store) { double('cert_store') }
+  let(:mock_empty_cert_store) { double('empty_cert_store') }
 
   before(:each) do
     allow(Conjur::PuppetModule::SSL).to receive(:load).with(ssl_certificate)
                                                       .and_return(mock_cert_store)
+    allow(Conjur::PuppetModule::SSL).to receive(:load).with(nil)
+                                                      .and_return(mock_empty_cert_store)
+
     allow(Net::HTTP).to receive(:start).with(host, port,
                                              hash_including(use_ssl: true,
                                                             cert_store: mock_cert_store))
+                                       .and_yield(mock_connection)
+
+    allow(Net::HTTP).to receive(:start).with(host, port,
+                                             hash_including(use_ssl: false,
+                                                            cert_store: mock_empty_cert_store))
                                        .and_yield(mock_connection)
   end
 
@@ -46,6 +55,18 @@ describe Conjur::PuppetModule::HTTP do
                                               .and_return(http_ok(mock_return_data))
 
       expect(subject.get(target_url, target_path, ssl_certificate, token))
+        .to eq(mock_return_data)
+    end
+
+    it 'logs a warning on non-https URLs' do
+      expect(mock_connection).to receive(:get).with('/' + target_path, header_with_encoded_token)
+                                              .and_return(http_ok(mock_return_data))
+
+      expect(Puppet).to receive(:warning)
+        .with("Conjur URL provided (http://#{host}:#{port}/) uses a non-HTTPS scheme" \
+              ' - YOU ARE VULNERABLE TO MITM ATTACKS!')
+
+      expect(subject.get("http://#{host}:#{port}/", target_path, nil, token))
         .to eq(mock_return_data)
     end
 
@@ -101,6 +122,18 @@ describe Conjur::PuppetModule::HTTP do
                                                .and_return(http_ok(mock_return_data))
 
       expect(subject.post(target_url, target_path, ssl_certificate, mock_post_data))
+        .to eq(mock_return_data)
+    end
+
+    it 'logs a warning on non-https URLs' do
+      expect(mock_connection).to receive(:post).with('/' + target_path, mock_post_data)
+                                               .and_return(http_ok(mock_return_data))
+
+      expect(Puppet).to receive(:warning)
+        .with("Conjur URL provided (http://#{host}:#{port}/) uses a non-HTTPS scheme" \
+              ' - YOU ARE VULNERABLE TO MITM ATTACKS!')
+
+      expect(subject.post("http://#{host}:#{port}/", target_path, nil, mock_post_data))
         .to eq(mock_return_data)
     end
 

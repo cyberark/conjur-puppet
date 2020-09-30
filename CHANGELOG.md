@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - If `authn_api_key` is not wrapped in `Sensitive` class, we now raise a descriptive
   error as to why we cannot proceed.
   [cyberark/conjur-puppet#232](https://github.com/cyberark/conjur-puppet/issues/232)
+- Warnings are now logged whenever this module attempts to use a non-HTTPS endpoint.
+  [cyberark/conjur-puppet#144](https://github.com/cyberark/conjur-puppet/issues/144)
 
 ## [3.0.0] - 2020-09-17
 
