@@ -26,6 +26,7 @@
       * [Using Hiera](#using-hiera)
       * [Using Conjur identity files (Linux agents only)](#using-conjur-identity-files--linux-agents-only-)
       * [Using Windows Registry / Windows Credential Manager (Windows agents only)](#using-windows-registry---windows-credential-manager--windows-agents-only-)
+- [Troubleshooting](#troubleshooting)
 - [Reference](#reference)
 - [Limitations](#limitations)
 - [Contributing](#contributing)
@@ -490,6 +491,11 @@ To then fetch your credential, you would use the default form of `conjur::secret
 ```puppet
 $dbpass = Deferred(conjur::secret, ['production/postgres/password'])
 ```
+
+## Troubleshooting
+
+For a complete guide on troubleshooting, please see
+[TROUBLESHOOTING.md](https://github.com/cyberark/conjur-puppet/blob/master/TROUBLESHOOTING.md).
 
 ## Reference
 
