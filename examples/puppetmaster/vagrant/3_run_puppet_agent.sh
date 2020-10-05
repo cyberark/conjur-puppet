@@ -13,7 +13,7 @@ snapshot_name="$(agent_snapshot_name $PUPPET_AGENT_VERSION)"
 
 echo "Locating relevant running containers..."
 conjur_cli_container=$(docker ps | awk '/.cyberark\/conjur-cli/{print $1}')
-puppet_master_container=$(docker ps | awk '/ puppet\/puppetserver/{print $1}')
+puppet_master_container=$(docker ps | grep -v 'compiler' | awk '/ puppet\/puppetserver/{print $1}')
 conjur_nginx_container=$(docker ps | awk '/ nginx:/{print $1}')
 
 echo "Using Puppet master container ID: $puppet_master_container"
