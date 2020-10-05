@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'conjur/puppet_module/config'
-require 'conjur/puppet_module/http'
-require 'conjur/puppet_module/identity'
+require_relative 'util/config'
+require_relative 'util/http'
+require_relative 'util/identity'
 
 # Function to retrieve a Conjur / DAP secret
 Puppet::Functions.create_function :'conjur::secret' do

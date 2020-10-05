@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-require 'conjur/puppet_module/http'
+require 'puppet/functions/conjur/util/http'
 
 describe Conjur::PuppetModule::HTTP do
   def http_ok(body)

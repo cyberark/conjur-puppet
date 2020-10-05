@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-require 'conjur/puppet_module/config'
+require 'puppet/functions/conjur/util/config'
 
 describe Conjur::PuppetModule::Config do
   let(:cert_file) do

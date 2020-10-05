@@ -3,7 +3,7 @@
 require 'spec_helper'
 require 'helpers/native_wincred'
 
-require 'conjur/puppet_module/identity'
+require 'puppet/functions/conjur/util/identity'
 
 describe Conjur::PuppetModule::Identity do
   before(:each) do

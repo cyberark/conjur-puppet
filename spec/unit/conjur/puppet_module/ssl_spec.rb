@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-require 'conjur/puppet_module/ssl'
+require 'puppet/functions/conjur/util/ssl'
 
 describe Conjur::PuppetModule::SSL do
   let(:host) { 'mock_host' }
