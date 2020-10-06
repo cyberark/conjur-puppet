@@ -22,6 +22,14 @@ describe Conjur::PuppetModule::HTTP do
 
   let(:ssl_certificate) { 'ssl_certificate' }
 
+  let(:token) { 'my_supersecret_token' }
+  let(:headers_with_token) do
+    { 'Authorization' => "Token token=\"#{token}\"" }
+  end
+  let(:headers_with_encoded_token) do
+    { 'Authorization' => 'Token token="bXlfc3VwZXJzZWNyZXRfdG9rZW4="' }
+  end
+
   let(:mock_return_data) { double('my_retrieved_data') }
   let(:mock_connection) { double('conjur_connection') }
   let(:mock_cert_store) { double('cert_store') }
@@ -45,13 +53,8 @@ describe Conjur::PuppetModule::HTTP do
   end
 
   describe 'get()' do
-    let(:token) { 'my_supersecret_token' }
-    let(:header_with_encoded_token) do
-      { 'Authorization' => 'Token token="bXlfc3VwZXJzZWNyZXRfdG9rZW4="' }
-    end
-
     it 'can retrieve data' do
-      expect(mock_connection).to receive(:get).with('/' + target_path, header_with_encoded_token)
+      expect(mock_connection).to receive(:get).with('/' + target_path, headers_with_encoded_token)
                                               .and_return(http_ok(mock_return_data))
 
       expect(subject.get(target_url, target_path, ssl_certificate, token))
@@ -59,7 +62,7 @@ describe Conjur::PuppetModule::HTTP do
     end
 
     it 'logs a warning on non-https URLs' do
-      expect(mock_connection).to receive(:get).with('/' + target_path, header_with_encoded_token)
+      expect(mock_connection).to receive(:get).with('/' + target_path, headers_with_encoded_token)
                                               .and_return(http_ok(mock_return_data))
 
       expect(Puppet).to receive(:warning)
@@ -71,7 +74,7 @@ describe Conjur::PuppetModule::HTTP do
     end
 
     it 'handles retrieval errors' do
-      expect(mock_connection).to receive(:get).with('/' + target_path, header_with_encoded_token)
+      expect(mock_connection).to receive(:get).with('/' + target_path, headers_with_encoded_token)
                                               .and_return(http_unauthorized)
 
       expect { subject.get(target_url, target_path, ssl_certificate, token) }
@@ -87,7 +90,7 @@ describe Conjur::PuppetModule::HTTP do
     end
 
     it 'can handle target url without slash' do
-      expect(mock_connection).to receive(:get).with('/' + target_path, header_with_encoded_token)
+      expect(mock_connection).to receive(:get).with('/' + target_path, headers_with_encoded_token)
                                               .and_return(http_ok(mock_return_data))
 
       expect(subject.get(target_url.delete_suffix('/'), target_path, ssl_certificate, token))
@@ -99,7 +102,7 @@ describe Conjur::PuppetModule::HTTP do
                                                hash_including(use_ssl: false,
                                                               cert_store: mock_cert_store))
                                          .and_yield(mock_connection)
-      expect(mock_connection).to receive(:get).with('/' + target_path, header_with_encoded_token)
+      expect(mock_connection).to receive(:get).with('/' + target_path, headers_with_encoded_token)
                                               .and_return(http_ok(mock_return_data))
 
       expect(subject.get(target_url.sub('https', 'http'), target_path, ssl_certificate, token))
@@ -118,15 +121,29 @@ describe Conjur::PuppetModule::HTTP do
     let(:mock_post_data) { 'post_data' }
 
     it 'can retrieve data' do
-      expect(mock_connection).to receive(:post).with('/' + target_path, mock_post_data)
+      expect(mock_connection).to receive(:post).with('/' + target_path, mock_post_data, {})
                                                .and_return(http_ok(mock_return_data))
 
       expect(subject.post(target_url, target_path, ssl_certificate, mock_post_data))
         .to eq(mock_return_data)
     end
 
+    it 'can forward the authorization token' do
+      expect(mock_connection).to receive(:post).with(
+        '/' + target_path,
+        mock_post_data,
+        headers_with_token,
+      ).and_return(http_ok(mock_return_data))
+
+      expect(subject.post(target_url,
+                          target_path,
+                          ssl_certificate,
+                          mock_post_data,
+                          token)).to eq(mock_return_data)
+    end
+
     it 'logs a warning on non-https URLs' do
-      expect(mock_connection).to receive(:post).with('/' + target_path, mock_post_data)
+      expect(mock_connection).to receive(:post).with('/' + target_path, mock_post_data, {})
                                                .and_return(http_ok(mock_return_data))
 
       expect(Puppet).to receive(:warning)
@@ -138,20 +155,15 @@ describe Conjur::PuppetModule::HTTP do
     end
 
     it 'handles retrieval errors' do
-      expect(mock_connection).to receive(:post).with('/' + target_path, mock_post_data)
+      expect(mock_connection).to receive(:post).with('/' + target_path, mock_post_data, {})
                                                .and_return(http_unauthorized)
 
       expect { subject.post(target_url, target_path, ssl_certificate, mock_post_data) }
         .to raise_error Net::HTTPError
     end
 
-    it 'raises an error if data is empty' do
-      expect { subject.post(target_url, target_path, ssl_certificate, nil) }
-        .to raise_error ArgumentError
-    end
-
     it 'can handle target url without slash' do
-      expect(mock_connection).to receive(:post).with('/' + target_path, mock_post_data)
+      expect(mock_connection).to receive(:post).with('/' + target_path, mock_post_data, {})
                                                .and_return(http_ok(mock_return_data))
 
       expect(subject.post(target_url.delete_suffix('/'), target_path, ssl_certificate, mock_post_data))
@@ -163,7 +175,7 @@ describe Conjur::PuppetModule::HTTP do
                                                hash_including(use_ssl: false,
                                                               cert_store: mock_cert_store))
                                          .and_yield(mock_connection)
-      expect(mock_connection).to receive(:post).with('/' + target_path, mock_post_data)
+      expect(mock_connection).to receive(:post).with('/' + target_path, mock_post_data, {})
                                                .and_return(http_ok(mock_return_data))
 
       expect(subject.post(target_url.sub('https', 'http'), target_path, ssl_certificate, mock_post_data))
