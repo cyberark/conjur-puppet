@@ -10,10 +10,10 @@ What kind of error are you seeing?
 - [`Conjur configuration not found on system`](#identity-not-set)
 - [`Error while evaluating a Method call ... expects a Sensitive value, got Deferred`](#misuse-of-deferred-variables)
 - [`Failed to open TCP connection to ... (getaddrinfo: No such host is known.)`](#incorrect-conjur-endpoint)
-- [`Failed to apply catalog: Unauthorized`](#incorrect-conjur-credentials)
+- [`Conjur server error: Unauthorized`](#incorrect-conjur-credentials)
 - [`Could not find any pre-populated Conjur credentials in WinCred storage`](#wincred-credentials-not-correctly-set)
-- [`Failed to apply catalog: Not Found`](#variable-not-found)
-- [`SSL_connect returned=1 errno=0 state=error: certificate verify failed`](#incorrect-ssl-certificate)
+- [`Conjur server error: Not Found`](#variable-not-found)
+- [`Conjur server error: SSL_connect returned=1 errno=0 state=error: certificate verify failed`](#incorrect-ssl-certificate)
 - [`Cert file '/path/to/cert.pem' cannot be found!`](#certificate-path-cannot-be-used)
 - [`Value of 'authn_api_key' must be wrapped in 'Sensitive()'!`](#authn_api_key-not-wrapped-in-sensitive)
 
@@ -116,7 +116,7 @@ reachable.
 #### Symptoms
 - You see an error in your Puppet logs that looks something like:
   ```
-  Error: Failed to apply catalog: Unauthorized
+  Error: Failed to apply catalog: Conjur server error: Unauthorized
   ```
 
 #### Known Causes
@@ -135,7 +135,7 @@ correct for the server that you are trying to connect to.
   ```
   Warning: Could not find any pre-populated Conjur credentials in WinCred storage for https://conjur.cyberark.com
   ...
-  Error: Failed to apply catalog: POST data to https://conjur.cyberark.com/authn/myaccount//authenticate must not be empty!
+  Error: Failed to apply catalog: Conjur server error: POST data to https://conjur.cyberark.com/authn/myaccount//authenticate must not be empty!
   ```
 
 #### Known Causes
@@ -155,7 +155,7 @@ Ensure that you have the correct credentials set in `Windows Credentials` for th
   ```
   Debug: Fetching Conjur secret 'inventoryy/db-password'...
   ...
-  Error: Failed to apply catalog: Not Found
+  Error: Failed to apply catalog: Conjur server error: Not Found
   ```
 
 #### Known Causes
@@ -172,7 +172,7 @@ user configured has the permissions to retrieve it.
 #### Symptoms
 - You see an error in your Puppet logs that looks something like:
   ```
-  Error: Failed to apply catalog: SSL_connect returned=1 errno=0 state=error: certificate verify failed (unable to get local issuer certificate)
+  Error: Failed to apply catalog: Conjur server error: SSL_connect returned=1 errno=0 state=error: certificate verify failed (unable to get local issuer certificate)
   ```
 
 #### Known Causes

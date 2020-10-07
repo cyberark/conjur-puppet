@@ -78,7 +78,7 @@ describe Conjur::PuppetModule::HTTP do
                                               .and_return(http_unauthorized)
 
       expect { subject.get(target_url, target_path, ssl_certificate, token) }
-        .to raise_error Net::HTTPError
+        .to raise_error Net::HTTPError, %r{Conjur server error: unauthorized}
     end
 
     it 'does not include token if none is provided' do
@@ -159,7 +159,7 @@ describe Conjur::PuppetModule::HTTP do
                                                .and_return(http_unauthorized)
 
       expect { subject.post(target_url, target_path, ssl_certificate, mock_post_data) }
-        .to raise_error Net::HTTPError
+        .to raise_error Net::HTTPError, %r{Conjur server error: unauthorized}
     end
 
     it 'can handle target url without slash' do

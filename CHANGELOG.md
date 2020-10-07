@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   [cyberark/conjur-puppet#105](https://github.com/cyberark/conjur-puppet/issues/105)
 
 ### Changed
+- Conjur server errors now have better descriptions.
+  [cyberark/conjur-puppet#241](https://github.com/cyberark/conjur-puppet/issues/241)
 - If `authn_api_key` is not wrapped in `Sensitive` class, we now raise a descriptive
   error as to why we cannot proceed.
   [cyberark/conjur-puppet#232](https://github.com/cyberark/conjur-puppet/issues/232)
