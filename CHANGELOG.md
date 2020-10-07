@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [3.1.0] - 2020-10-08
+
 ### Added
 - Module now fully supports the use of `cert_file` parameter, which accepts the path to the PEM-encoded
   x509 CA certificate chain for Conjur. Users can supply the module with certificate path in `cert_file` OR
@@ -173,7 +175,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - fixed a bug in host identity manifest preventing usage of host factory
 
-[Unreleased]: https://github.com/cyberark/conjur-puppet/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-puppet/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/cyberark/conjur-puppet/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/cyberark/conjur-puppet/compare/v2.0.6...v3.0.0
 [2.0.6]: https://github.com/cyberark/conjur-puppet/compare/v2.0.5...v2.0.6
 [2.0.5]: https://github.com/cyberark/conjur-puppet/compare/v2.0.4...v2.0.5
