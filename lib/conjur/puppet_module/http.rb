@@ -39,7 +39,9 @@ module Conjur
           Net::HTTP.start(uri.host, uri.port, use_ssl: use_ssl, cert_store: certs) do |http|
             response = yield http, uri
 
-            raise Net::HTTPError.new response.message, response unless response.code.match?(%r{^2})
+            unless response.code.match?(%r{^2})
+              raise Net::HTTPError.new("Conjur server error: #{response.message}", response)
+            end
 
             response.body
           end
