@@ -6,7 +6,6 @@
 
 - [Description](#description)
 - [Certification Level](#certification-level)
-  * [Certified Versions](#certified-versions)
 - [Setup](#setup)
   * [Setup requirements](#setup-requirements)
   * [Deprecations](#deprecations)
@@ -45,18 +44,11 @@ You can find our official distributable releases on Puppet Forge under [`cyberar
 
 ## Certification level
 
-![](https://img.shields.io/badge/Certification%20Level-Trusted-007BFF?link=https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md)
+![Certification Level](https://img.shields.io/badge/Certification%20Level-Certified-6C757D?link=https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md)
 
-This repo is a **Trusted** level project. It's been reviewed by CyberArk to verify that it will securely
-work with Conjur OSS as documented. For more detailed information on our certification levels, see
+This repo is a **Certified** project. It is officially approved to work with Conjur OSS
+and DAP as documented. For more detailed information on our certification levels, see
 [our community guidelines](https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md#community).
-
-### Certified Versions
-
-Releases of this module belonging to the `v3` major version are not currently
-Certified. If a Certified version of this module is desired, please use the highest
-available `v2.x.x` version available on PuppetForge under
-[`cyberark/conjur`](https://forge.puppet.com/cyberark/conjur).
 
 ## Setup
 
