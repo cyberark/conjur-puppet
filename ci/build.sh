@@ -4,6 +4,8 @@
 # To ensure this script always executes relative to the repo root
 cd "$(dirname "$0")/.."
 
+mkdir -p "./pkg"
+
 docker build -t puppet-pdk -f ./ci/Dockerfile.pdk .
 
 docker run --rm \
