@@ -41,13 +41,15 @@ pipeline {
         stage('Setup & Hold Win2016 Node') {
           steps {
             script {
+              dir("ci") {
+                stash name: "expose-daemon-script", includes: "expose-daemon.ps1"
+              }
               // Node used instead of agent to avoid the automatic git checkout that agent provides.
               // This is because git checkout is unreliable on windows agents
               node('executor-windows-2016-containers'){
-                // because the repo is not auto checked out, fetch the configure script via http
-                powershell """
-                  Invoke-WebRequest -Uri "https://raw.githubusercontent.com/cyberark/conjur-puppet/${BRANCH_NAME}/ci/expose-daemon.ps1" -OutFile "expose-daemon.ps1"
-                """
+                // because the repo is not auto checked out, fetch the configure script
+                unstash "expose-daemon-script"
+
                 powershell '.\\expose-daemon.ps1'
                 env.WINDOWS_IP = powershell(returnStdout: true, script:  '(curl http://169.254.169.254/latest/meta-data/local-ipv4).Content').trim()
                 env.WINDOWS_DOCKER_CERT_CA = powershell(returnStdout: true, script:  'cat $env:USERPROFILE\\.docker\\ca.pem')
@@ -82,6 +84,7 @@ pipeline {
                 writeFile file: "${env.WINDOWS_DOCKER_CERT_DIR}/ca.pem", text: env.WINDOWS_DOCKER_CERT_CA
                 writeFile file: "${env.WINDOWS_DOCKER_CERT_DIR}/cert.pem", text: env.WINDOWS_DOCKER_CERT_CERT
                 writeFile file: "${env.WINDOWS_DOCKER_CERT_DIR}/key.pem", text: env.WINDOWS_DOCKER_CERT_KEY
+                sh "ls -la ${env.WINDOWS_DOCKER_CERT_DIR}"
               }
             }
 
