@@ -44,11 +44,11 @@ You can find our official distributable releases on Puppet Forge under [`cyberar
 
 ## Certification level
 
-![Certification Level](https://img.shields.io/badge/Certification%20Level-Certified-6C757D?link=https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md)
+![Certification Level](https://img.shields.io/badge/Certification%20Level-Certified-6C757D?link=https://github.com/cyberark/community/blob/main/Conjur/conventions/certification-levels.md)
 
 This repo is a **Certified** project. It is officially approved to work with Conjur OSS
 and DAP as documented. For more detailed information on our certification levels, see
-[our community guidelines](https://github.com/cyberark/community/blob/master/Conjur/conventions/certification-levels.md#community).
+[our community guidelines](https://github.com/cyberark/community/blob/main/Conjur/conventions/certification-levels.md#community).
 
 ## Setup
 
@@ -487,16 +487,16 @@ $dbpass = Deferred(conjur::secret, ['production/postgres/password'])
 ## Troubleshooting
 
 For a complete guide on troubleshooting, please see
-[TROUBLESHOOTING.md](https://github.com/cyberark/conjur-puppet/blob/master/TROUBLESHOOTING.md).
+[TROUBLESHOOTING.md](https://github.com/cyberark/conjur-puppet/blob/main/TROUBLESHOOTING.md).
 
 ## Reference
 
 For a complete reference, please see
-[REFERENCE.md](https://github.com/cyberark/conjur-puppet/blob/master/REFERENCE.md).
+[REFERENCE.md](https://github.com/cyberark/conjur-puppet/blob/main/REFERENCE.md).
 
 ## Limitations
 
-See [metadata.json](https://github.com/cyberark/conjur-puppet/blob/master/metadata.json)
+See [metadata.json](https://github.com/cyberark/conjur-puppet/blob/main/metadata.json)
 for supported platforms.
 
 At current, the Conjur Puppet module encrypts and decrypts the Conjur access
@@ -509,7 +509,7 @@ We welcome contributions of all kinds to this repository. For instructions on
 how to get started and descriptions of our development workflows, please see our
 [contributing guide][contrib].
 
-[contrib]: https://github.com/cyberark/conjur-puppet/blob/master/CONTRIBUTING.md
+[contrib]: https://github.com/cyberark/conjur-puppet/blob/main/CONTRIBUTING.md
 
 ## Support
 
