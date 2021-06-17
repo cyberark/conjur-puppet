@@ -13,7 +13,7 @@
     + [Conjur Enterprise v4](#conjur-enterprise-v4)
     + [Use of Host Factory Tokens](#use-of-host-factory-tokens)
   * [Installation](#installation)
-  * [Using conjur-puppet with Conjur OSS](#using-conjur-puppet-with-conjur-oss)
+  * [Using conjur-puppet with Conjur Open Source](#using-conjur-puppet-with-conjur-open-source)
   * [Conjur module basics](#conjur-module-basics)
     + [Example usage](#example-usage)
     + [`Deferred` functions](#deferred-functions)
@@ -46,8 +46,8 @@ You can find our official distributable releases on Puppet Forge under [`cyberar
 
 ![Certification Level](https://img.shields.io/badge/Certification%20Level-Certified-6C757D?link=https://github.com/cyberark/community/blob/main/Conjur/conventions/certification-levels.md)
 
-This repo is a **Certified** project. It is officially approved to work with Conjur OSS
-and DAP as documented. For more detailed information on our certification levels, see
+This repo is a **Certified** project. It is officially approved to work with Conjur Open Source
+and Conjur Enterprise as documented. For more detailed information on our certification levels, see
 [our community guidelines](https://github.com/cyberark/community/blob/main/Conjur/conventions/certification-levels.md#community).
 
 ## Setup
@@ -58,8 +58,8 @@ This module requires that you have:
 - Puppet v6 _or equivalent EE version_
 - Conjur endpoint available to both the Puppet server and the Puppet nodes using this
   module. Supported versions:
-  - Conjur OSS v1+
-  - DAP v10+
+  - Conjur Open Source v1+
+  - Conjur Enterprise (formerly DAP) v10+
 
 ### Deprecations
 
@@ -97,9 +97,9 @@ command on the Puppet server:
 puppet module install cyberark-conjur --version 1.2.3
 ```
 
-### Using conjur-puppet with Conjur OSS
+### Using conjur-puppet with Conjur Open Source
 
-Are you using this project with [Conjur OSS](https://github.com/cyberark/conjur)? Then we
+Are you using this project with [Conjur Open Source](https://github.com/cyberark/conjur)? Then we
 **strongly** recommend choosing the version of this project to use from the latest [Conjur OSS
 suite release](https://docs.conjur.org/Latest/en/Content/Overview/Conjur-OSS-Suite-Overview.html).
 Conjur maintainers perform additional testing on the suite release versions to ensure
@@ -261,15 +261,15 @@ In the sections below, we'll outline the different methods of providing this
 module with your Conjur configuration and credentials. In those sections we'll
 refer often to the following Conjur configuration variables:
 
-- `appliance_url`: The URL of the Conjur or DAP instance you are connecting to. If using
-  DAP, this may be the URL of a load balancer for the cluster's DAP follower instances.
-- `account` - the account name for the Conjur / DAP instance you are connecting to.
-- `authn_login`: The identity you are using to authenticate to the Conjur / DAP
+- `appliance_url`: The URL of the Conjur or Conjur Enterprise instance you are connecting to. If using
+  Conjur Enterprise, this may be the URL of a load balancer for the cluster's Conjur Enterprise follower instances.
+- `account` - the account name for the Conjur / Conjur Enterprise instance you are connecting to.
+- `authn_login`: The identity you are using to authenticate to the Conjur / Conjur Enterprise
   instance. For hosts / application identities, the fully qualified path should be prefixed
   by `host/`, eg `host/production/my-app-host`.
 - `authn_api_key`: The API key of the identity you are using to authenticate to the
-  Conjur / DAP instance.
-- `ssl_certificate`: The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance you
+  Conjur / Conjur Enterprise instance.
+- `ssl_certificate`: The _raw_ PEM-encoded x509 CA certificate chain for the Conjur Enterprise instance you
   are connecting to, provided as a string (including newlines) or using the
   [Puppet file resource type](https://puppet.com/docs/puppet/latest/types/file.html).
   This value may be obtained by running the command:

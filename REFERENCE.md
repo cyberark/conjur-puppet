@@ -10,7 +10,7 @@
 
 ### Functions
 
-* [`conjur::secret`](#conjursecret): Function to retrieve a Conjur / DAP secret
+* [`conjur::secret`](#conjursecret): Function to retrieve a Conjur secret
 
 ## Resource types
 
@@ -32,11 +32,11 @@ Default value: `present`
 
 ##### `username`
 
-The identity used to authenticate to the Conjur / DAP instance
+The identity used to authenticate to the Conjur instance
 
 ##### `value`
 
-The API key matching the Conjur / DAP identity
+The API key matching the Conjur identity
 
 #### Parameters
 
@@ -49,7 +49,7 @@ discover the appropriate provider for your platform.
 
 ##### `target`
 
-Conjur / DAP URL
+Conjur URL
 
 ## Functions
 
@@ -57,7 +57,7 @@ Conjur / DAP URL
 
 Type: Ruby 4.x API
 
-Function to retrieve a Conjur / DAP secret
+Function to retrieve a Conjur secret
 
 #### Examples
 
@@ -87,7 +87,7 @@ $dbpass = Deferred(conjur::secret, ['production/postgres/password', {
 
 #### `conjur::secret(String $variable_id, Optional[Hash] $options)`
 
-Function to retrieve a Conjur / DAP secret
+Function to retrieve a Conjur secret
 
 Returns: `Sensitive` Value of the Conjur variable.
 
@@ -121,7 +121,7 @@ $dbpass = Deferred(conjur::secret, ['production/postgres/password', {
 
 Data type: `String`
 
-Conjur / DAP variable ID that you want the value of.
+Conjur variable ID that you want the value of.
 
 ##### `options`
 
@@ -129,11 +129,11 @@ Data type: `Optional[Hash]`
 
 Optional parameter specifying server identity overrides
 The following keys are supported in the options hash:
-- appliance_url: The URL of the Conjur or DAP instance..
+- appliance_url: The URL of the Conjur instance..
 - account: Name of the Conjur account that contains this variable.
-- authn_login: The identity you are using to authenticate to the Conjur / DAP instance.
+- authn_login: The identity you are using to authenticate to the Conjur instance.
 - authn_api_key: The API key of the identity you are using to authenticate with (must be Sensitive type).
-- cert_file: The absolute path to CA certificate chain for the DAP instance on the agent. This variable overrides `ssl_certificate`.
-- ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance. Overwritten by the contents read from `cert_file` when it is present.
+- cert_file: The absolute path to CA certificate chain for the Conjur Enterprise instance on the agent. This variable overrides `ssl_certificate`.
+- ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the Conjur Enterprise instance. Overwritten by the contents read from `cert_file` when it is present.
 - version: Conjur API version, defaults to 5.
 
