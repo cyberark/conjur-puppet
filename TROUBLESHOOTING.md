@@ -103,7 +103,7 @@ information on how to do this correctly.
   ```
 
 #### Known Causes
-This problem occurs when the `appliance_url` for Conjur / DAP is either
+This problem occurs when the `appliance_url` for Conjur is either
 incorrect or unreachable from the agent.
 
 #### Resolution
@@ -121,7 +121,7 @@ reachable.
 
 #### Known Causes
 This is usually due to credential values being incorrect for the
-target Conjur / DAP server.
+target Conjur server.
 
 #### Resolution
 Verify that `authn_login_id`, `authn_api_key`, and `account` are
@@ -180,7 +180,7 @@ The provided Conjur SSL signing certificate is either incorrect, invalid, or mal
 
 #### Resolution
 Ensure that `ssl_certificate` or `cert_file` correctly specifies the certificate
-that can be used to validate the Conjur / DAP SSL certificate. Also ensure that
+that can be used to validate the Conjur SSL certificate. Also ensure that
 none of the certificates in the chain are expired as seen by the agent machine.
 
 
