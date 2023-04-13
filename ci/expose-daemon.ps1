@@ -133,6 +133,15 @@ function updateConfig($daemonJson, $serverCertsPath) {
 $dockerData = "$env:ProgramData\docker"
 $userPath = "$env:USERPROFILE\.docker"
 
+Write-Host "Updating and Restarting Docker"
+
+Stop-Service docker
+Remove-Item -Recurse -Force $dockerData
+Invoke-WebRequest https://get.docker.com/builds/Windows/x86_64/docker-1.13.1.zip -UseBasicParsing -OutFile docker.zip
+Expand-Archive docker.zip -DestinationPath $Env:ProgramFiles -Force
+Remove-Item -Force docker.zip
+Start-Service docker
+
 ensureDirs @("$dockerData\certs.d", "$dockerData\config", "$userPath")
 
 $serverCertsPath = "$dockerData\certs.d"

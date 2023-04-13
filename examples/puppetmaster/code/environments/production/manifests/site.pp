@@ -37,7 +37,7 @@ node default {
   file { $output_file2:
     ensure  => file,
     content => Sensitive(Deferred(conjur::secret, [
-          'inventory/funky/special @#$%^&*(){}[].,+/variable'
+          'inventory/funky/special @#$%^&*(){}[].,+/variable',
     ])),
   }
 
