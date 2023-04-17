@@ -1,11 +1,13 @@
-FROM ruby:2.5
-MAINTAINER CyberArk Software Ltd.
+FROM ruby:3.2.1
+LABEL org.opencontainers.image.authors="CyberArk Software Ltd."
 
 # Install PDK (https://puppet.com/docs/pdk/1.x/pdk_install.html)
-RUN wget -q https://apt.puppet.com/puppet-tools-release-stretch.deb && \
-    dpkg -i puppet-tools-release-stretch.deb && \
+RUN wget "https://pm.puppet.com/cgi-bin/pdk_download.cgi?dist=debian&rel=10&arch=amd64&ver=latest" -O pdk.deb && \
+    dpkg -i pdk.deb && \
     apt-get update && \
-    apt-get install pdk
+    apt-get install -y pdk
+
+RUN ln -s /bin/mkdir /usr/bin/mkdir
 
 RUN mkdir /conjur
 WORKDIR /conjur

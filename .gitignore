@@ -36,3 +36,5 @@
 .project
 .envrc
 /inventory.yaml
+pdk.yaml
+

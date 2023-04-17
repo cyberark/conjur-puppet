@@ -151,6 +151,7 @@ run_with_docker_windows() {
   export DOCKER_HOST;
   export DOCKER_CERT_PATH;
   export DOCKER_TLS_VERIFY;
+  export DOCKER_BUILDKIT=0
 
   "$@"
 }

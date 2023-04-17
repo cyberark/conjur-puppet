@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Security
+- Upgrade PDK and Ruby base image version
+  [cyberark/conjur-puppet#253](https://github.com/cyberark/conjur-puppet/pull/253)
+
 ## [3.1.0] - 2020-10-08
 
 ### Added
