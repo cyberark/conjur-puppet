@@ -1,4 +1,4 @@
-FROM ruby:3.3-rc-slim
+FROM ruby:3.3-rc
 LABEL org.opencontainers.image.authors="CyberArk Software Ltd."
 
 # Install PDK (https://puppet.com/docs/pdk/1.x/pdk_install.html)
