@@ -1,13 +1,13 @@
-FROM ruby:3.2.2
+FROM ruby:3.3-rc-slim
 LABEL org.opencontainers.image.authors="CyberArk Software Ltd."
 
 # Install PDK (https://puppet.com/docs/pdk/1.x/pdk_install.html)
-RUN wget "https://pm.puppet.com/cgi-bin/pdk_download.cgi?dist=debian&rel=10&arch=amd64&ver=latest" -O pdk.deb && \
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -L "https://pm.puppet.com/cgi-bin/pdk_download.cgi?dist=debian&rel=10&arch=amd64&ver=latest" -o pdk.deb && \
     dpkg -i pdk.deb && \
-    apt-get update && \
-    apt-get install -y pdk
-
-RUN ln -s /bin/mkdir /usr/bin/mkdir
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /conjur
 WORKDIR /conjur
