@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Security
 - Upgrade Ruby base image version to 3.3-rc-slim
-  [cyberark/conjur-puppet#258](https://github.com/cyberark/conjur-puppet/pull/258)
+  [cyberark/conjur-puppet#259](https://github.com/cyberark/conjur-puppet/pull/259)
 - Upgrade PDK and Ruby base image version to 3.2.2
   [cyberark/conjur-puppet#256](https://github.com/cyberark/conjur-puppet/pull/256)
 - Upgrade PDK and Ruby base image version

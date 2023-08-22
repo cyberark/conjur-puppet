@@ -12,6 +12,7 @@ SimpleCov.start
 RSpec.configure do |c|
   c.mock_with :rspec
 end
+
 require 'puppetlabs_spec_helper/module_spec_helper'
 require 'rspec-puppet-facts'
 
@@ -34,8 +35,8 @@ default_fact_files.each do |f|
   next unless File.exist?(f) && File.readable?(f) && File.size?(f)
 
   begin
-    default_facts.merge!(YAML.safe_load(File.read(f), [], [], true))
-  rescue => e
+    default_facts.merge!(YAML.safe_load(File.read(f), permitted_classes: [], permitted_symbols: [], aliases: true))
+  rescue StandardError => e
     RSpec.configuration.reporter.message "WARNING: Unable to load #{f}: #{e}"
   end
 end
@@ -47,53 +48,27 @@ end
 
 RSpec.configure do |c|
   c.default_facts = default_facts
-  c.mock_with :rspec
-  c.expect_with :rspec do |expectations|
-    expectations.max_formatted_output_length = nil
-  end
-
   c.before :each do
     # set to strictest setting for testing
     # by default Puppet runs at warning level
     Puppet.settings[:strict] = :warning
     Puppet.settings[:strict_variables] = true
   end
-
   c.filter_run_excluding(bolt: true) unless ENV['GEM_BOLT']
   c.after(:suite) do
+    RSpec::Puppet::Coverage.report!(0)
   end
-end
 
-module RSpec::Puppet
-  module ClassExampleGroup
-    def environment_module
-      @envmod ||= Puppet::Parser::Functions.environment_module Puppet.lookup(:current_environment)
-    end
+  # Filter backtrace noise
+  backtrace_exclusion_patterns = [
+    %r{spec_helper},
+    %r{gems},
+  ]
 
-    def allow_calling_puppet_function(name, method)
-      loader = Puppet::Pops::Loaders.new adapter.current_environment
-      fun = loader.private_environment_loader.load :function, name
-      allow(fun).to receive(method)
-    end
-
-    def lookupvar(name)
-      # HACK: There is no way to get to a local variable from the catalog:
-      # by design, catalog contains only the external observable effects.
-      # So instead synthesize a catalog by adding a dummy file
-      # with the contents equal to variable to look up, then get lookup
-      # its content in the catalog. Slow and convoluted, but seems to work.
-      puppet_code = <<-END
-        #{test_manifest(:class)}
-        file { var:
-          content => $#{name}
-        }
-      END
-      catalog = build_catalog('test', facts_hash('conjur'), nil, nil,
-                              puppet_code,
-                              nil,
-                              {})
-      catalog.resource('File[var]')[:content]
-    end
+  if c.respond_to?(:backtrace_exclusion_patterns)
+    c.backtrace_exclusion_patterns = backtrace_exclusion_patterns
+  elsif c.respond_to?(:backtrace_clean_patterns)
+    c.backtrace_clean_patterns = backtrace_exclusion_patterns
   end
 end
 

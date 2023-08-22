@@ -3,7 +3,7 @@ LABEL org.opencontainers.image.authors="CyberArk Software Ltd."
 
 # Install PDK (https://puppet.com/docs/pdk/1.x/pdk_install.html)
 RUN apt-get update && \
-    apt-get install -y curl && \
+    apt-get install -y build-essential curl make && \
     curl -L "https://pm.puppet.com/cgi-bin/pdk_download.cgi?dist=debian&rel=10&arch=amd64&ver=latest" -o pdk.deb && \
     dpkg -i pdk.deb && \
     apt-get clean && \
