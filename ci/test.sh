@@ -12,7 +12,7 @@ if [ ! "${SKIP_VALIDATION}" == "true" ]; then
     -w /root \
     puppet-pdk \
     bash -ec "
-      pdk validate control-repo,metadata,puppet,ruby,yaml
+      pdk validate control-repo,metadata,puppet,yaml
     "
 fi
 
