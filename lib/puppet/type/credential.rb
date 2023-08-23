@@ -9,14 +9,14 @@ Puppet::Type.newtype(:credential) do
   ensurable
 
   newparam(:target, namevar: true) do
-    desc 'Conjur / DAP URL'
+    desc 'Conjur URL'
   end
 
   newproperty(:username) do
-    desc 'The identity used to authenticate to the Conjur / DAP instance'
+    desc 'The identity used to authenticate to the Conjur instance'
   end
 
   newproperty(:value) do
-    desc 'The API key matching the Conjur / DAP identity'
+    desc 'The API key matching the Conjur identity'
   end
 end
