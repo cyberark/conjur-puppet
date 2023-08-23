@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [3.1.1] - 2023-08-23
+
 ### Security
 - Upgrade Ruby base image version to 3.3-rc-slim
   [cyberark/conjur-puppet#259](https://github.com/cyberark/conjur-puppet/pull/259)
@@ -183,7 +185,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - fixed a bug in host identity manifest preventing usage of host factory
 
-[Unreleased]: https://github.com/cyberark/conjur-puppet/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/cyberark/conjur-puppet/compare/v3.1.1...HEAD
+[3.1.1]: https://github.com/cyberark/conjur-puppet/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/cyberark/conjur-puppet/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/cyberark/conjur-puppet/compare/v2.0.6...v3.0.0
 [2.0.6]: https://github.com/cyberark/conjur-puppet/compare/v2.0.5...v2.0.6
