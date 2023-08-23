@@ -10,11 +10,11 @@
 
 ### Functions
 
-* [`conjur::secret`](#conjursecret): Function to retrieve a Conjur secret
+* [`conjur::secret`](#conjur--secret): Function to retrieve a Conjur secret
 
 ## Resource types
 
-### `credential`
+### <a name="credential"></a>`credential`
 
 Manages Credential Manager credentials on Windows systems.
 
@@ -42,18 +42,21 @@ The API key matching the Conjur identity
 
 The following parameters are available in the `credential` type.
 
-##### `provider`
+* [`provider`](#-credential--provider)
+* [`target`](#-credential--target)
+
+##### <a name="-credential--provider"></a>`provider`
 
 The specific backend to use for this `credential` resource. You will seldom need to specify this --- Puppet will usually
 discover the appropriate provider for your platform.
 
-##### `target`
+##### <a name="-credential--target"></a>`target`
 
 Conjur URL
 
 ## Functions
 
-### `conjur::secret`
+### <a name="conjur--secret"></a>`conjur::secret`
 
 Type: Ruby 4.x API
 
@@ -129,11 +132,11 @@ Data type: `Optional[Hash]`
 
 Optional parameter specifying server identity overrides
 The following keys are supported in the options hash:
-- appliance_url: The URL of the Conjur instance..
+- appliance_url: The URL of the Conjur instance.
 - account: Name of the Conjur account that contains this variable.
 - authn_login: The identity you are using to authenticate to the Conjur instance.
 - authn_api_key: The API key of the identity you are using to authenticate with (must be Sensitive type).
-- cert_file: The absolute path to CA certificate chain for the Conjur Enterprise instance on the agent. This variable overrides `ssl_certificate`.
-- ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the Conjur Enterprise instance. Overwritten by the contents read from `cert_file` when it is present.
+- cert_file: The absolute path to CA certificate chain for the Conjur instance on the agent. This variable overrides `ssl_certificate`.
+- ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the Conjur instance. Overwritten by the contents read from `cert_file` when it is present.
 - version: Conjur API version, defaults to 5.
 

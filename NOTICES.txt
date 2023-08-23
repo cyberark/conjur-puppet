@@ -15,7 +15,7 @@ Section 1: Apache License 2.0
 
 Section 2: BSD 2-clause "Simplified" License
 
->>> github.com/ruby/ruby-2.4.10
+>>> github.com/ruby/ruby-3.3
 
 
 
@@ -71,7 +71,7 @@ APPENDIX: Standard License Files and Templates
 
 BSD 2-clause "Simplified" License is applicable to the following component(s).
 
->>> github.com/ruby/ruby-2.4.10
+>>> github.com/ruby/ruby-3.3
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
 

@@ -4,17 +4,17 @@ require 'conjur/puppet_module/config'
 require 'conjur/puppet_module/http'
 require 'conjur/puppet_module/identity'
 
-# Function to retrieve a Conjur / DAP secret
+# Function to retrieve a Conjur secret
 Puppet::Functions.create_function :'conjur::secret' do
-  # @param variable_id Conjur / DAP variable ID that you want the value of.
+  # @param variable_id Conjur variable ID that you want the value of.
   # @param options Optional parameter specifying server identity overrides
   #   The following keys are supported in the options hash:
-  #   - appliance_url: The URL of the Conjur or DAP instance..
+  #   - appliance_url: The URL of the Conjur instance.
   #   - account: Name of the Conjur account that contains this variable.
-  #   - authn_login: The identity you are using to authenticate to the Conjur / DAP instance.
+  #   - authn_login: The identity you are using to authenticate to the Conjur instance.
   #   - authn_api_key: The API key of the identity you are using to authenticate with (must be Sensitive type).
-  #   - cert_file: The absolute path to CA certificate chain for the DAP instance on the agent. This variable overrides `ssl_certificate`.
-  #   - ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the DAP instance. Overwritten by the contents read from `cert_file` when it is present.
+  #   - cert_file: The absolute path to CA certificate chain for the Conjur instance on the agent. This variable overrides `ssl_certificate`.
+  #   - ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the Conjur instance. Overwritten by the contents read from `cert_file` when it is present.
   #   - version: Conjur API version, defaults to 5.
   # @return [Sensitive] Value of the Conjur variable.
   # @example Agent-based identity invocation
@@ -45,7 +45,7 @@ Puppet::Functions.create_function :'conjur::secret' do
       .map(&URI.method(:encode_www_form_component)).join('/')
   end
 
-  # Authenticates against a Conjur / DAP server returning the API token
+  # Authenticates against a Conjur server returning the API token
   def authenticate(url, ssl_certificate, account, authn_login, authn_api_key)
     Conjur::PuppetModule::HTTP.post(
       url,
@@ -55,7 +55,7 @@ Puppet::Functions.create_function :'conjur::secret' do
     )
   end
 
-  # Fetches a variable from Conjur / DAP
+  # Fetches a variable from Conjur
   def get_variable(url, ssl_certificate, account, variable_id, token)
     secrets_path = [
       'secrets',

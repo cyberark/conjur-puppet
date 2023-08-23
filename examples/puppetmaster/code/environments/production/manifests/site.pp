@@ -15,7 +15,7 @@ node default {
   $output_file1 = "${cred_file_prefix}creds1.txt"
   $output_file2 = "${cred_file_prefix}creds2.txt"
 
-  # If using server-supplied identity for the agent's Conjur / DAP connection,
+  # If using server-supplied identity for the agent's Conjur connection,
   # you would use the optional parameters to the `conjur::secret` function as
   # shown below.
   #
