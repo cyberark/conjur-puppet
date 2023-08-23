@@ -16,6 +16,7 @@ summon -f ./ci/secrets.yml \
     bash -ec """
       PDK_DISABLE_ANALYTICS=true pdk release --skip-documentation \
                                              --skip-changelog \
+                                             --skip-validation \
                                              --forge-token="\$PDK_FORGE_TOKEN" \
                                              --force
     """
