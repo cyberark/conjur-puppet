@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Security
+- Upgrade Ruby base image version to 3.3-slim
+  [cyberark/conjur-puppet#263](https://github.com/cyberark/conjur-puppet/pull/263)
+
 ## [3.1.1] - 2023-08-23
 
 ### Security
