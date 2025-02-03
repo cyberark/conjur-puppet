@@ -1,0 +1,6 @@
+ignore:
+  "<ISSUE_ID>":
+    - reason: "Ignoring hardcoded secret path in test file"
+      expires: "2026-12-31T23:59:59Z"
+      path:
+        - "spec/unit/conjur/puppet_module/identity_spec.rb"

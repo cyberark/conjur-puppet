@@ -1,6 +1,6 @@
 {
   "name": "cyberark-conjur",
-  "version": "3.1.1",
+  "version": "5.0.0",
   "author": "CyberArk Software, Inc.",
   "summary": "Register nodes as Conjur hosts and securely use secrets stored in Conjur",
   "license": "Apache-2.0",
@@ -17,31 +17,29 @@
     {
       "operatingsystem": "Ubuntu",
       "operatingsystemrelease": [
-        "14.04",
-        "16.04",
         "18.04",
-        "20.04"
+        "20.04",
+        "22.04"
       ]
     },
     {
       "operatingsystem": "Centos",
       "operatingsystemrelease": [
         "6",
-        "7"
+        "7",
+        "8"
       ]
     },
     {
       "operatingsystem": "Debian",
       "operatingsystemrelease": [
-        "8",
-        "9",
-        "10"
+        "12"
       ]
     },
     {
       "operatingsystem": "Alpine",
       "operatingsystemrelease": [
-        "3.9"
+        "3.21"
       ]
     },
     {
@@ -56,7 +54,7 @@
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 6.0.0 < 7.0.0"
+      "version_requirement": ">= 6.0.0 < 7.34.0"
     }
   ],
   "tags": [
