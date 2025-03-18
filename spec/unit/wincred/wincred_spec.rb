@@ -23,6 +23,7 @@ describe WinCred, wincred: :mock do
   describe '.enumerate_credentials' do
     it 'enumerates all credentials' do
       expect(WinCred.enumerate_credentials).to eq [
+        # file deepcode ignore HardcodedCredential: <please specify a reason of ignoring this>
         { target: 'some.test', username: 'alice', value: 'secret' },
         { target: 'other.test', username: 'bob', value: 'password' },
       ]
@@ -39,6 +40,7 @@ describe WinCred, wincred: :mock do
 
   describe '.read_credential' do
     it 'reads a given credential' do
+      # file deepcode ignore HardcodedCredential: <please specify a reason of ignoring this>
       expect(WinCred.read_credential('some.test')).to eq \
         target: 'some.test', username: 'alice', value: 'secret'
     end
@@ -46,6 +48,7 @@ describe WinCred, wincred: :mock do
 
   context 'with UTF-16 encoded credentials' do
     it 'round-trips them correctly' do
+      # file deepcode ignore HardcodedCredential: <please specify a reason of ignoring this>
       password = 'ancient'.encode('utf-16le').force_encoding('binary')
       WinCred.write_credential \
         target: 'utf16.test', username: 'ursula', value: password

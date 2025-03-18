@@ -23,8 +23,6 @@ PUPPET_SERVER_TAG=latest
 PUPPET_AGENT_TAGS=( latest )
 export PUPPET_SERVER_TAG
 
-echo "Using Puppet server '$PUPPET_SERVER_TAG' with agents: '${PUPPET_AGENT_TAGS[@]}'"
-
 OSES=(
   "alpine"
   "ubuntu"

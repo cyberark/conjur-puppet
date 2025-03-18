@@ -6,7 +6,6 @@ cd "$(dirname "$0")/.."
 docker build -t puppet-pdk -f ./ci/Dockerfile.pdk .
 
 if [ ! "${SKIP_VALIDATION}" == "true" ]; then
-  echo "Running validations..."
   docker run --rm \
     -v $PWD:/root \
     -w /root \
@@ -16,7 +15,6 @@ if [ ! "${SKIP_VALIDATION}" == "true" ]; then
     "
 fi
 
-echo "Running specs..."
 mkdir -p ./spec/output
 docker run --rm \
   -v $PWD:/root \
@@ -25,5 +23,3 @@ docker run --rm \
   bash -ec "
     pdk test unit --format=junit:./spec/output/rspec.xml --format=text
   "
-
-echo "Tests complete!"

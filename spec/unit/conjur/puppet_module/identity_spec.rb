@@ -56,6 +56,7 @@ describe Conjur::PuppetModule::Identity do
     let(:wincred_credentials) do
       {
         # password needs an encoding
+        # file deepcode ignore HardcodedNonCryptoSecret: <For testing if it can store and retrieve credentials>
         'conjur.test' => ['conjur-login', 'secret'.encode('utf-16le').force_encoding('binary')],
       }
     end
