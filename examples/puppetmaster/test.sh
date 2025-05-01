@@ -35,7 +35,7 @@ EXPECTED_COMPLEX_ID_PASSWORD="complexidpassword"
 
 cleanup() {
   echo "Ensuring clean state..."
-  docker-compose down -v || true
+  docker compose down -v || true
 }
 
 build_windows_puppet_image() {
@@ -155,25 +155,25 @@ run_with_docker_windows() {
 }
 
 run_in_conjur() {
-  docker-compose exec -T conjur "$@"
+  docker compose exec -T conjur "$@"
 }
 
 run_in_conjur_cli() {
-  docker-compose exec -T cli "$@"
+  docker compose exec -T cli "$@"
 }
 
 run_in_puppet() {
-  docker-compose exec -T puppet "$@"
+  docker compose exec -T puppet "$@"
 }
 
 start_services() {
   echo "Starting services..."
-  docker-compose up -d conjur-https puppet puppet-compiler
+  docker compose up -d conjur-https puppet puppet-compiler
 }
 
 wait_for_conjur() {
   echo "Waiting for Conjur..."
-  docker-compose exec -T conjur conjurctl wait
+  docker compose exec -T conjur conjurctl wait
 }
 
 wait_for_puppet() {
@@ -220,7 +220,7 @@ install_required_module_dependency() {
 
 get_docker_gateway_ip() {
   # Get the IP address of the Docker compose network's gateway.
-  DOCKER_GATEWAY_IP="$(docker inspect $(docker-compose ps -q puppet)| \
+  DOCKER_GATEWAY_IP="$(docker inspect $(docker compose ps -q puppet)| \
     jq .[0].NetworkSettings.Networks[].Gateway | tr -d '"')"
 }
 
@@ -246,7 +246,7 @@ setup_conjur() {
   echo "Starting CLI"
   echo "-----"
 
-  docker-compose up -d cli
+  docker compose up -d cli
 
   echo "-----"
   echo "Logging into the CLI"
