@@ -188,7 +188,7 @@ wait_for_puppet() {
 
 get_host_key() {
   local hostname="$1"
-  run_in_conjur_cli conjur host rotate_api_key -h "$hostname"
+  run_in_conjur_cli conjur host rotate-api-key --id "$hostname"
 }
 
 get_hf_token() {
@@ -251,20 +251,20 @@ setup_conjur() {
   echo "-----"
   echo "Logging into the CLI"
   echo "-----"
-  run_in_conjur_cli conjur authn login -u admin -p "${api_key}"
+  run_in_conjur_cli conjur login --id admin --password "${api_key}"
 
   echo "-----"
   echo "Loading Conjur initial policy"
   echo "-----"
-  run_in_conjur_cli conjur policy load root /src/policy.yml
+  run_in_conjur_cli conjur policy load -b root -f /src/policy.yml
 
   echo "-----"
   echo "Setting variable values"
   echo "-----"
-  run_in_conjur_cli conjur variable values add \
-    'inventory/db-password' "$EXPECTED_PASSWORD"
-  run_in_conjur_cli conjur variable values add \
-    'inventory/funky/special @#$%^&*(){}[].,+/variable' "$EXPECTED_COMPLEX_ID_PASSWORD"
+  run_in_conjur_cli conjur variable set \
+    -i 'inventory/db-password' -v "$EXPECTED_PASSWORD"
+  run_in_conjur_cli conjur variable set \
+    -i 'inventory/funky/special @#$%^&*(){}[].,+/variable' -v "$EXPECTED_COMPLEX_ID_PASSWORD"
 }
 
 revoke_cert_for() {
