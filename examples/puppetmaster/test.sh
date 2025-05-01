@@ -4,6 +4,19 @@ set -euo pipefail
 
 # Launches a full Puppet stack and converges nodes against it
 
+# Recommendations for running this script:
+# 1. Set a compose project name before running the script
+#    this way you can interact with the compose stack from your terminal
+#    export COMPOSE_PROJECT_NAME=puppet8
+#
+# 2. Set the docker platform:
+#    DOCKER_DEFAULT_PLATFORM=linux/amd64
+#
+# 3. Disabled cleanup on exit so you can investigate failures
+#    export CLEAN_UP_ON_EXIT=false
+#
+# 4. Run ci/build.sh first so there is a package to test.
+
 source vagrant/utils.sh
 
 # MAIN_HOST_IP is the IP address of the host where the tests are running that should be

@@ -1,6 +1,9 @@
 services:
   puppet:
     image: puppet/puppetserver:${PUPPET_SERVER_TAG:-latest}
+    # For version 8:
+    # image:  ghcr.io/openvoxproject/openvoxserver:8
+    # puppet/puppetservice now redirects via dockerhub deprecation to https://github.com/OpenVoxProject/container-openvoxserver
     platform: linux/amd64
     ports:
       - 8140
