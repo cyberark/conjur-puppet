@@ -92,7 +92,6 @@ main() {
   fi
 
   get_docker_gateway_ip
-  add_puppetmaster_etc_hosts
 
   for os_name in ${OSES[@]}; do
     for agent_tag in ${PUPPET_AGENT_TAGS[@]}; do
@@ -224,19 +223,6 @@ get_docker_gateway_ip() {
     jq .[0].NetworkSettings.Networks[].Gateway | tr -d '"')"
 }
 
-add_puppetmaster_etc_hosts() {
-  # Make an /etc/hosts entry in the Puppet server container for the DNS name
-  # 'conjur.cyberark.com'. This is used by the Puppet server to access the
-  echo "Adding /etc/hosts entry in puppet server: \"$DOCKER_GATEWAY_IP conjur.cyberark.com\""
-  # Make a temporary copy of /etc/hosts to modify since `sed` is not able to
-  # directly modify /etc/hosts when it is run via 'docker exec'.
-  run_in_puppet bash -c \
-    "cp /etc/hosts /tmp/hosts; \
-    /bin/sed -i $'/\tconjur.cyberark.com$/d' /tmp/hosts; \
-    echo $'$DOCKER_GATEWAY_IP\tconjur.cyberark.com' >> /tmp/hosts; \
-    cp /tmp/hosts /etc/hosts"
-}
-
 setup_conjur() {
   wait_for_conjur
   run_in_conjur conjurctl account create cucumber || :
@@ -299,7 +285,7 @@ converge_node_agent_apikey() {
   local identity_file="$TMPDIR/conjur.identity"
 
   echo "
-    appliance_url: https://conjur.cyberark.com:$(conjur_host_port)/
+    appliance_url: https://conjur.cyberark.com:8443/
     version: 5
     account: cucumber
     cert_file: /etc/ca.crt
@@ -318,7 +304,6 @@ converge_node_agent_apikey() {
   set -x
   docker run --rm -t \
     --net $NETNAME \
-    --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
     -v "$config_file:/etc/conjur.conf:ro" \
     -v "$identity_file:/etc/conjur.identity:ro" \
     -v "$PWD/https_config/ca.crt:/etc/ca.crt:ro" \
@@ -356,7 +341,7 @@ lookup_options:
     convert_to: 'Sensitive'
 
 conjur::account: 'cucumber'
-conjur::appliance_url: 'https://conjur.cyberark.com:$(conjur_host_port)'
+conjur::appliance_url: 'https://conjur.cyberark.com:8443'
 conjur::authn_login: 'host/$node_name'
 conjur::authn_api_key: '$api_key'
 conjur::ssl_certificate: |
@@ -413,7 +398,6 @@ $ssl_certificate
   set -x
   docker run --rm -t \
     --net $NETNAME \
-    --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
     --hostname "$hostname" \
     "$agent_image" \
       agent --verbose \
@@ -451,7 +435,7 @@ converge_windows_node_agent_apikey() {
 
 
         # Set conjur.conf equivalent with connection details
-        reg ADD HKLM\Software\CyberArk\Conjur /v ApplianceUrl /t REG_SZ /d https://conjur.cyberark.com:$(conjur_host_port)/
+        reg ADD HKLM\Software\CyberArk\Conjur /v ApplianceUrl /t REG_SZ /d https://conjur.cyberark.com:8443/
         reg ADD HKLM\Software\CyberArk\Conjur /v Version /t REG_DWORD /d 5
         reg ADD HKLM\Software\CyberArk\Conjur /v Account /t REG_SZ /d cucumber
         reg ADD HKLM\Software\CyberArk\Conjur /v CertFile /t REG_SZ /d c:\conjur-ca.crt
@@ -483,7 +467,7 @@ lookup_options:
     convert_to: 'Sensitive'
 
 conjur::account: 'cucumber'
-conjur::appliance_url: 'https://conjur.cyberark.com:$(conjur_host_port)'
+conjur::appliance_url: 'https://conjur.cyberark.com:8443'
 conjur::authn_login: 'host/$node_name'
 conjur::authn_api_key: '$api_key'
 conjur::ssl_certificate: |

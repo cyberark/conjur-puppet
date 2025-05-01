@@ -93,6 +93,7 @@ services:
     depends_on:
       - conjur-db
 
+
   conjur-https:
     image: nginx:alpine
     platform: linux/amd64
@@ -107,6 +108,10 @@ services:
       - ./https_config/ca.crt:/ca/tls.crt:ro
     depends_on:
       - conjur
+    networks:
+      default:
+        aliases:
+          - conjur.cyberark.com
 
   conjur-db:
     image: postgres:15
