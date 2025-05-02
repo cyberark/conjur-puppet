@@ -19,9 +19,3 @@ docker run --rm \
     cp ./pkg/cyberark-conjur-*.tar.gz ./pkg/cyberark-conjur.tar.gz;
     ls -l pkg/
   "
-
-# Copy the package from the Docker container to the host machine
-container_id=$(docker ps -alq)
-mkdir -p ./pkg
-docker cp "$container_id":/conjur/pkg/cyberark-conjur.tar.gz ./pkg/cyberark-conjur.tar.gz
-

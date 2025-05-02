@@ -4,6 +4,19 @@ set -euo pipefail
 
 # Launches a full Puppet stack and converges nodes against it
 
+# Recommendations for running this script:
+# 1. Set a compose project name before running the script
+#    this way you can interact with the compose stack from your terminal
+#    export COMPOSE_PROJECT_NAME=puppet8
+#
+# 2. Set the docker platform:
+#    DOCKER_DEFAULT_PLATFORM=linux/amd64
+#
+# 3. Disabled cleanup on exit so you can investigate failures
+#    export CLEAN_UP_ON_EXIT=false
+#
+# 4. Run ci/build.sh first so there is a package to test.
+
 source vagrant/utils.sh
 
 # MAIN_HOST_IP is the IP address of the host where the tests are running that should be
@@ -35,7 +48,7 @@ EXPECTED_COMPLEX_ID_PASSWORD="complexidpassword"
 
 cleanup() {
   echo "Ensuring clean state..."
-  docker-compose down -v || true
+  docker compose down -v || true
 }
 
 build_windows_puppet_image() {
@@ -92,7 +105,6 @@ main() {
   fi
 
   get_docker_gateway_ip
-  add_puppetmaster_etc_hosts
 
   for os_name in ${OSES[@]}; do
     for agent_tag in ${PUPPET_AGENT_TAGS[@]}; do
@@ -155,25 +167,25 @@ run_with_docker_windows() {
 }
 
 run_in_conjur() {
-  docker-compose exec -T conjur "$@"
+  docker compose exec -T conjur "$@"
 }
 
 run_in_conjur_cli() {
-  docker-compose exec -T cli "$@"
+  docker compose exec -T cli "$@"
 }
 
 run_in_puppet() {
-  docker-compose exec -T puppet "$@"
+  docker compose exec -T puppet "$@"
 }
 
 start_services() {
   echo "Starting services..."
-  docker-compose up -d conjur-https puppet puppet-compiler
+  docker compose up -d conjur-https puppet puppet-compiler
 }
 
 wait_for_conjur() {
   echo "Waiting for Conjur..."
-  docker-compose exec -T conjur conjurctl wait
+  docker compose exec -T conjur conjurctl wait
 }
 
 wait_for_puppet() {
@@ -188,7 +200,7 @@ wait_for_puppet() {
 
 get_host_key() {
   local hostname="$1"
-  run_in_conjur_cli conjur host rotate_api_key -h "$hostname"
+  run_in_conjur_cli conjur host rotate-api-key --id "$hostname"
 }
 
 get_hf_token() {
@@ -220,21 +232,8 @@ install_required_module_dependency() {
 
 get_docker_gateway_ip() {
   # Get the IP address of the Docker compose network's gateway.
-  DOCKER_GATEWAY_IP="$(docker inspect $(docker-compose ps -q puppet)| \
+  DOCKER_GATEWAY_IP="$(docker inspect $(docker compose ps -q puppet)| \
     jq .[0].NetworkSettings.Networks[].Gateway | tr -d '"')"
-}
-
-add_puppetmaster_etc_hosts() {
-  # Make an /etc/hosts entry in the Puppet server container for the DNS name
-  # 'conjur.cyberark.com'. This is used by the Puppet server to access the
-  echo "Adding /etc/hosts entry in puppet server: \"$DOCKER_GATEWAY_IP conjur.cyberark.com\""
-  # Make a temporary copy of /etc/hosts to modify since `sed` is not able to
-  # directly modify /etc/hosts when it is run via 'docker exec'.
-  run_in_puppet bash -c \
-    "cp /etc/hosts /tmp/hosts; \
-    /bin/sed -i $'/\tconjur.cyberark.com$/d' /tmp/hosts; \
-    echo $'$DOCKER_GATEWAY_IP\tconjur.cyberark.com' >> /tmp/hosts; \
-    cp /tmp/hosts /etc/hosts"
 }
 
 setup_conjur() {
@@ -246,25 +245,25 @@ setup_conjur() {
   echo "Starting CLI"
   echo "-----"
 
-  docker-compose up -d cli
+  docker compose up -d cli
 
   echo "-----"
   echo "Logging into the CLI"
   echo "-----"
-  run_in_conjur_cli conjur authn login -u admin -p "${api_key}"
+  run_in_conjur_cli conjur login --id admin --password "${api_key}"
 
   echo "-----"
   echo "Loading Conjur initial policy"
   echo "-----"
-  run_in_conjur_cli conjur policy load root /src/policy.yml
+  run_in_conjur_cli conjur policy load -b root -f /src/policy.yml
 
   echo "-----"
   echo "Setting variable values"
   echo "-----"
-  run_in_conjur_cli conjur variable values add \
-    'inventory/db-password' "$EXPECTED_PASSWORD"
-  run_in_conjur_cli conjur variable values add \
-    'inventory/funky/special @#$%^&*(){}[].,+/variable' "$EXPECTED_COMPLEX_ID_PASSWORD"
+  run_in_conjur_cli conjur variable set \
+    -i 'inventory/db-password' -v "$EXPECTED_PASSWORD"
+  run_in_conjur_cli conjur variable set \
+    -i 'inventory/funky/special @#$%^&*(){}[].,+/variable' -v "$EXPECTED_COMPLEX_ID_PASSWORD"
 }
 
 revoke_cert_for() {
@@ -299,7 +298,7 @@ converge_node_agent_apikey() {
   local identity_file="$TMPDIR/conjur.identity"
 
   echo "
-    appliance_url: https://conjur.cyberark.com:$(conjur_host_port)/
+    appliance_url: https://conjur.cyberark.com:8443/
     version: 5
     account: cucumber
     cert_file: /etc/ca.crt
@@ -318,7 +317,6 @@ converge_node_agent_apikey() {
   set -x
   docker run --rm -t \
     --net $NETNAME \
-    --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
     -v "$config_file:/etc/conjur.conf:ro" \
     -v "$identity_file:/etc/conjur.identity:ro" \
     -v "$PWD/https_config/ca.crt:/etc/ca.crt:ro" \
@@ -356,7 +354,7 @@ lookup_options:
     convert_to: 'Sensitive'
 
 conjur::account: 'cucumber'
-conjur::appliance_url: 'https://conjur.cyberark.com:$(conjur_host_port)'
+conjur::appliance_url: 'https://conjur.cyberark.com:8443'
 conjur::authn_login: 'host/$node_name'
 conjur::authn_api_key: '$api_key'
 conjur::ssl_certificate: |
@@ -413,7 +411,6 @@ $ssl_certificate
   set -x
   docker run --rm -t \
     --net $NETNAME \
-    --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
     --hostname "$hostname" \
     "$agent_image" \
       agent --verbose \
@@ -451,7 +448,7 @@ converge_windows_node_agent_apikey() {
 
 
         # Set conjur.conf equivalent with connection details
-        reg ADD HKLM\Software\CyberArk\Conjur /v ApplianceUrl /t REG_SZ /d https://conjur.cyberark.com:$(conjur_host_port)/
+        reg ADD HKLM\Software\CyberArk\Conjur /v ApplianceUrl /t REG_SZ /d https://conjur.cyberark.com:8443/
         reg ADD HKLM\Software\CyberArk\Conjur /v Version /t REG_DWORD /d 5
         reg ADD HKLM\Software\CyberArk\Conjur /v Account /t REG_SZ /d cucumber
         reg ADD HKLM\Software\CyberArk\Conjur /v CertFile /t REG_SZ /d c:\conjur-ca.crt
@@ -483,7 +480,7 @@ lookup_options:
     convert_to: 'Sensitive'
 
 conjur::account: 'cucumber'
-conjur::appliance_url: 'https://conjur.cyberark.com:$(conjur_host_port)'
+conjur::appliance_url: 'https://conjur.cyberark.com:8443'
 conjur::authn_login: 'host/$node_name'
 conjur::authn_api_key: '$api_key'
 conjur::ssl_certificate: |

@@ -88,7 +88,7 @@ pipeline {
     stage('Check Tag') {
       steps {
         script {
-          sh "git config --global --add safe.directory /home/jenkins/agent/workspace/e-conjur-puppet-development_PR-1"
+          sh "git config --global --add safe.directory ${WORKSPACE}"
           env.TAG = sh(script: "git tag --points-at HEAD", returnStdout: true).trim()
         }
       }

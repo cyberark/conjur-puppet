@@ -1,8 +1,10 @@
-version: "3"
-
 services:
   puppet:
     image: puppet/puppetserver:${PUPPET_SERVER_TAG:-latest}
+    # For version 8:
+    # image:  ghcr.io/openvoxproject/openvoxserver:8
+    # puppet/puppetservice now redirects via dockerhub deprecation to https://github.com/OpenVoxProject/container-openvoxserver
+    platform: linux/amd64
     ports:
       - 8140
     volumes:
@@ -20,6 +22,7 @@ services:
 
   puppet-compiler:
     image: puppet/puppetserver:${PUPPET_SERVER_TAG:-latest}
+    platform: linux/amd64
     ports:
       - 8140
     volumes:
@@ -39,6 +42,7 @@ services:
 
   puppet-db:
     image: puppet/puppetdb
+    platform: linux/amd64
     environment:
       - CERTNAME=puppet-db
       - PUPPETSERVER_HOSTNAME=puppet
@@ -54,7 +58,8 @@ services:
       - puppet-pg
 
   puppet-pg:
-    image: postgres:9.6
+    image: postgres:latest
+    platform: linux/amd64
     environment:
       - POSTGRES_PASSWORD=puppetdb
       - POSTGRES_USER=puppetdb
@@ -64,32 +69,37 @@ services:
 
   puppetboard:
     image: puppet/puppetboard
+    platform: linux/amd64
     ports:
       - 8081:8000
 
   puppetexplorer:
     image: puppet/puppetexplorer
+    platform: linux/amd64
     ports:
       - 8080:80
     read_only: true
 
   conjur:
     image: cyberark/conjur
+    platform: linux/amd64
     ports:
       - 80
     environment:
       CONJUR_ADMIN_PASSWORD: ADmin123!!!!
-      DATABASE_URL: postgres://postgres@conjur-db
+      DATABASE_URL: postgres://postgres:SuperSecretPg@conjur-db/postgres
       CONJUR_DATA_KEY: testing//testing//testing//testing//testing=
-    volumes:
-      - .:/src:ro
-    working_dir: /src
+    #volumes:
+    #  - .:/src:ro
+    #working_dir: /src
     command: server
     depends_on:
       - conjur-db
 
+
   conjur-https:
     image: nginx:alpine
+    platform: linux/amd64
     ports:
       - 8443
     volumes:
@@ -101,15 +111,25 @@ services:
       - ./https_config/ca.crt:/ca/tls.crt:ro
     depends_on:
       - conjur
+    networks:
+      default:
+        aliases:
+          - conjur.cyberark.com
 
   conjur-db:
-    image: postgres:9.3
-
+    image: postgres:15
+    platform: linux/amd64
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: password
+      POSTGRES_PASSWORD: SuperSecretPg
+    ports:
+      - 8432:5432
   cli:
     environment:
       CONJUR_ACCOUNT: cucumber
       CONJUR_APPLIANCE_URL: http://conjur
-    image: cyberark/conjur-cli:5
+    image: cyberark/conjur-cli
+    platform: linux/amd64
     entrypoint: sleep
     command: infinity
     volumes:
