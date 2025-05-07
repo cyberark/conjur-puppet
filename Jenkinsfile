@@ -1,5 +1,22 @@
 #!/usr/bin/env groovy
-@Library('conjur-enterprise-sharedlib') _
+@Library("product-pipelines-shared-library") _
+
+// Automated release, promotion and dependencies
+properties([
+  release.addParams(),
+  dependencies([])
+])
+
+// Performs release promotion.  No other stages will be run
+if (params.MODE == "PROMOTE") {
+  release.promote(params.VERSION_TO_PROMOTE) { sourceVersion, targetVersion, assetDirectory ->
+    // Release to Puppet Forge
+    sh './ci/release.sh'
+  }
+  // Copy Github Enterprise release to Github
+  release.copyEnterpriseRelease(params.VERSION_TO_PROMOTE)
+  return
+}
 
 pipeline {
   agent { label 'conjur-enterprise-common-agent' }
@@ -14,10 +31,20 @@ pipeline {
   }
 
   environment {
+    // Sets the MODE to the specified or autocalculated value as appropriate
+    MODE = release.canonicalizeMode()
     PDK_DISABLE_ANALYTICS = 'true'
   }
 
   stages {
+    stage('Scan for internal URLs') {
+      steps {
+        script {
+          detectInternalUrls()
+        }
+      }
+    }
+
     stage('Get InfraPool ExecutorV2 Agent') {
       steps {
         script {
@@ -29,16 +56,11 @@ pipeline {
     }  
     stage('Validate') {
       parallel {
-        stage('Changelog') {
-          steps { 
+        // Generates a VERSION file based on the current build number and latest version in CHANGELOG.md
+        stage('Validate Changelog and set version') {
+          steps {
             script {
-              sh """
-                if [ ! -f CHANGELOG.md ]; then
-                  echo "CHANGELOG.md not found!"
-                  exit 1
-                fi
-              """
-              def changelogOutput = parseChangelog()
+              updateVersion(INFRAPOOL_EXECUTORV2_AGENT_0, "CHANGELOG.md", "${BUILD_NUMBER}")
             }
           }
         }
@@ -66,45 +88,70 @@ pipeline {
 
     stage('Tests') {
       parallel {
-        stage('Running Tests') {
+        stage('Unit Tests') {
           steps {
             script {
-              def testlog = INFRAPOOL_EXECUTORV2_AGENT_1.agentSh(script: './ci/test.sh', returnStdout: true).trim()
-              INFRAPOOL_EXECUTORV2_AGENT_1.agentStash name: 'spec', includes: 'spec/**'
-              unstash 'spec'
+              INFRAPOOL_EXECUTORV2_AGENT_0.agentSh './ci/test.sh'
+              INFRAPOOL_EXECUTORV2_AGENT_0.agentStash name: 'spec', includes: 'spec/**'
+              INFRAPOOL_EXECUTORV2_AGENT_0.agentStash name: 'coverage', includes: 'coverage/**'
             }
           }
 
           post {
             always {
+              unstash 'spec'
+              unstash 'coverage'
+
               junit 'spec/output/rspec.xml'
               archiveArtifacts artifacts: 'spec/output/rspec.xml', fingerprint: true
+
+              cobertura autoUpdateHealth: false,
+                autoUpdateStability: false,
+                coberturaReportFile: 'coverage/coverage.xml',
+                conditionalCoverageTargets: '70, 0, 0',
+                failUnhealthy: false,
+                failUnstable: false,
+                maxNumberOfBuilds: 0,
+                lineCoverageTargets: '70, 0, 0',
+                methodCoverageTargets: '70, 0, 0',
+                onlyStable: false,
+                sourceEncoding: 'ASCII',
+                zoomCoverageChart: false
+
+              codacy action: 'reportCoverage', filePath: "coverage/coverage.xml"
+              archiveArtifacts artifacts: 'coverage/coverage.xml', fingerprint: true
+            }
+          }
+        }
+        stage ('Integration Tests (Puppet 8)') {
+          steps {
+            script {
+              INFRAPOOL_EXECUTORV2_AGENT_1.agentSh 'cd ./examples/puppetmaster/ && INSTALL_PACKAGED_MODULE=false ./test.sh'
+            }
+          }
+        }
+        stage ('Integration Tests (Puppet 7)') {
+          steps {
+            script {
+              INFRAPOOL_EXECUTORV2_AGENT_0.agentSh 'cd ./examples/puppetmaster/ && INSTALL_PACKAGED_MODULE=false PUPPET_SERVER_TAG=7-latest ./test.sh'
             }
           }
         }
       }
     }
 
-    stage('Check Tag') {
-      steps {
-        script {
-          sh "git config --global --add safe.directory ${WORKSPACE}"
-          env.TAG = sh(script: "git tag --points-at HEAD", returnStdout: true).trim()
-        }
-      }
-    }
-
-    stage('Release Puppet module') {
-      // Only run this stage when triggered by a tag
+    stage('Release') {
       when {
         expression {
-          return env.TAG ==~ /^v.*/
+          MODE == "RELEASE"
         }
       }
       steps {
         script {
-          def releaseLog0 = INFRAPOOL_EXECUTORV2_AGENT_0.agentSh(script: './ci/release.sh', returnStdout: true).trim()
-          def releaseLog1 = INFRAPOOL_EXECUTORV2_AGENT_1.agentSh(script: './ci/release.sh', returnStdout: true).trim()
+          release(infrapool) { billOfMaterialsDirectory, assetDirectory, toolsDirectory ->
+            // Publish release artifacts to all the appropriate locations
+            // Copy any artifacts to assetDirectory to attach them to the Github release
+          }
         }
       }
     }
@@ -112,12 +159,9 @@ pipeline {
 
   post {
     always {
-      releaseInfraPoolAgent(".infrapool/release_agents")
-      sh 'git config --global --add safe.directory ${PWD}'
-      infraPostHook()
-      // Remove this Jenkins Agent's IP from AWS security groups
-      removeIPAccess(INFRAPOOL_EXECUTORV2_AGENT_0)
-      removeIPAccess(INFRAPOOL_EXECUTORV2_AGENT_1)
+      script {
+        releaseInfraPoolAgent(".infrapool/release_agents")
+      }
     }
   }
 }
