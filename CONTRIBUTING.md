@@ -49,11 +49,11 @@ sections of the [README.md](README.md) file.
 
 Run a pre-configured Conjur and Puppet master instance by going into the
 `examples/puppetmaster` folder and running the following:
-```sh-session
-$ export CLEAN_UP_ON_EXIT=false
-$ export INSTALL_PACKAGED_MODULE=false
-$ export COMPOSE_PROJECT_NAME=puppetmaster_manual
-$ ./test.sh
+```sh
+export CLEAN_UP_ON_EXIT=false
+export INSTALL_PACKAGED_MODULE=false
+export COMPOSE_PROJECT_NAME=puppetmaster_manual
+./test.sh
 ```
 
 This command will run the integration tests and exit with the Puppet master and
@@ -66,17 +66,17 @@ After you have your test environment up, you can test changes using pre-built
 that makes the test cycle really fast.
 
 For example, once the Puppet master is up you can run this to converge an agent:
-```sh-session
-$ # Get IP of docker-compose gateway. This only needs to be run once.
-$ export DOCKER_GATEWAY_IP="$(docker inspect $(docker-compose ps -q puppet) | \
+```sh
+# Get IP of docker-compose gateway. This only needs to be run once.
+export DOCKER_GATEWAY_IP="$(docker inspect $(docker-compose ps -q puppet) | \
     jq .[0].NetworkSettings.Networks[].Gateway | tr -d '"')"
 
-$ # Run the agent
-$ docker run --rm -it \
+# Run the agent
+docker run --rm -it \
     --net puppetmaster_manual_default \
     --add-host "conjur.cyberark.com:$DOCKER_GATEWAY_IP" \
     --hostname "my-agent-name" \
-    "puppet/puppet-agent-ubuntu"
+    "ghcr.io/openvoxproject/openvoxagent"
 ```
 
 You will see Puppet converge on the node.

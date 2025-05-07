@@ -9,7 +9,7 @@ defaults:
 # - %CommonAppData%\PuppetLabs\code\data on Windows
 hierarchy:
   - name: Per-node data
-    path: "nodes/%{::trusted.certname}.yaml"
+    path: "nodes/%{trusted.certname}.yaml"
 
   - name: Common
     paths:

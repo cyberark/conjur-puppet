@@ -30,18 +30,11 @@ export WINDOWS_DOCKER_TLS_VERIFY=${WINDOWS_DOCKER_TLS_VERIFY:-0}
 
 CLEAN_UP_ON_EXIT=${CLEAN_UP_ON_EXIT:-true}
 INSTALL_PACKAGED_MODULE=${INSTALL_PACKAGED_MODULE:-true}
-COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-puppetmaster_$(openssl rand -hex 3)}
+export COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-puppetmaster_$(openssl rand -hex 3)}
 
-PUPPET_SERVER_TAG=latest
-PUPPET_AGENT_TAGS=( latest )
-export PUPPET_SERVER_TAG
+export PUPPET_SERVER_TAG=${PUPPET_SERVER_TAG:-8-latest}
 
-OSES=(
-  "alpine"
-  "ubuntu"
-)
 
-export COMPOSE_PROJECT_NAME
 NETNAME=${COMPOSE_PROJECT_NAME//-/}_default
 EXPECTED_PASSWORD="supersecretpassword"
 EXPECTED_COMPLEX_ID_PASSWORD="complexidpassword"
@@ -106,24 +99,20 @@ main() {
 
   get_docker_gateway_ip
 
-  for os_name in ${OSES[@]}; do
-    for agent_tag in ${PUPPET_AGENT_TAGS[@]}; do
-      local agent_image="puppet/puppet-agent-$os_name:$agent_tag"
+  local agent_image="ghcr.io/openvoxproject/openvoxagent:latest"
 
-      echo "---"
-      echo "Running tests for '$agent_image'..."
+  echo "---"
+  echo "Running tests for '$agent_image'... on Puppet server version '$PUPPET_SERVER_TAG'"
 
-      echo
-      echo "=> Agent config, API Key <="
-      converge_node_agent_apikey "$agent_image"
+  echo
+  echo "=> Hiera manifest config, API Key <="
+  converge_node_hiera_manifest_apikey "$agent_image"
 
-      echo
-      echo "=> Hiera manifest config, API Key <="
-      converge_node_hiera_manifest_apikey "$agent_image"
+  echo
+  echo "=> Agent config, API Key <="
+  converge_node_agent_apikey "$agent_image"
 
-      echo "Tests for '$agent_image': OK"
-    done
-  done
+  echo "Tests for '$agent_image': OK"
 
   run_windows_tests
 
@@ -269,13 +258,6 @@ setup_conjur() {
 revoke_cert_for() {
   local cert_fqdn="$1"
   echo "Ensuring clean cert state for $cert_fqdn..."
-
-  # Puppet v5 and v6 CLIs aren't 1:1 compatible so we have to choose the format based
-  # on the server version
-  if [ "${PUPPET_SERVER_TAG:0:1}" == 5 ]; then
-    run_in_puppet puppet cert clean "$cert_fqdn" &>/dev/null || true
-    return
-  fi
 
   run_in_puppet puppetserver ca revoke --certname "$cert_fqdn" &>/dev/null || true
   run_in_puppet puppetserver ca clean --certname "$cert_fqdn" &>/dev/null || true

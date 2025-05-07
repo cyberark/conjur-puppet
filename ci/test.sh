@@ -3,7 +3,7 @@
 # To ensure this script always executes relative to the repo root
 cd "$(dirname "$0")/.."
 
-docker build -t puppet-pdk -f ./ci/Dockerfile.pdk .
+docker build --platform linux/amd64 -t puppet-pdk -f ./ci/Dockerfile.pdk .
 
 if [ ! "${SKIP_VALIDATION}" == "true" ]; then
   docker run --rm \

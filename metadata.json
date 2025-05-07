@@ -1,6 +1,6 @@
 {
   "name": "cyberark-conjur",
-  "version": "5.0.0",
+  "version": "3.2.0",
   "author": "CyberArk Software, Inc.",
   "summary": "Register nodes as Conjur hosts and securely use secrets stored in Conjur",
   "license": "Apache-2.0",
@@ -54,7 +54,7 @@
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 6.0.0 < 7.34.0"
+      "version_requirement": ">= 6.0.0 < 9.0.0"
     }
   ],
   "tags": [
@@ -73,7 +73,7 @@
     "security",
     "vault"
   ],
-  "pdk-version": "3.0.0",
-  "template-url": "pdk-default#3.0.0",
-  "template-ref": "tags/3.0.0-0-g056e50d"
+  "pdk-version": "3.4.0",
+  "template-url": "pdk-default#3.4.0",
+  "template-ref": "tags/3.4.0-0-gd3cc13f"
 }

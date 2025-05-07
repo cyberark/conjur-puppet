@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 
 mkdir -p "./pkg"
 
-docker build -t puppet-pdk -f ./ci/Dockerfile.pdk .
+docker build --platform linux/amd64 -t puppet-pdk -f ./ci/Dockerfile.pdk .
 
 docker run --rm \
   -v $PWD:/conjur -w /conjur \

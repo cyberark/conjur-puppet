@@ -1,14 +1,5 @@
 # frozen_string_literal: true
 
-# Ensure that SimpleCov loads before anything else
-require 'simplecov'
-require 'simplecov-cobertura'
-
-SimpleCov.formatter = SimpleCov::Formatter::CoberturaFormatter
-SimpleCov.start
-
-# Ensure that RSpec is set as mocking framework before anything else
-# as the `require` statements throw warnings otherwise
 RSpec.configure do |c|
   c.mock_with :rspec
 end
@@ -23,7 +14,6 @@ include RspecPuppetFacts
 default_facts = {
   puppetversion: Puppet.version,
   facterversion: Facter.version,
-  conjur_version: 5,
 }
 
 default_fact_files = [
@@ -35,7 +25,8 @@ default_fact_files.each do |f|
   next unless File.exist?(f) && File.readable?(f) && File.size?(f)
 
   begin
-    default_facts.merge!(YAML.safe_load(File.read(f), permitted_classes: [], permitted_symbols: [], aliases: true))
+    require 'deep_merge'
+    default_facts.deep_merge!(YAML.safe_load(File.read(f), permitted_classes: [], permitted_symbols: [], aliases: true))
   rescue StandardError => e
     RSpec.configuration.reporter.message "WARNING: Unable to load #{f}: #{e}"
   end
@@ -43,7 +34,7 @@ end
 
 # read default_facts and merge them over what is provided by facterdb
 default_facts.each do |fact, value|
-  add_custom_fact fact, value
+  add_custom_fact fact, value, merge_facts: true
 end
 
 RSpec.configure do |c|
@@ -70,11 +61,6 @@ RSpec.configure do |c|
   elsif c.respond_to?(:backtrace_clean_patterns)
     c.backtrace_clean_patterns = backtrace_exclusion_patterns
   end
-end
-
-# Loads a static fixture file from a common dir
-def fixture_file(path)
-  File.read("spec/fixtures/files/#{path}")
 end
 
 # Ensures that a module is defined
