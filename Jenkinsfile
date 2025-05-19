@@ -9,9 +9,9 @@ properties([
 
 // Performs release promotion.  No other stages will be run
 if (params.MODE == "PROMOTE") {
-  release.promote(params.VERSION_TO_PROMOTE) { sourceVersion, targetVersion, assetDirectory ->
+  release.promote(params.VERSION_TO_PROMOTE) { INFRAPOOL_EXECUTORV2_AGENT_0, sourceVersion, targetVersion, assetDirectory ->
     // Release to Puppet Forge
-    sh './ci/release.sh'
+    INFRAPOOL_EXECUTORV2_AGENT_0.agentSh "./ci/release.sh"
   }
   // Copy Github Enterprise release to Github
   release.copyEnterpriseRelease(params.VERSION_TO_PROMOTE)
