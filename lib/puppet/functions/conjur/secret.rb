@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
-require 'conjur/puppet_module/config'
-require 'conjur/puppet_module/http'
-require 'conjur/puppet_module/identity'
+# These files are loaded using `require_relative` instead of `require` because this code may execute
+# on the Puppet server during catalog compilation, where the Ruby `$LOAD_PATH` may not include 
+# the full path to this module’s internal directories (like `lib/` or other subfolders). This pattern 
+# is consistent with other Puppet modules.
+require_relative '../../../conjur/puppet_module/config'
+require_relative '../../../conjur/puppet_module/http'
+require_relative '../../../conjur/puppet_module/identity'
 
 # Function to retrieve a Conjur secret
 Puppet::Functions.create_function :'conjur::secret' do
