@@ -167,17 +167,11 @@ node 'server-123' {
 
 This module _requires_ the use of Puppet v6+
 [`Deferred` functions](https://puppet.com/docs/puppet/6.17/deferring_functions.html)
-to ensure that the credential retrieval is fully handled on the agent. Failure
-to use `Deferred` around the method will result in an error:
+to ensure that the credential retrieval is fully handled on the agent:
 
 ```puppet
 # GOOD: Function `conjur::secret` is wrapped in `Deferred` call
 Deferred(conjur::secret, ['production/postgres/password'])
-```
-
-```puppet
-# BAD: This will not work!
-conjur::secret('production/postgres/password')
 ```
 
 Since the resolution of variables is done also on the agent _after_ the catalog is
@@ -197,6 +191,10 @@ Deferred(conjur::secret, ['production/postgres/password'])
 # BAD: This will not work!
 Deferred(conjur::secret('production/postgres/password'))
 ```
+
+NOTE: With v3.2.0 of this module, the `conjur::secret` function is able to run on the Puppet server,
+though it is still recommended to run it on the agent via deferred functions unless the string value 
+is required at compliation time for compatiblity reasons.
 
 You can read more about Puppet's `Deferred` functions
 [here](https://puppet.com/docs/puppet/6.17/deferring_functions.html).

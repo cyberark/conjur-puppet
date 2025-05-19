@@ -28,12 +28,18 @@ export WINDOWS_DOCKER_HOST=${WINDOWS_DOCKER_HOST:-}
 export WINDOWS_DOCKER_CERT_PATH=${WINDOWS_DOCKER_CERT_PATH:-}
 export WINDOWS_DOCKER_TLS_VERIFY=${WINDOWS_DOCKER_TLS_VERIFY:-0}
 
-CLEAN_UP_ON_EXIT=${CLEAN_UP_ON_EXIT:-true}
-INSTALL_PACKAGED_MODULE=${INSTALL_PACKAGED_MODULE:-true}
 export COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-puppetmaster_$(openssl rand -hex 3)}
-
 export PUPPET_SERVER_TAG=${PUPPET_SERVER_TAG:-8-latest}
 
+CLEAN_UP_ON_EXIT=${CLEAN_UP_ON_EXIT:-true}
+INSTALL_PACKAGED_MODULE=${INSTALL_PACKAGED_MODULE:-true}
+
+NODE_SUFFIX="$(openssl rand -hex 3)"
+TMP_FOLDER="$(openssl rand -hex 3)"
+TMPDIR="$PWD/tmp/$TMP_FOLDER"
+mkdir -p "$TMPDIR"
+CONJUR_CONFIG_FILE="$TMPDIR/conjur.conf"
+CONJUR_IDENTITY_FILE="$TMPDIR/conjur.identity"
 
 NETNAME=${COMPOSE_PROJECT_NAME//-/}_default
 EXPECTED_PASSWORD="supersecretpassword"
@@ -98,6 +104,7 @@ main() {
   fi
 
   get_docker_gateway_ip
+  create_conjur_config_files
 
   local agent_image="ghcr.io/openvoxproject/openvoxagent:latest"
 
@@ -165,6 +172,10 @@ run_in_conjur_cli() {
 
 run_in_puppet() {
   docker compose exec -T puppet "$@"
+}
+
+run_in_puppet_compiler() {
+  docker compose exec -T puppet-compiler "$@"
 }
 
 start_services() {
@@ -263,44 +274,49 @@ revoke_cert_for() {
   run_in_puppet puppetserver ca clean --certname "$cert_fqdn" &>/dev/null || true
 }
 
-converge_node_agent_apikey() {
-  local agent_image="$1"
+create_conjur_config_files() {
   local node_name="agent-apikey-node"
-  local hostname="${node_name}-$(openssl rand -hex 3)"
-
   local login="host/$node_name"
   local api_key=$(get_host_key $node_name)
   echo "API key for $node_name: $api_key"
-
-  # write the conjurize files to a tempdir so they can be mounted
-  TMPDIR="$PWD/tmp/$(openssl rand -hex 3)"
-  mkdir -p $TMPDIR
-
-  local config_file="$TMPDIR/conjur.conf"
-  local identity_file="$TMPDIR/conjur.identity"
 
   echo "
     appliance_url: https://conjur.cyberark.com:8443/
     version: 5
     account: cucumber
     cert_file: /etc/ca.crt
-  " > $config_file
-  chmod 600 $config_file
+  " > $CONJUR_CONFIG_FILE
+  chmod 600 $CONJUR_CONFIG_FILE
 
   echo "
     machine conjur.cyberark.com
     login $login
     password $api_key
-  " > $identity_file
-  chmod 600 $identity_file
+  " > $CONJUR_IDENTITY_FILE
+  chmod 600 $CONJUR_IDENTITY_FILE
+
+  # Move these files to the correct locations in the puppet compiler server
+  run_in_puppet_compiler bash -c "
+    cp /conjur/examples/puppetmaster/tmp/$TMP_FOLDER/conjur.conf /etc/conjur.conf
+    chmod 777 /etc/conjur.conf
+    cp /conjur/examples/puppetmaster/tmp/$TMP_FOLDER/conjur.identity /etc/conjur.identity
+    chmod 777 /etc/conjur.identity
+    cp /conjur/examples/puppetmaster/https_config/ca.crt /etc/ca.crt
+  "
+}
+
+converge_node_agent_apikey() {
+  local agent_image="$1"
+  local node_name="agent-apikey-node"
+  local hostname="${node_name}-$NODE_SUFFIX"
 
   revoke_cert_for "$hostname"
 
   set -x
   docker run --rm -t \
     --net $NETNAME \
-    -v "$config_file:/etc/conjur.conf:ro" \
-    -v "$identity_file:/etc/conjur.identity:ro" \
+    -v "$CONJUR_CONFIG_FILE:/etc/conjur.conf:ro" \
+    -v "$CONJUR_IDENTITY_FILE:/etc/conjur.identity:ro" \
     -v "$PWD/https_config/ca.crt:/etc/ca.crt:ro" \
     --hostname "$hostname" \
     "$agent_image" \
@@ -362,6 +378,18 @@ $ssl_certificate
           authn_api_key => lookup('conjur::authn_api_key'),
           ssl_certificate => lookup('conjur::ssl_certificate')
       }]))
+
+      \$nondeferred_secret = conjur::secret('inventory/db-password', {
+          appliance_url => lookup('conjur::appliance_url'),
+          account => lookup('conjur::account'),
+          authn_login => lookup('conjur::authn_login'),
+          authn_api_key => lookup('conjur::authn_api_key'),
+          ssl_certificate => lookup('conjur::ssl_certificate')
+      }).unwrap
+
+      if \$nondeferred_secret != 'supersecretpassword' {
+        fail(\"Expected Conjur secret to be 'supersecretpassword', but got '\$nondeferred_secret'\")
+      }
 
       notify { \"Writing secret to \${output_file1}...\": }
       file { \$output_file1:

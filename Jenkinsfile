@@ -148,7 +148,7 @@ pipeline {
       }
       steps {
         script {
-          release(infrapool) { billOfMaterialsDirectory, assetDirectory, toolsDirectory ->
+          release(INFRAPOOL_EXECUTORV2_AGENT_0) { billOfMaterialsDirectory, assetDirectory, toolsDirectory ->
             // Publish release artifacts to all the appropriate locations
             // Copy any artifacts to assetDirectory to attach them to the Github release
           }

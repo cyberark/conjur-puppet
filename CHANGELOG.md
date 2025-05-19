@@ -6,12 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## [3.2.0] - 2025-05-06
+## [3.2.0] - 2025-05-19
 
 ### Changed
 - Upgraded PDK to 3.4.0
 
 ### Added
+- Allow retrieving secrets outside a deffered function so they are available at compilation time
 - Tests against Puppet 8 and bump supported versions (CNJR-9524)
 
 ### Security

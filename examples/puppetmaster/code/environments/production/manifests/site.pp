@@ -41,6 +41,13 @@ node default {
     ])),
   }
 
+  # Test invoking the `conjur::secret` function directly on the server instead of deferring to the agent
+  $nondeferred_secret = conjur::secret('inventory/db-password').unwrap
+
+  if $nondeferred_secret != 'supersecretpassword' {
+    fail("Expected Conjur secret to be 'supersecretpassword', but got '${nondeferred_secret}'")
+  }
+
   if $facts['os']['family'] == 'Windows' {
     exec { "Read secret from ${output_file1}...":
       command   => "${win_cmd_exe} /c type ${output_file1}",
