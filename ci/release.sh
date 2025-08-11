@@ -4,19 +4,17 @@
 # To ensure this script always executes relative to the repo root
 cd "$(dirname "$0")/.."
 
-docker build --platform linux/amd64 -t puppet-pdk -f ./ci/Dockerfile.pdk .
-
 summon -f ./ci/secrets.yml \
   docker run \
     --rm -t \
     -v $PWD:/conjur \
     -w /conjur \
     --env-file @SUMMONENVFILE \
-    puppet-pdk \
-    bash -ec """
-      PDK_DISABLE_ANALYTICS=true pdk release --skip-documentation \
-                                             --skip-changelog \
-                                             --skip-validation \
-                                             --forge-token="\$PDK_FORGE_TOKEN" \
-                                             --force
+    --env PDK_DISABLE_ANALYTICS=true \
+    puppet/pdk:latest \
+   """release --skip-documentation \
+              --skip-changelog \
+              --skip-validation \
+              --forge-token="\$PDK_FORGE_TOKEN" \
+              --force
     """

@@ -8,4 +8,4 @@ docker run -t \
            -v "$(pwd):/conjur" \
            -w /conjur \
            --entrypoint /bin/bash \
-           puppet/puppetserver:latest -ec "$strings_cmd"
+           ruby:slim -ec "$strings_cmd"

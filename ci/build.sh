@@ -6,13 +6,10 @@ cd "$(dirname "$0")/.."
 
 mkdir -p "./pkg"
 
-docker build --platform linux/amd64 -t puppet-pdk -f ./ci/Dockerfile.pdk .
-
 docker run --rm \
   -v $PWD:/conjur -w /conjur \
-  puppet-pdk \
-  bash -ec "
-    pdk build --force
+  puppet/pdk:latest \
+ "build --force
     # Ensure there's a generically named copy of the packaged module. This will allow the
     # packaged module to be more easily referenced in any automation scripts e.g. integration
     # tests.
