@@ -1,0 +1,5 @@
+config:
+  exclusions:
+    - ci/expose-daemon.ps1
+    - examples/puppetmaster/https_config/conjur.key
+    - spec/unit/conjur/puppet_module/http_spec.rb
