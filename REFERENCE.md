@@ -10,7 +10,7 @@
 
 ### Functions
 
-* [`conjur::secret`](#conjur--secret): Function to retrieve a Conjur secret
+* [`conjur::secret`](#conjur--secret): Function to retrieve a Secrets Manager secret
 
 ## Resource types
 
@@ -32,11 +32,11 @@ Default value: `present`
 
 ##### `username`
 
-The identity used to authenticate to the Conjur instance
+The identity used to authenticate to the Secrets Manager instance
 
 ##### `value`
 
-The API key matching the Conjur identity
+The API key matching the Secrets Manager identity
 
 #### Parameters
 
@@ -52,7 +52,7 @@ discover the appropriate provider for your platform.
 
 ##### <a name="-credential--target"></a>`target`
 
-Conjur URL
+Secrets Manager URL
 
 ## Functions
 
@@ -60,7 +60,7 @@ Conjur URL
 
 Type: Ruby 4.x API
 
-Function to retrieve a Conjur secret
+Function to retrieve a Secrets Manager secret
 
 #### Examples
 
@@ -90,9 +90,9 @@ $dbpass = Deferred(conjur::secret, ['production/postgres/password', {
 
 #### `conjur::secret(String $variable_id, Optional[Hash] $options)`
 
-Function to retrieve a Conjur secret
+Function to retrieve a Secrets Manager secret
 
-Returns: `Sensitive` Value of the Conjur variable.
+Returns: `Sensitive` Value of the Secrets Manager variable.
 
 ##### Examples
 
@@ -124,7 +124,7 @@ $dbpass = Deferred(conjur::secret, ['production/postgres/password', {
 
 Data type: `String`
 
-Conjur variable ID that you want the value of.
+Secrets Manager variable ID that you want the value of.
 
 ##### `options`
 
@@ -132,11 +132,11 @@ Data type: `Optional[Hash]`
 
 Optional parameter specifying server identity overrides
 The following keys are supported in the options hash:
-- appliance_url: The URL of the Conjur instance.
-- account: Name of the Conjur account that contains this variable.
-- authn_login: The identity you are using to authenticate to the Conjur instance.
+- appliance_url: The URL of the Secrets Manager instance.
+- account: Name of the Secrets Manager account that contains this variable.
+- authn_login: The identity you are using to authenticate to the Secrets Manager instance.
 - authn_api_key: The API key of the identity you are using to authenticate with (must be Sensitive type).
-- cert_file: The absolute path to CA certificate chain for the Conjur instance on the agent. This variable overrides `ssl_certificate`.
-- ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the Conjur instance. Overwritten by the contents read from `cert_file` when it is present.
-- version: Conjur API version, defaults to 5.
+- cert_file: The absolute path to CA certificate chain for the Secrets Manager instance on the agent. This variable overrides `ssl_certificate`.
+- ssl_certificate: The _raw_ PEM-encoded x509 CA certificate chain for the Secrets Manager instance. Overwritten by the contents read from `cert_file` when it is present.
+- version: Secrets Manager API version, defaults to 5.
 
