@@ -1,4 +1,4 @@
-# conjur
+# CyberArk Secrets Manager Puppet Module
 
 [![Version](https://img.shields.io/puppetforge/v/cyberark/conjur.svg)](https://forge.puppet.com/cyberark/conjur)
 
@@ -10,20 +10,19 @@
   * [Setup requirements](#setup-requirements)
   * [Deprecations](#deprecations)
     + [Puppet v5](#puppet-v5)
-    + [Conjur Enterprise v4](#conjur-enterprise-v4)
     + [Use of Host Factory Tokens](#use-of-host-factory-tokens)
   * [Installation](#installation)
-  * [Using conjur-puppet with Conjur Open Source](#using-conjur-puppet-with-conjur-open-source)
-  * [Conjur module basics](#conjur-module-basics)
+  * [Using conjur-puppet with OSS](#using-conjur-puppet-with-conjur-oss)
+  * [Secrets Manager module basics](#secrets-manager-module-basics)
     + [Example usage](#example-usage)
     + [`Deferred` functions](#deferred-functions)
     + [`Sensitive` type](#sensitive-type)
 - [Usage](#usage)
-  * [Methods to establish Conjur host identity](#methods-to-establish-conjur-host-identity)
-    + [Conjur host identity with API key](#conjur-host-identity-with-api-key)
+  * [Methods to establish Secrets Manager host identity](#methods-to-establish-secrets-manager-host-identity)
+    + [Secrets Manager host identity with API key](#secrets-manager-host-identity-with-api-key)
       * [Updating the Puppet manifest](#updating-the-puppet-manifest)
       * [Using Hiera](#using-hiera)
-      * [Using Conjur identity files (Linux agents only)](#using-conjur-identity-files--linux-agents-only-)
+      * [Using Secrets Manager identity files (Linux agents only)](#using-secrets-manager-identity-files--linux-agents-only-)
       * [Using Windows Registry / Windows Credential Manager (Windows agents only)](#using-windows-registry---windows-credential-manager--windows-agents-only-)
 - [Troubleshooting](#troubleshooting)
 - [Reference](#reference)
@@ -35,10 +34,10 @@
 
 ## Description
 
-This is the official Puppet module for [Conjur](https://www.conjur.org), a robust
+This is the official Puppet module for [CyberArk Secrets Manager](https://www.cyberark.com/products/secrets-manager-self-hosted/), a robust
 identity and access management platform. This module simplifies the operations involved in
-establishing a Conjur host identity and allows authorized Puppet nodes to fetch
-secrets from Conjur.
+establishing a CyberArk Secrets Manager host identity and allows authorized Puppet nodes to fetch
+secrets from CyberArk Secrets Manager.
 
 You can find our official distributable releases on Puppet Forge under [`cyberark/conjur`](https://forge.puppet.com/cyberark/conjur).
 
@@ -46,8 +45,7 @@ You can find our official distributable releases on Puppet Forge under [`cyberar
 
 ![Certification Level](https://img.shields.io/badge/Certification%20Level-Certified-6C757D?link=https://github.com/cyberark/community/blob/main/Conjur/conventions/certification-levels.md)
 
-This repo is a **Certified** project. It is officially approved to work with Conjur Open Source
-and Conjur Enterprise as documented. For more detailed information on our certification levels, see
+This repo is a **Certified** project. It is officially approved to work with Conjur OSS, CyberArk Secrets Manager Self-Hosted, and CyberArk Secrets Manager SaaS as documented. For more detailed information on our certification levels, see
 [our community guidelines](https://github.com/cyberark/community/blob/main/Conjur/conventions/certification-levels.md#community).
 
 ## Setup
@@ -56,10 +54,10 @@ and Conjur Enterprise as documented. For more detailed information on our certif
 
 This module requires that you have:
 - Puppet v6 _or equivalent EE version_
-- Conjur endpoint available to both the Puppet server and the Puppet nodes using this
+- CyberArk Secrets Manager endpoint available to both the Puppet server and the Puppet nodes using this
   module. Supported versions:
-  - Conjur Open Source v1+
-  - Conjur Enterprise (formerly DAP) v10+
+  - Conjur OSS v1+
+  - CyberArk Secrets Manager, Self-Hosted (formerly Conjur Enterprise) v10+
 
 ### Deprecations
 
@@ -68,12 +66,6 @@ This module requires that you have:
 Puppet v5 is not supported in v3+ of this module. If you are still using this version,
 please use the [v2](https://github.com/cyberark/conjur-puppet/tree/v2) branch of this
 project or a release version `<3.0.0`.
-
-#### Conjur Enterprise v4
-
-Conjur Enterprise v4 is not supported in v3+ of this module. If you are still using this
-version, please use the [v2](https://github.com/cyberark/conjur-puppet/tree/v2) branch
-of this project or a release version `<3.0.0`.
 
 #### Use of Host Factory Tokens
 
@@ -97,22 +89,22 @@ command on the Puppet server:
 puppet module install cyberark-conjur --version 1.2.3
 ```
 
-### Using conjur-puppet with Conjur Open Source
+### Using conjur-puppet with Conjur OSS
 
-Are you using this project with [Conjur Open Source](https://github.com/cyberark/conjur)? Then we
+Are you using this project with [Conjur OSS](https://github.com/cyberark/conjur)? Then we
 **strongly** recommend choosing the version of this project to use from the latest [Conjur OSS
 suite release](https://docs.conjur.org/Latest/en/Content/Overview/Conjur-OSS-Suite-Overview.html).
-Conjur maintainers perform additional testing on the suite release versions to ensure
-compatibility. When possible, upgrade your Conjur version to match the
+Conjur OSS maintainers perform additional testing on the suite release versions to ensure
+compatibility. When possible, upgrade your Conjur OSS version to match the
 [latest suite release](https://docs.conjur.org/Latest/en/Content/ReleaseNotes/ConjurOSS-suite-RN.htm);
-when using integrations, choose the latest suite release that matches your Conjur version. For any
+when using integrations, choose the latest suite release that matches your Conjur OSS version. For any
 questions, please contact us on [Discourse](https://discuss.cyberarkcommons.org/c/conjur/5).
 
-### Conjur module basics
+### Secrets Manager module basics
 
 This module provides a `conjur::secret` [`Deferred` function](#deferred-functions)
-that can be used to retrieve secrets from Conjur. Given a Conjur variable identifier and optional
-identity parameters, `conjur::secret` uses the node’s Conjur identity to resolve and return
+that can be used to retrieve secrets from Secrets Manager. Given a Secrets Manager variable identifier and optional
+identity parameters, `conjur::secret` uses the node’s Secrets Manager identity to resolve and return
 the variable’s value as a `Sensitive` variable.
 
 Using a pre-provisioned identity:
@@ -230,7 +222,7 @@ file { '/etc/someservice/db.yaml':
 }
 ```
 
-Note: We only enforce that the API key from the Conjur configuration is marked
+Note: We only enforce that the API key from the Secrets Manager configuration is marked
 Sensitive, but if any other data in the function parameters is also considered
 sensitive by your organization you may also wrap the whole `Deferred` invocation
 in the `Sensitive` type to prevent accidental disclosure of the sensitive
@@ -240,34 +232,34 @@ output twice.
 ## Usage
 
 This module provides the `conjur::secret` function described above and the `conjur`
-class, which can be configured to establish Conjur host identity on the node running
+class, which can be configured to establish Secrets Manager host identity on the node running
 Puppet.
 
-### Methods to establish Conjur host identity
+### Methods to establish Secrets Manager host identity
 
-Conjur requires an
+Secrets Manager requires an
 [application identity](https://docs.conjur.org/Latest/en/Content/Get%20Started/key_concepts/machine_identity.html)
-for any applications, machines, or processes that need to interact with Conjur.
+for any applications, machines, or processes that need to interact with Secrets Manager.
 
 Please note that before getting started configuring your Puppet environment, you'll need
-to load a policy in Conjur to define the application identities that you will be using to
-authenticate to Conjur. To learn more about
-[creating hosts](https://docs.conjur.org/Latest/en/Content/Operations/Policy/statement-ref-host.htm),
-please see [the Conjur documentation](https://docs.conjur.org/Latest/en/Content/Resources/_TopNav/cc_Home.htm).
+to load a policy in Secrets Manager to define the application identities that you will be using to
+authenticate to Secrets Manager. To learn more about
+[creating hosts](https://docs.cyberark.com/conjur-open-source/latest/en/content/operations/policy/statement-ref-host.htm),
+please see [the Secrets Manager documentation](https://docs.cyberark.com/portal/latest/en/docs.htm).
 
 In the sections below, we'll outline the different methods of providing this
-module with your Conjur configuration and credentials. In those sections we'll
-refer often to the following Conjur configuration variables:
+module with your Secrets Manager configuration and credentials. In those sections we'll
+refer often to the following Secrets Manager configuration variables:
 
-- `appliance_url`: The URL of the Conjur or Conjur Enterprise instance you are connecting to. If using
-  Conjur Enterprise, this may be the URL of a load balancer for the cluster's Conjur Enterprise follower instances.
-- `account` - the account name for the Conjur / Conjur Enterprise instance you are connecting to.
-- `authn_login`: The identity you are using to authenticate to the Conjur / Conjur Enterprise
+- `appliance_url`: The URL of the Conjur OSS or Secrets Manager Self-Hosted instance you are connecting to. If using
+  Secrets Manager Self-Hosted, this may be the URL of a load balancer for the cluster's Secrets Manager Follower instances.
+- `account` - the account name for the Conjur OSS / Secrets Manager Self-Hosted instance you are connecting to.
+- `authn_login`: The identity you are using to authenticate to the Conjur OSS / Secrets Manager Self-Hosted
   instance. For hosts / application identities, the fully qualified path should be prefixed
   by `host/`, eg `host/production/my-app-host`.
 - `authn_api_key`: The API key of the identity you are using to authenticate to the
-  Conjur / Conjur Enterprise instance.
-- `ssl_certificate`: The _raw_ PEM-encoded x509 CA certificate chain for the Conjur Enterprise instance you
+  Conjur OSS / Secrets Manager Self-Hosted instance.
+- `ssl_certificate`: The _raw_ PEM-encoded x509 CA certificate chain for the Secrets Manager Self-Hosted instance you
   are connecting to, provided as a string (including newlines) or using the
   [Puppet file resource type](https://puppet.com/docs/puppet/latest/types/file.html).
   This value may be obtained by running the command:
@@ -279,24 +271,24 @@ refer often to the following Conjur configuration variables:
   ...
   -----END CERTIFICATE-----
   ```
-- `version` (optional): Conjur API version, defaults to 5.
+- `version` (optional): Secrets Manager API version, defaults to 5.
 
 _Note that not all variables are required for each method of configuration._
 
-#### Conjur host identity with API key
+#### Secrets Manager host identity with API key
 
-The simplest way to get started with a Conjur application identity is to
-[create a host in Conjur](https://docs.conjur.org/Latest/en/Content/Operations/Policy/statement-ref-host.htm)
-and then provide its Conjur credentials to this module. There are a few ways to provide
-the Conjur Puppet module with these credentials and they are outlined in
+The simplest way to get started with a Secrets Manager application identity is to
+[create a host in Secrets Manager](https://docs.cyberark.com/conjur-open-source/latest/en/content/operations/policy/statement-ref-host.htm)
+and then provide its Secrets Manager credentials to this module. There are a few ways to provide
+the Secrets Manager Puppet module with these credentials and they are outlined in
 the following sections.
 
 ##### Updating the Puppet manifest
 
-When you update the Puppet manifest to include the Conjur host identity and API key, you
-are configuring the Puppet **server** with the Conjur identity information.
+When you update the Puppet manifest to include the Secrets Manager host identity and API key, you
+are configuring the Puppet **server** with the Secrets Manager identity information.
 
-In this example, after you have created a Conjur host named `redis001`, you can add
+In this example, after you have created a Secrets Manager host named `redis001`, you can add
 its host identity information and its API key to your `Deferred` invocation as an optional
 hash like this:
 ```puppet
@@ -317,7 +309,7 @@ $dbpass = Deferred(conjur::secret, ['production/postgres/password', {
 
 ##### Using Hiera
 
-You can also add the Conjur identity configuration to Hiera, which provides the Conjur
+You can also add the Secrets Manager identity configuration to Hiera, which provides the Secrets Manager
 identity information to the Puppet **server**. You then would use that information to
 populate the host identity information:
 
@@ -353,11 +345,11 @@ file { '/abslute/path/to/cert.pem':
 }
 ```
 
-##### Using Conjur identity files (Linux agents only)
+##### Using Secrets Manager identity files (Linux agents only)
 
-To configure **Linux agents** with a Conjur host identity, you can add the Conjur host
+To configure **Linux agents** with a Secrets Manager host identity, you can add the Secrets Manager host
 and API key to
-[Conjur identity files](https://docs.conjur.org/Latest/en/Content/Get%20Started/key_concepts/machine_identity.html)
+[Secrets Manager identity files](https://docs.cyberark.com/conjur-open-source/latest/en/content/get%20started/key_concepts/machine_identity.html)
 `/etc/conjur.conf` and `/etc/conjur.identity`.
 
 Using the same `redis001` host as above, you would create a `conjur.conf` file that
@@ -377,10 +369,10 @@ cert_file: "/absolute/path/to/conjur-ca.pem" # Read from the Puppet agent
 
 | Value Name | Description |
 |-|-|
-| `account` | `Conjur account specified during Conjur setup. |
-| `appliance_url` | `Conjur API endpoint. |
-| `cert_file` | `Path to a file containing the public Conjur SSL cert on the agent. This value **must** be an absolute path and not a relative one. |
-| `ssl_certificate` | `Raw public Conjur SSL cert. Overwritten by the contents read from `cert_file` when it is present. |
+| `account` | Secrets Manager account specified during Secrets Manager setup. |
+| `appliance_url` | Secrets Manager API endpoint. |
+| `cert_file` | Path to a file containing the public Secrets Manager SSL cert on the agent. This value **must** be an absolute path and not a relative one. |
+| `ssl_certificate` | Raw public Secrets Manager SSL cert. Overwritten by the contents read from `cert_file` when it is present. |
 | `version` | Conjur API version. Defaults to `5`. |
 
 Note: **use either `SslCertificate` _or_ `CertFile` but not both as `cert_file`
@@ -394,12 +386,12 @@ machine conjur.mycompany.com
 ```
 
 _**NOTE: The `conjur.conf` and `conjur.identity` files contain sensitive
-  Conjur connection information. Care must be taken to ensure that
+  Secrets Manager connection information. Care must be taken to ensure that
   the permissions for these files are set to `600` to
   disallow any access to these files by unauthorized (non-root) users
   on a Linux Puppet agent node.**_
 
-The Conjur Puppet Module automatically checks for these files on your node and uses
+The Secrets Manager Puppet Module automatically checks for these files on your node and uses
 them if they are available.
 
 To then fetch your credential, you would use the default form of `conjur::secret`:
@@ -409,22 +401,22 @@ $dbpass = Deferred(conjur::secret, ['production/postgres/password'])
 
 ##### Using Windows Registry / Windows Credential Manager (Windows agents only)
 
-To configure **Windows agents** with a Conjur host identity, you set up the Conjur
+To configure **Windows agents** with a Secrets Manager host identity, you set up the Secrets Manager
 configuration in the Windows Registry and in the Windows Credential Manager. The
 Registry contains the connection general information and the Credential Manager is
 used to store the sensitive authentication credentials.
 
-Connection settings for Conjur are stored in the Windows Registry under the key
+Connection settings for Secrets Manager are stored in the Windows Registry under the key
 `HKLM\Software\CyberArk\Conjur`. This is equivalent to `/etc/conjur.conf` on Linux. The
 values available to set are:
 
 | Value Name | Value Type | Description |
 |-|-|-|
-| `Account` | `REG_SZ` | Conjur account specified during Conjur setup. |
-| `ApplianceUrl` | `REG_SZ` | Conjur API endpoint. |
-| `CertFile` | `REG_SZ` | Path to a file containing the public Conjur SSL cert on the agent. This value **must** be an absolute path and not a relative one. |
-| `SslCertificate` | `REG_SZ` | Raw public Conjur SSL cert. Overwritten by the contents read from `CertFile` when it is present. |
-| `Version` | `REG_DWORD` | Conjur API version. Defaults to `5`. |
+| `Account` | `REG_SZ` | Secrets Manager account specified during Secrets Manager setup. |
+| `ApplianceUrl` | `REG_SZ` | Secrets Manager API endpoint. |
+| `CertFile` | `REG_SZ` | Path to a file containing the public Secrets Manager SSL cert on the agent. This value **must** be an absolute path and not a relative one. |
+| `SslCertificate` | `REG_SZ` | Raw public Secrets Manager SSL cert. Overwritten by the contents read from `CertFile` when it is present. |
+| `Version` | `REG_DWORD` | Secrets Manager API version. Defaults to `5`. |
 
 These may be set using Powershell:
 
@@ -447,11 +439,11 @@ Windows Registry Editor Version 5.00
 ```
 
 _**NOTE: It is important from a security perspective to ensure that
-unauthorized, non-administrator users do not have write access to Conjur
+unauthorized, non-administrator users do not have write access to Secrets Manager
 connection settings in the Windows Registry. Disabling write access for
 unauthorized users to these settings will help to prevent potential malicious
 redirection of sensitive Puppet agent messages. Read-only access for
-non-administrator users to Conjur connection information can be confirmed via
+non-administrator users to Secrets Manager connection information can be confirmed via
 `regedit` on the Windows Desktop, or by running the following command from a
 PowerShell to confirm that only the `ReadKey` flag is set:**_
 
@@ -462,8 +454,8 @@ TIN\\Users"
 AccessToString          : BUILTIN\Users Allow  ReadKey
 ```
 
-Credentials for Conjur are stored in the Windows Credential Manager. The credential
-`Target` is the Conjur appliance URL (e.g. `https://conjur.mycompany.com`).
+Credentials for Secrets Manager are stored in the Windows Credential Manager. The credential
+`Target` is the Secrets Manager appliance URL (e.g. `https://conjur.mycompany.com`).
 The username is the host ID, with a `host/` prefix (e.g. `host/redis001`, as in previous
 examples) and the credential password is the host's API key. This is equivalent to
 `/etc/conjur.identity` on Linux.
@@ -497,7 +489,7 @@ For a complete reference, please see
 See [metadata.json](https://github.com/cyberark/conjur-puppet/blob/main/metadata.json)
 for supported platforms.
 
-At current, the Conjur Puppet module encrypts and decrypts the Conjur access
+Currently, the Secrets Manager Puppet module encrypts and decrypts the Secrets Manager access
 token using the Puppet server’s private/public key pair. This is known to be
 incompatible with using multiple [compile masters](https://puppet.com/docs/puppetserver/5.3/scaling_puppet_server.html).
 
@@ -515,4 +507,4 @@ Please note, that this is a "Partner Supported" module, which means that technic
 customer support for this module is solely provided by CyberArk.
 
 Puppet does not provide support for any Partner Supported modules. For technical
-support please visit the Conjur channnel at [CyberArk Commons](https://discuss.cyberarkcommons.org/).
+support please visit the Conjur OSS / Secrets Manager channnel at [CyberArk Commons](https://discuss.cyberarkcommons.org/).

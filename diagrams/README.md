@@ -1,7 +1,7 @@
-# Workflows for Conjur Puppet Module
+# Workflows for Secrets Manager Puppet Module
 
 This directory includes sequence diagrams for the workflows that are supported
-by the Conjur Puppet module. To see them, go to our
+by the Secrets Manager Puppet module. To see them, go to our
 [CONTRIBUTING.md](../CONTRIBUTING.md#sequence-diagrams) document.
 
 ## Generating the diagram images

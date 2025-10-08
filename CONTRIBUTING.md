@@ -21,7 +21,7 @@ For general contribution and community guidelines, please see the [community rep
 ### Sequence diagrams
 
 It may help to understand some typical flows when this Puppet module is
-included in your Puppet workflows. The following Conjur Puppet module
+included in your Puppet workflows. The following Secrets Manager Puppet module
 workflows are portrayed below:
 
 - [Manifest-provided Identity](#manifest-provided-identity)
@@ -38,7 +38,7 @@ section in the [README.md](README.md) file.
 #### Pre-Provisioned Identity
 
 This workflow is described in the
-["Using Conjur identity files (Linux agents only)"](README.md#using-conjur-identity-files--linux-agents-only-)
+["Using Secrets Manager identity files (Linux agents only)"](README.md#using-conjur-identity-files--linux-agents-only-)
 and
 ["Using Windows Registry / Windows Credential Manager (Windows agents only)"](README.md#using-windows-registry---windows-credential-manager--windows-agents-only-)
 sections of the [README.md](README.md) file.
@@ -47,7 +47,7 @@ sections of the [README.md](README.md) file.
 
 ### Running a test environment
 
-Run a pre-configured Conjur and Puppet master instance by going into the
+Run a pre-configured Secrets Manager and Puppet master instance by going into the
 `examples/puppetmaster` folder and running the following:
 ```sh
 export CLEAN_UP_ON_EXIT=false
@@ -57,7 +57,7 @@ export COMPOSE_PROJECT_NAME=puppetmaster_manual
 ```
 
 This command will run the integration tests and exit with the Puppet master and
-Conjur instances still available.
+Secrets Manager instances still available.
 
 ### Running a Puppet node locally
 
@@ -85,7 +85,7 @@ A couple notes:
 
 1. `docker-compose` creates the `$COMPOSE_PROJECT_NAME_default` network by default.
   The agent needs to connect to this network to be able to see the Puppet master
-  and Conjur.
+  and Secrets Manager.
 2. The default command for these agent images is `agent --verbose --one-time --no-daemonize --summarize`.
    The default entrypoint is `/opt/puppetlabs/bin/puppet `.
    This can be overridden for your purposes with CLI parameters:
@@ -107,12 +107,12 @@ A couple notes:
 The [examples/puppetmaster/vagrant](examples/puppetmaster/vagrant) directory
 contains Vagrantfiles, Bash scripts, and PowerShell scripts that can be used
 to create a Vagrant/VirtualBox-based development and test environment for
-testing the Conjur Puppet module with Puppet Agents running on Windows2016
+testing the Secrets Manager Puppet module with Puppet Agents running on Windows2016
 or Windows2012.
 
 These Vagrantfiles and scripts can be used to:
 
-- Spin up a containerized Puppet Server and Conjur server via docker-compose.
+- Spin up a containerized Puppet Server and Secrets Manager server via docker-compose.
 - Create a Windows2016 or Windows2012 VM.
 - Dynamically install the desired version of Puppet Agent on the VM.
 - Run Puppet Agent on the VM to install a Puppet catalog.

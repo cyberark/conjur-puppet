@@ -7,10 +7,10 @@ This document can help you quickly identify and fix most common errors.
 What kind of error are you seeing?
 - [`Unknown function 'conjur::secret'`](#module-not-installed)
 - [`(LoadError) no such file to load -- conjur/puppet_module/config`](#deferred-not-used-correctly)
-- [`Conjur configuration not found on system`](#identity-not-set)
+- [`Secrets Manager configuration not found on system`](#identity-not-set)
 - [`Error while evaluating a Method call ... expects a Sensitive value, got Deferred`](#misuse-of-deferred-variables)
-- [`Failed to open TCP connection to ... (getaddrinfo: No such host is known.)`](#incorrect-conjur-endpoint)
-- [`Conjur server error: Unauthorized`](#incorrect-conjur-credentials)
+- [`Failed to open TCP connection to ... (getaddrinfo: No such host is known.)`](#incorrect-secrets-manager-endpoint)
+- [`Conjur server error: Unauthorized`](#incorrect-secrets-manager-credentials)
 - [`Could not find any pre-populated Conjur credentials in WinCred storage`](#wincred-credentials-not-correctly-set)
 - [`Conjur server error: Not Found`](#variable-not-found)
 - [`Conjur server error: SSL_connect returned=1 errno=0 state=error: certificate verify failed`](#incorrect-ssl-certificate)
@@ -94,7 +94,7 @@ via `Deferred` functions. See [our exmaple usage](README.md#example-usage) for
 information on how to do this correctly.
 
 
-### Incorrect Conjur endpoint
+### Incorrect Secrets Manager endpoint
 
 #### Symptoms
 - You see an error in your Puppet logs that looks something like:
@@ -103,7 +103,7 @@ information on how to do this correctly.
   ```
 
 #### Known Causes
-This problem occurs when the `appliance_url` for Conjur is either
+This problem occurs when the `appliance_url` for Secrets Manager is either
 incorrect or unreachable from the agent.
 
 #### Resolution
@@ -111,7 +111,7 @@ Verify that the agent has the correct `appliance_url` set and that it is
 reachable.
 
 
-### Incorrect Conjur credentials
+### Incorrect Secrets Manager credentials
 
 #### Symptoms
 - You see an error in your Puppet logs that looks something like:
@@ -121,7 +121,7 @@ reachable.
 
 #### Known Causes
 This is usually due to credential values being incorrect for the
-target Conjur server.
+target Secrets Manager server.
 
 #### Resolution
 Verify that `authn_login_id`, `authn_api_key`, and `account` are
