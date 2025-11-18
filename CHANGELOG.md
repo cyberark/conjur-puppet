@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Updated documentation to use new "Secrets Manager" product name
 
+### Added
+- Added `close-stale.yml` GitHub workflow
+
 ## [3.2.0] - 2025-05-19
 
 ### Changed
