@@ -9,7 +9,7 @@ summon -f ./ci/secrets.yml \
     --rm -t \
     -v $PWD:/conjur \
     -w /conjur \
-    --env-file @SUMMONENVFILE \
+    --env PDK_FORGE_TOKEN="$PDK_FORGE_TOKEN" \
     --env PDK_DISABLE_ANALYTICS=true \
     puppet/pdk:latest \
    """release --skip-documentation \
