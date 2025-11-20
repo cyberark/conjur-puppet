@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## [3.2.1] - 2025-08-07
+## [3.2.1] - 2025-11-20
 
 ### Changed
 - Updated documentation to use new "Secrets Manager" product name
